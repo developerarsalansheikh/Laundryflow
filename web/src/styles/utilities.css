@@ -1,0 +1,298 @@
+/**
+ * LaundryFlow Super Admin - Reusable Utilities
+ * Glassmorphic surfaces, button presets, form control styles, status badges, typography scale, scrollbars.
+ */
+
+@layer utilities {
+  /* ==========================================================================
+     Glassmorphic Surfaces
+     ========================================================================== */
+  .glass-card {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.7) 0%, rgba(10, 15, 34, 0.85) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--lf-radius-xl);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow: 0 20px 40px -15px rgba(124, 58, 237, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .glass-card-premium {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.85) 100%);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--lf-radius-2xl);
+    box-shadow: 0 20px 50px -12px rgba(124, 58, 237, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .glass-panel {
+    background: rgba(10, 15, 34, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--lf-radius-lg);
+  }
+
+  .glass-dropdown {
+    background-color: #0B0F26;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--lf-radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(124, 58, 237, 0.15);
+  }
+
+  /* ==========================================================================
+     Button System
+     ========================================================================== */
+  .btn-base {
+    display: inline-flex;
+    items-center: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    border-radius: var(--lf-radius-md);
+    transition: all var(--lf-transition-fast);
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .btn-base:focus-visible {
+    box-shadow: 0 0 0 2px var(--lf-bg-primary), 0 0 0 4px var(--lf-purple-light);
+  }
+
+  .btn-base:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary {
+    @apply btn-base px-4 py-2.5 text-white;
+    background: linear-gradient(135deg, var(--lf-purple) 0%, var(--lf-indigo) 100%);
+    box-shadow: var(--lf-shadow-purple-glow);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--lf-purple-light) 0%, var(--lf-purple) 100%);
+    box-shadow: 0 0 30px -3px rgba(124, 58, 237, 0.5);
+  }
+
+  .btn-secondary {
+    @apply btn-base px-4 py-2.5 text-textPrimary;
+    background-color: var(--lf-card);
+    border: 1px solid var(--lf-border);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--lf-card-hover);
+    border-color: var(--lf-border-strong);
+  }
+
+  .btn-ghost {
+    @apply btn-base px-3 py-2 text-textSecondary;
+    background: transparent;
+  }
+
+  .btn-ghost:hover {
+    color: var(--lf-text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .btn-danger {
+    @apply btn-base px-4 py-2.5 text-white;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+
+  .btn-success {
+    @apply btn-base px-4 py-2.5 text-white;
+    background-color: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .btn-success:hover {
+    background-color: rgba(34, 197, 94, 0.25);
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+
+  .btn-icon {
+    @apply btn-base p-2 rounded-lg text-textSecondary;
+    background-color: var(--lf-card);
+    border: 1px solid var(--lf-border);
+  }
+
+  .btn-icon:hover {
+    color: var(--lf-text-primary);
+    background-color: var(--lf-card-hover);
+    border-color: var(--lf-border-strong);
+  }
+
+  /* ==========================================================================
+     Form Elements
+     ========================================================================== */
+  .input-glass {
+    width: 100%;
+    background-color: rgba(10, 15, 34, 0.6);
+    border: 1px solid var(--lf-border);
+    border-radius: var(--lf-radius-md);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: var(--lf-text-primary);
+    transition: all var(--lf-transition-fast);
+    outline: none;
+  }
+
+  .input-glass::placeholder {
+    color: var(--lf-text-muted);
+  }
+
+  .input-glass:focus {
+    border-color: var(--lf-purple-light);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25);
+  }
+
+  .select-glass {
+    @apply input-glass cursor-pointer appearance-none pr-10;
+  }
+
+  .toggle-glass {
+    width: 2.75rem;
+    height: 1.5rem;
+    background-color: var(--lf-border);
+    border-radius: var(--lf-radius-full);
+    position: relative;
+    cursor: pointer;
+    transition: background-color var(--lf-transition-fast);
+  }
+
+  .toggle-glass-active {
+    background-color: var(--lf-purple);
+  }
+
+  /* ==========================================================================
+     Status Badges
+     ========================================================================== */
+  .badge-base {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--lf-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1rem;
+    letter-spacing: 0.025em;
+  }
+
+  .badge-success {
+    @apply badge-base;
+    background-color: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: var(--lf-success);
+  }
+
+  .badge-warning {
+    @apply badge-base;
+    background-color: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: var(--lf-warning);
+  }
+
+  .badge-danger {
+    @apply badge-base;
+    background-color: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: var(--lf-danger);
+  }
+
+  .badge-info {
+    @apply badge-base;
+    background-color: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: var(--lf-info);
+  }
+
+  .badge-neutral {
+    @apply badge-base;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--lf-border);
+    color: var(--lf-text-secondary);
+  }
+
+  /* ==========================================================================
+     Typography Helper Scale
+     ========================================================================== */
+  .text-display {
+    font-size: 3rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+
+  .text-heading-1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .text-heading-2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .text-heading-3 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  .text-metric {
+    font-size: 2rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--lf-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--lf-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--lf-purple-light);
+}
+
+/* Custom Text Selection */
+::selection {
+  background-color: var(--lf-purple);
+  color: #FFFFFF;
+}

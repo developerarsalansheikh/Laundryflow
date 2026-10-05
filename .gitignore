@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────
+# LaundryFlow — Root .gitignore
+# Project-wide exclusions for local/generated files
+# ─────────────────────────────────────────────
+
+# Environment variables (SENSITIVE - never commit)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/

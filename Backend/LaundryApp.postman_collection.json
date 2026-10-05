@@ -1,0 +1,1369 @@
+{
+  "info": {
+    "_postman_id": "laundry-platform-collection-v1",
+    "name": "🧺 Laundry Platform API",
+    "description": "Complete API collection for the multi-tenant laundry platform backend.\n\n**Base URL:** `http://localhost:8080`\n\n**Variables:**\n- `base` → `http://localhost:8080`\n- `token` → JWT access token (auto-set on login)\n- `laundryId` → Target laundry ID\n- `orderId` → Target order ID\n- `serviceId` → Target service ID",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base",       "value": "http://localhost:8080", "type": "string" },
+    { "key": "token",      "value": "",                      "type": "string" },
+    { "key": "laundryId",  "value": "LAUNDRY_ID_HERE",       "type": "string" },
+    { "key": "orderId",    "value": "ORDER_ID_HERE",         "type": "string" },
+    { "key": "serviceId",  "value": "SERVICE_ID_HERE",       "type": "string" },
+    { "key": "addressId",  "value": "ADDRESS_ID_HERE",       "type": "string" },
+    { "key": "notifId",    "value": "NOTIF_ID_HERE",         "type": "string" },
+    { "key": "resetToken", "value": "RESET_TOKEN_HERE",      "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "🔐 AUTH",
+      "description": "Authentication endpoints — register, OTP verification, login, password management.",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/register",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@gmail.com\",\n  \"phone\": \"8725980254\",\n  \"password\": \"test1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Register a new user account. An OTP will be sent to the provided phone number."
+          }
+        },
+        {
+          "name": "Verify OTP (Registration)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/verify-otp",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "verify-otp"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"8725980254\",\n  \"otp\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Verify the OTP sent during registration to activate the account."
+          }
+        },
+        {
+          "name": "Login (Password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  console.log('Token saved:', json.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/login",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@gmail.com\",\n  \"password\": \"test1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Login with email and password. ✅ Access token is auto-saved to `{{token}}` collection variable via test script."
+          }
+        },
+        {
+          "name": "Login Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/login-verify",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "login-verify"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"8725980254\",\n  \"otp\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Verify OTP for phone-based login flow."
+          }
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/resend-otp",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "resend-otp"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"8725980254\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Resend OTP to the provided phone number."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/refresh-token",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "refresh-token"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"YOUR_REFRESH_TOKEN_HERE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Get a new access token using a valid refresh token."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/auth/logout",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"YOUR_REFRESH_TOKEN_HERE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Invalidate the current session and refresh token."
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/forgot-password",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@gmail.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Send a password reset link to the user's email address."
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/reset-password/{{resetToken}}",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "reset-password", "{{resetToken}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newPassword123\",\n  \"confirmPassword\": \"newPassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Reset user password using the token received via email. Replace `{{resetToken}}` collection variable with the actual token from email link."
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/auth/change-password",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"test1234\",\n  \"newPassword\": \"newPassword123\",\n  \"confirmPassword\": \"newPassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Change the authenticated user's password. Requires valid current password."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👑 SUPER ADMIN",
+      "description": "Super Admin management — platform-wide control over laundries, users, and payments.",
+      "item": [
+        {
+          "name": "Create Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/super-admin/create",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "create"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Super Admin\",\n  \"email\": \"superadmin@laundry.com\",\n  \"password\": \"SuperAdmin@123\",\n  \"secretKey\": \"SUPER_SECRET_KEY\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Bootstrap the platform super admin account. Requires a secret key configured on the server."
+          }
+        },
+        {
+          "name": "Login as Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  console.log('Super Admin token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base}}/api/auth/login",
+              "host": ["{{base}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@laundry.com\",\n  \"password\": \"SuperAdmin@123\",\n  \"role\": \"super_admin\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Login as super admin. ✅ Token auto-saved to `{{token}}`."
+          }
+        },
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/super-admin/dashboard",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "dashboard"]
+            },
+            "description": "Retrieve platform-wide dashboard statistics — total orders, revenue, active laundries, users."
+          }
+        },
+        {
+          "name": "Get All Laundries",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/super-admin/laundries?page=1&limit=10&status=pending",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "laundries"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "status", "value": "pending", "description": "Options: pending | approved | rejected | suspended" }
+              ]
+            },
+            "description": "List all registered laundries. Filter by status: pending, approved, rejected, suspended."
+          }
+        },
+        {
+          "name": "Approve Laundry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/super-admin/laundries/{{laundryId}}/approve",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "laundries", "{{laundryId}}", "approve"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Documents verified successfully.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Approve a pending laundry registration."
+          }
+        },
+        {
+          "name": "Reject Laundry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/super-admin/laundries/{{laundryId}}/reject",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "laundries", "{{laundryId}}", "reject"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Incomplete documentation provided.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Reject a laundry registration with a mandatory reason."
+          }
+        },
+        {
+          "name": "Suspend Laundry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/super-admin/laundries/{{laundryId}}/suspend",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "laundries", "{{laundryId}}", "suspend"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Multiple policy violations reported by customers.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Suspend an approved/active laundry."
+          }
+        },
+        {
+          "name": "Update Laundry Commission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/super-admin/laundries/{{laundryId}}/commission",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "laundries", "{{laundryId}}", "commission"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commissionRate\": 12\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update the platform commission rate (%) for a specific laundry."
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/super-admin/users?page=1&limit=20",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "users"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List all registered platform users."
+          }
+        },
+        {
+          "name": "Get All Payments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/super-admin/payments?page=1&limit=20",
+              "host": ["{{base}}"],
+              "path": ["api", "super-admin", "payments"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Retrieve all payment transactions across the platform."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🏪 LAUNDRY",
+      "description": "Laundry registration, public listing, and laundry admin management endpoints.",
+      "item": [
+        {
+          "name": "Register Laundry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/laundry/register",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"SparkClean Laundry\",\n  \"ownerName\": \"Rahul Sharma\",\n  \"email\": \"rahul@sparkclean.com\",\n  \"phone\": \"8725980254\",\n  \"address\": {\n    \"street\": \"12 MG Road\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"pincode\": \"560001\",\n    \"coordinates\": { \"lat\": 12.9716, \"lng\": 77.5946 }\n  },\n  \"gstin\": \"29ABCDE1234F1Z5\",\n  \"bankDetails\": {\n    \"accountHolder\": \"Rahul Sharma\",\n    \"accountNumber\": \"1234567890\",\n    \"ifsc\": \"SBIN0001234\",\n    \"bankName\": \"State Bank of India\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Register a new laundry business on the platform. Requires authentication (user token)."
+          }
+        },
+        {
+          "name": "Get All Laundries (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/laundry/all?lat=12.9716&lng=77.5946&radius=10",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "all"],
+              "query": [
+                { "key": "lat",    "value": "12.9716" },
+                { "key": "lng",    "value": "77.5946" },
+                { "key": "radius", "value": "10", "description": "Radius in km" }
+              ]
+            },
+            "description": "Public endpoint — list all approved laundries near a given lat/lng location within radius (km)."
+          }
+        },
+        {
+          "name": "Get Laundry by ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/laundry/{{laundryId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "{{laundryId}}"]
+            },
+            "description": "Public endpoint — get details of a specific laundry."
+          }
+        },
+        {
+          "name": "Admin – Get My Laundry",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/my-laundry",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "my-laundry"]
+            },
+            "description": "Get the authenticated laundry admin's own laundry details."
+          }
+        },
+        {
+          "name": "Admin – Update My Laundry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/my-laundry",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "my-laundry"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"SparkClean Laundry Pro\",\n  \"description\": \"Premium laundry services in Bengaluru.\",\n  \"operatingHours\": {\n    \"open\": \"08:00\",\n    \"close\": \"20:00\"\n  },\n  \"isAcceptingOrders\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update the authenticated laundry admin's own laundry profile."
+          }
+        },
+        {
+          "name": "Admin – Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/dashboard",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "dashboard"]
+            },
+            "description": "Retrieve laundry admin dashboard stats — orders, revenue, pending pickups, etc."
+          }
+        },
+        {
+          "name": "Admin – Add Delivery Partner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/delivery-partner",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "delivery-partner"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amit Kumar\",\n  \"phone\": \"9876543210\",\n  \"email\": \"amit@delivery.com\",\n  \"vehicleType\": \"bike\",\n  \"vehicleNumber\": \"KA01AB1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Onboard a new delivery partner for this laundry."
+          }
+        },
+        {
+          "name": "Admin – Get Delivery Partners",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/delivery-partners",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "delivery-partners"]
+            },
+            "description": "List all delivery partners associated with this laundry."
+          }
+        },
+        {
+          "name": "Admin – Toggle Delivery Partner",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/delivery-partner/PARTNER_ID/toggle",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "delivery-partner", "PARTNER_ID", "toggle"]
+            },
+            "description": "Toggle active/inactive status of a delivery partner. Replace PARTNER_ID in URL."
+          }
+        },
+        {
+          "name": "Admin – Create Time Slots",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/laundry/admin/time-slots",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "admin", "time-slots"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slots\": [\n    { \"day\": \"monday\",    \"startTime\": \"09:00\", \"endTime\": \"11:00\", \"maxOrders\": 10 },\n    { \"day\": \"monday\",    \"startTime\": \"14:00\", \"endTime\": \"16:00\", \"maxOrders\": 10 },\n    { \"day\": \"tuesday\",   \"startTime\": \"09:00\", \"endTime\": \"11:00\", \"maxOrders\": 8  },\n    { \"day\": \"wednesday\", \"startTime\": \"10:00\", \"endTime\": \"12:00\", \"maxOrders\": 8  }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Create pickup/delivery time slots for this laundry."
+          }
+        },
+        {
+          "name": "Get Time Slots by Laundry (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/laundry/{{laundryId}}/time-slots",
+              "host": ["{{base}}"],
+              "path": ["api", "laundry", "{{laundryId}}", "time-slots"]
+            },
+            "description": "Public endpoint — fetch available pickup/delivery time slots for a specific laundry."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🧼 SERVICES",
+      "description": "Laundry service management — create, read, update, delete, and toggle services.",
+      "item": [
+        {
+          "name": "Get All Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/services?laundryId={{laundryId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "services"],
+              "query": [{ "key": "laundryId", "value": "{{laundryId}}" }]
+            },
+            "description": "Public endpoint — fetch all services, optionally filtered by laundryId."
+          }
+        },
+        {
+          "name": "Get Service by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/services/{{serviceId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "services", "{{serviceId}}"]
+            },
+            "description": "Get details of a specific service."
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/services",
+              "host": ["{{base}}"],
+              "path": ["api", "services"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wash & Fold\",\n  \"description\": \"Complete wash and fold service for everyday clothes.\",\n  \"category\": \"washing\",\n  \"pricePerKg\": 60,\n  \"minWeight\": 2,\n  \"estimatedTime\": 24,\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Create a new laundry service. Requires laundry admin token."
+          }
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/services/{{serviceId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "services", "{{serviceId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wash & Fold Premium\",\n  \"pricePerKg\": 75,\n  \"description\": \"Premium wash and fold with fabric softener included.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update an existing service."
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/services/{{serviceId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "services", "{{serviceId}}"]
+            },
+            "description": "Permanently delete a service."
+          }
+        },
+        {
+          "name": "Toggle Service Active/Inactive",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/services/{{serviceId}}/toggle",
+              "host": ["{{base}}"],
+              "path": ["api", "services", "{{serviceId}}", "toggle"]
+            },
+            "description": "Toggle the active/inactive status of a service."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📦 ORDERS",
+      "description": "Order placement and lifecycle management.",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/orders",
+              "host": ["{{base}}"],
+              "path": ["api", "orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"laundryId\": \"{{laundryId}}\",\n  \"services\": [\n    {\n      \"serviceId\": \"{{serviceId}}\",\n      \"quantity\": 3,\n      \"weight\": 3.5\n    }\n  ],\n  \"pickupAddress\": {\n    \"street\": \"45 Park Avenue\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"pincode\": \"560002\",\n    \"coordinates\": { \"lat\": 12.9352, \"lng\": 77.6245 }\n  },\n  \"pickupSlot\": {\n    \"date\": \"2026-07-12\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"11:00\"\n  },\n  \"deliverySlot\": {\n    \"date\": \"2026-07-13\",\n    \"startTime\": \"14:00\",\n    \"endTime\": \"16:00\"\n  },\n  \"paymentMethod\": \"online\",\n  \"specialInstructions\": \"Handle with care, delicate fabrics.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Place a new laundry order. paymentMethod: online | cod."
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/orders?page=1&limit=10&status=pending",
+              "host": ["{{base}}"],
+              "path": ["api", "orders"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "status", "value": "pending", "description": "pending | confirmed | processing | ready | out_for_delivery | delivered | cancelled" }
+              ]
+            },
+            "description": "List orders for the authenticated user (or laundry admin sees their laundry's orders)."
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/orders/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "orders", "{{orderId}}"]
+            },
+            "description": "Fetch full details of a specific order."
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/orders/{{orderId}}/cancel",
+              "host": ["{{base}}"],
+              "path": ["api", "orders", "{{orderId}}", "cancel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Changed my mind, no longer needed.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Cancel a pending order with an optional reason."
+          }
+        },
+        {
+          "name": "Update Order Status (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/orders/{{orderId}}/status",
+              "host": ["{{base}}"],
+              "path": ["api", "orders", "{{orderId}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"processing\",\n  \"note\": \"Clothes picked up and processing started.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update order status (laundry admin). Flow: pending → confirmed → picked_up → processing → ready → out_for_delivery → delivered."
+          }
+        },
+        {
+          "name": "Assign Delivery Partner",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/orders/{{orderId}}/assign-delivery",
+              "host": ["{{base}}"],
+              "path": ["api", "orders", "{{orderId}}", "assign-delivery"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deliveryPartnerId\": \"DELIVERY_PARTNER_ID\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Assign a delivery partner to an order."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "💳 PAYMENTS",
+      "description": "Payment creation, verification, COD confirmation, and refund management.",
+      "item": [
+        {
+          "name": "Create Payment Order (Razorpay)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/payments/create-order",
+              "host": ["{{base}}"],
+              "path": ["api", "payments", "create-order"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Create a Razorpay payment order for a laundry order. Returns Razorpay order details to initiate payment on frontend."
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/payments/verify",
+              "host": ["{{base}}"],
+              "path": ["api", "payments", "verify"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razorpay_order_id\": \"order_XXXXXXXXXX\",\n  \"razorpay_payment_id\": \"pay_XXXXXXXXXX\",\n  \"razorpay_signature\": \"SIGNATURE_HASH_HERE\",\n  \"orderId\": \"{{orderId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Verify Razorpay payment signature after successful payment. Marks order as paid on success."
+          }
+        },
+        {
+          "name": "Get Payment by Order ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/payments/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "payments", "{{orderId}}"]
+            },
+            "description": "Fetch payment details for a specific order."
+          }
+        },
+        {
+          "name": "Get All Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/payments?page=1&limit=20",
+              "host": ["{{base}}"],
+              "path": ["api", "payments"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List all payment records (laundry admin sees own payments; super admin sees all)."
+          }
+        },
+        {
+          "name": "Confirm COD Payment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/payments/confirm-cod/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "payments", "confirm-cod", "{{orderId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amountCollected\": 210\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Mark a Cash-On-Delivery payment as collected upon delivery."
+          }
+        },
+        {
+          "name": "Initiate Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/payments/refund/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "payments", "refund", "{{orderId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Order cancelled by user before pickup.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Initiate a refund for a cancelled or failed order via Razorpay."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👤 USERS",
+      "description": "User profile management and address book endpoints.",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/profile",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Retrieve the authenticated user's profile."
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/users/profile",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User Updated\",\n  \"phone\": \"8725980254\",\n  \"profilePicture\": \"https://example.com/avatar.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update the authenticated user's profile."
+          }
+        },
+        {
+          "name": "Delete My Account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/profile",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Permanently delete the authenticated user's account."
+          }
+        },
+        {
+          "name": "Get My Orders (User)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/my-orders?page=1&limit=10",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "my-orders"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "List all orders placed by the authenticated user."
+          }
+        },
+        {
+          "name": "Add Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/users/address",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "address"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Home\",\n  \"street\": \"45 Park Avenue\",\n  \"city\": \"Bengaluru\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560002\",\n  \"isDefault\": true,\n  \"coordinates\": { \"lat\": 12.9352, \"lng\": 77.6245 }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Add a new address to the user's address book."
+          }
+        },
+        {
+          "name": "Get All Addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/address",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "address"]
+            },
+            "description": "Retrieve all saved addresses for the authenticated user."
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/users/address/{{addressId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "address", "{{addressId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Office\",\n  \"street\": \"100 Tech Park\",\n  \"city\": \"Bengaluru\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560100\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update a specific saved address."
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/address/{{addressId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "address", "{{addressId}}"]
+            },
+            "description": "Delete a specific saved address."
+          }
+        },
+        {
+          "name": "Set Default Address",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/users/address/{{addressId}}/set-default",
+              "host": ["{{base}}"],
+              "path": ["api", "users", "address", "{{addressId}}", "set-default"]
+            },
+            "description": "Mark a specific address as the user's default address."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🚴 DELIVERY",
+      "description": "Delivery partner operational endpoints — order accept/reject, OTP, location updates.",
+      "item": [
+        {
+          "name": "Get Available Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/available-orders",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "available-orders"]
+            },
+            "description": "List orders available for pickup by the authenticated delivery partner."
+          }
+        },
+        {
+          "name": "Accept Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/accept/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "accept", "{{orderId}}"]
+            },
+            "description": "Accept an available delivery order."
+          }
+        },
+        {
+          "name": "Reject Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/delivery/reject/{{orderId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "reject", "{{orderId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Out of service area.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Reject an assigned delivery order."
+          }
+        },
+        {
+          "name": "Get My Active Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/my-active-orders",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "my-active-orders"]
+            },
+            "description": "List all currently active orders for the delivery partner."
+          }
+        },
+        {
+          "name": "Get My Completed Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/my-completed-orders?page=1&limit=10",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "my-completed-orders"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "List completed delivery history for the delivery partner."
+          }
+        },
+        {
+          "name": "Update Order Status (Delivery)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/delivery/orders/{{orderId}}/status",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "orders", "{{orderId}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"out_for_delivery\",\n  \"note\": \"En route to customer.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update the delivery status of an order."
+          }
+        },
+        {
+          "name": "Generate OTP for Delivery",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/orders/{{orderId}}/generate-otp",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "orders", "{{orderId}}", "generate-otp"]
+            },
+            "description": "Generate an OTP for order handover verification at delivery."
+          }
+        },
+        {
+          "name": "Verify OTP for Delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/delivery/orders/{{orderId}}/verify-otp",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "orders", "{{orderId}}", "verify-otp"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp\": \"4521\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Verify OTP provided by customer to confirm delivery completion."
+          }
+        },
+        {
+          "name": "Get Delivery Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/delivery/stats",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "stats"]
+            },
+            "description": "Retrieve delivery partner performance stats — total deliveries, earnings, ratings."
+          }
+        },
+        {
+          "name": "Update Live Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base}}/api/delivery/update-location",
+              "host": ["{{base}}"],
+              "path": ["api", "delivery", "update-location"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coordinates\": {\n    \"lat\": 12.9716,\n    \"lng\": 77.5946\n  },\n  \"orderId\": \"{{orderId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Send real-time GPS coordinates of the delivery partner during an active delivery."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🔔 NOTIFICATIONS",
+      "description": "Notification management — retrieve, mark read, and delete notifications.",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/notifications?page=1&limit=20",
+              "host": ["{{base}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Retrieve all notifications for the authenticated user."
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/notifications/{{notifId}}/read",
+              "host": ["{{base}}"],
+              "path": ["api", "notifications", "{{notifId}}", "read"]
+            },
+            "description": "Mark a specific notification as read."
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/notifications/read-all",
+              "host": ["{{base}}"],
+              "path": ["api", "notifications", "read-all"]
+            },
+            "description": "Mark all notifications for the authenticated user as read at once."
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/notifications/{{notifId}}",
+              "host": ["{{base}}"],
+              "path": ["api", "notifications", "{{notifId}}"]
+            },
+            "description": "Delete a specific notification."
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base}}/api/notifications/unread-count",
+              "host": ["{{base}}"],
+              "path": ["api", "notifications", "unread-count"]
+            },
+            "description": "Get the total count of unread notifications for the authenticated user."
+          }
+        }
+      ]
+    }
+
+  ]
+}
