@@ -30,17 +30,33 @@ const PORT = process.env.PORT || 3001;
 const http = require("http");
 const { Server } = require("socket.io");
 const server = http.createServer(app);
-// Build allowed origins list from FRONTEND_URL (supports comma-separated values)
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
+// Build allowed origins list from FRONTEND_URL and canonical production domains
+const defaultAllowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
+  "https://laundryflow-blush.vercel.app",
+];
+const envOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/$/, ""))
   .filter(Boolean);
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envOrigins])];
 
 // Origin function: allow listed origins; mobile native apps send no Origin header (pass-through)
 const corsOriginFn = (origin, callback) => {
   // No origin = native mobile / server-to-server request — allow
   if (!origin) return callback(null, true);
-  if (allowedOrigins.includes(origin)) return callback(null, true);
+  const cleanOrigin = origin.trim().replace(/\/$/, "");
+  if (
+    allowedOrigins.includes(cleanOrigin) ||
+    cleanOrigin.endsWith(".vercel.app") ||
+    cleanOrigin.endsWith(".onrender.com")
+  ) {
+    return callback(null, true);
+  }
   return callback(new Error(`CORS: origin ${origin} not allowed`));
 };
 
