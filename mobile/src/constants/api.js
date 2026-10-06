@@ -6,9 +6,11 @@ try {
   console.warn('[Config] Native RNCConfigModule unavailable:', e?.message);
 }
 
+// Render production backend — https://laundryflow-657q.onrender.com
+const PROD_HOST = 'https://laundryflow-657q.onrender.com';
+
 // LAN host for physical device local development (never 10.0.2.2)
 const DEV_LAN_HOST = 'http://192.168.1.122:8080';
-const PROD_HOST = 'https://api.laundryflow.com';
 
 // Preserve separate production configuration path
 const isProduction = Config?.APP_ENV === 'production';

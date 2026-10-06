@@ -481,6 +481,7 @@ export const CustomerHomeScreen = () => {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
+                nestedScrollEnabled={false}
                 contentContainerStyle={styles.sortScroll}
               >
                 {SORT_OPTIONS.map((sort) => {

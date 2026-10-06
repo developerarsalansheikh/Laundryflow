@@ -15,7 +15,7 @@ import { PaymentEmptyState } from '../../components/superadmin/payments/PaymentE
 import { PaymentPagination } from '../../components/superadmin/payments/PaymentPagination';
 import { PaymentDetailsDrawer } from '../../components/superadmin/payments/PaymentDetailsDrawer';
 
-const DEFAULT_FILTERS = { search: '', status: '', method: '' };
+const DEFAULT_FILTERS = { search: '', status: '', method: '', today: '' };
 const LIMIT = 20;
 
 const pageVariants = {
@@ -55,6 +55,7 @@ export const Payments = () => {
     ...(debouncedFilters.status && { status: debouncedFilters.status }),
     ...(debouncedFilters.method && { method: debouncedFilters.method }),
     ...(debouncedFilters.search && { search: debouncedFilters.search }),
+    ...(debouncedFilters.today && { today: debouncedFilters.today }),
   };
 
   const { data: paymentsData, isLoading, isError, error, isFetching, refetch } = usePayments(queryParams);
@@ -64,7 +65,7 @@ export const Payments = () => {
   const totalPages = paymentsData?.pages || 1;
 
   const hasActiveFilters =
-    filters.search !== '' || filters.status !== '' || filters.method !== '';
+    filters.search !== '' || filters.status !== '' || filters.method !== '' || filters.today !== '';
 
   const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);

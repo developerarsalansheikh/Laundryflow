@@ -72,6 +72,32 @@ export const AdminProfile = () => {
     },
   });
 
+  // Mutation: Quick toggle store active/inactive (matching Mobile Admin)
+  const toggleActiveMutation = useMutation({
+    mutationFn: (newActive) => adminApi.updateMyLaundry({ isActive: newActive }),
+    onMutate: async (newActive) => {
+      await queryClient.cancelQueries({ queryKey: ['admin-my-laundry'] });
+      const prevData = queryClient.getQueryData(['admin-my-laundry']);
+      queryClient.setQueryData(['admin-my-laundry'], (old) =>
+        old ? { ...old, isActive: newActive } : old
+      );
+      return { prevData };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-my-laundry'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      toast.success(
+        `Store is now ${data?.isActive !== false ? 'ACTIVE and visible to customers' : 'INACTIVE (offline)'}`
+      );
+    },
+    onError: (err, _vars, context) => {
+      if (context?.prevData) {
+        queryClient.setQueryData(['admin-my-laundry'], context.prevData);
+      }
+      toast.error(err.response?.data?.message || 'Failed to update store operational status');
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -134,6 +160,56 @@ export const AdminProfile = () => {
           <Save className="w-4 h-4" />
           <span>{updateMutation.isPending ? 'Saving...' : 'Save Settings'}</span>
         </button>
+      </div>
+
+      {/* Store Active Status Banner (Matching Mobile Admin parity) */}
+      <div className={`glass-card p-5 border transition-all ${
+        laundry?.isActive !== false
+          ? 'bg-emerald-500/[0.04] border-emerald-500/20'
+          : 'bg-rose-500/[0.04] border-rose-500/20'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className={`w-3 h-3 rounded-full animate-pulse ${
+              laundry?.isActive !== false ? 'bg-emerald-400' : 'bg-rose-400'
+            }`} />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-textPrimary">
+                  Store Status: {laundry?.isActive !== false ? 'ACTIVE & ACCEPTING ORDERS' : 'INACTIVE (OFFLINE)'}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                  laundry?.isActive !== false
+                    ? 'bg-emerald-500/20 text-emerald-300'
+                    : 'bg-rose-500/20 text-rose-300'
+                }`}>
+                  {laundry?.isActive !== false ? 'Live in Marketplace' : 'Hidden from Customers'}
+                </span>
+              </div>
+              <p className="text-[11px] text-textMuted mt-0.5">
+                {laundry?.isActive !== false
+                  ? 'Your store is currently visible to customers. Orders can be placed.'
+                  : 'Your store is offline. Customers cannot place new orders until reactivated.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={toggleActiveMutation.isPending}
+            onClick={() => toggleActiveMutation.mutate(laundry?.isActive === false)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50 ${
+              laundry?.isActive !== false
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30'
+                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
+            }`}
+          >
+            {toggleActiveMutation.isPending
+              ? 'Updating...'
+              : laundry?.isActive !== false
+              ? 'Pause Store (Go Offline)'
+              : 'Activate Store (Go Live)'}
+          </button>
+        </div>
       </div>
 
       {/* Main Settings Form */}

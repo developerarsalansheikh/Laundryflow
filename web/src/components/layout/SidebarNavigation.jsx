@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Store, ShoppingBag, Users, UserCheck,
   CreditCard, DollarSign, BarChart3, FileText, HelpCircle, Settings,
+  Sparkles, Coins,
 } from 'lucide-react';
 import { SUPER_ADMIN_NAV_ITEMS } from '../../constants/navigation';
 import { useUIStore } from '../../store/uiStore';
@@ -20,6 +21,8 @@ const ICON_MAP = {
   DollarSign,
   BarChart3,
   FileText,
+  Sparkles,
+  Coins,
   HelpCircle,
   Settings,
 };

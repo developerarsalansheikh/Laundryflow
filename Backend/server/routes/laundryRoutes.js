@@ -8,6 +8,7 @@ const {
   addDeliveryPartner,
   getDeliveryPartners,
   toggleDeliveryPartner,
+  updateDeliveryPartner,
   getAllLaundries,
   getLaundryById,
   addTimeSlot,
@@ -35,10 +36,11 @@ router.get("/admin/time-slots", protect, restrictTo("admin"), getAdminTimeSlots)
 router.post("/admin/time-slots", protect, restrictTo("admin"), addTimeSlot);       // POST /api/laundry/admin/time-slots
 
 // Delivery partner management
-// NOTE: Only SUPERADMIN can CREATE new delivery agent accounts (Section 19)
+// NOTE: Only SUPERADMIN can CREATE and EDIT delivery agent accounts
 router.post("/admin/delivery-partner", protect, restrictTo("superadmin"), addDeliveryPartner);
-router.get("/admin/delivery-partners", protect, restrictTo("admin"), getDeliveryPartners);
-router.put("/admin/delivery-partner/:id/toggle", protect, restrictTo("admin"), toggleDeliveryPartner);
+router.get("/admin/delivery-partners", protect, restrictTo("admin", "superadmin"), getDeliveryPartners);
+router.put("/admin/delivery-partner/:id/toggle", protect, restrictTo("admin", "superadmin"), toggleDeliveryPartner);
+router.put("/admin/delivery-partner/:id", protect, restrictTo("superadmin"), updateDeliveryPartner);
 
 // Customer management
 router.get("/admin/customers", protect, restrictTo("admin"), getLaundryCustomers); // GET  /api/laundry/admin/customers

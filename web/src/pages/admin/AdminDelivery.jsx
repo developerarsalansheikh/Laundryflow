@@ -79,8 +79,8 @@ export const AdminDelivery = () => {
   });
 
   const allOrders = ordersData?.orders || ordersData?.data || [];
-  const dispatchQueue = allOrders.filter(
-    (o) => o.status === 'ready' || o.status === 'out_for_delivery' || o.status === 'picked_up'
+  const dispatchQueue = allOrders.filter((o) =>
+    ['pending', 'picked_up', 'ready', 'out_for_delivery'].includes(o.status)
   );
 
   // Mutation: Toggle Driver Active

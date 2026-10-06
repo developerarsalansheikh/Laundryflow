@@ -25,9 +25,12 @@ const getInitials = (name = '') =>
 /**
  * EmployeeCard — Mobile card layout for employee records.
  */
-export const EmployeeCard = ({ employee, onView, onToggleStatus, index = 0 }) => {
+export const EmployeeCard = ({ employee, onView, onEdit, onToggleStatus, index = 0 }) => {
   const laundryName = employee.laundryId?.name || null;
   const joinedDate = formatDate(employee.createdAt);
+  const vehicleInfo = employee.vehicleType
+    ? `${employee.vehicleType.toUpperCase()}${employee.vehicleNumber ? ` • ${employee.vehicleNumber}` : ''}`
+    : null;
 
   return (
     <motion.div
@@ -70,11 +73,23 @@ export const EmployeeCard = ({ employee, onView, onToggleStatus, index = 0 }) =>
             <span className="truncate">{laundryName}</span>
           </div>
         )}
+        {vehicleInfo && (
+          <div className="flex items-center gap-2 text-[11px] text-indigo-300/80">
+            <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 font-mono">
+              {vehicleInfo}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/6">
         <span className="text-[10px] text-textMuted">Joined {joinedDate}</span>
-        <EmployeeRowActions employee={employee} onView={onView} onToggleStatus={onToggleStatus} />
+        <EmployeeRowActions
+          employee={employee}
+          onView={onView}
+          onEdit={onEdit}
+          onToggleStatus={onToggleStatus}
+        />
       </div>
     </motion.div>
   );

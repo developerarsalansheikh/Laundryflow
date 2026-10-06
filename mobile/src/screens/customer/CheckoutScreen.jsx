@@ -155,16 +155,32 @@ export const CheckoutScreen = () => {
 
   const activeDateOption = dateOptions[selectedDateOffset] || dateOptions[0];
 
-  // Helper to check if a slot has already passed for Today
-  const isSlotPassed = (slot, isToday) => {
-    if (!isToday) return false;
-    if (slot?.isPassed !== undefined) return Boolean(slot.isPassed);
-    if (!slot?.startTime) return false;
+  // Helper to parse time string (e.g., "09:00 AM", "12:00 PM", "15:00", "03:00 PM") to total minutes from midnight
+  const parseTimeToMinutes = (timeStr) => {
+    if (!timeStr || typeof timeStr !== 'string') return null;
+    const match = timeStr.trim().toUpperCase().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/);
+    if (!match) return null;
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const period = match[3];
+
+    if (period) {
+      if (period === 'PM' && hours < 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+    }
+    return hours * 60 + minutes;
+  };
+
+  // Check if slot starts strictly in the future (after current time)
+  const isSlotUpcoming = (slot, isToday) => {
+    if (!isToday) return true;
+    if (!slot?.startTime) return true;
+    const slotStartMinutes = parseTimeToMinutes(slot.startTime);
+    if (slotStartMinutes === null) return true;
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const [startH, startM] = slot.startTime.split(':').map(Number);
-    const slotStartMinutes = (startH || 0) * 60 + (startM || 0);
-    return currentMinutes >= slotStartMinutes;
+    // Strictly after current time (already started or past slots are NOT eligible)
+    return slotStartMinutes > currentMinutes;
   };
 
   // Query: Time Slots for Selected Laundry & Date
@@ -180,34 +196,27 @@ export const CheckoutScreen = () => {
   const rawSlots = slotsData?.data;
   const availableSlots = Array.isArray(rawSlots) ? rawSlots : [];
 
-  // When available slots load for chosen date, auto-select first valid (not passed) slot
+  const isToday = selectedDateOffset === 0;
+
+  // On Today: strictly filter out slots that have passed or are currently running
+  const displayedSlots = useMemo(() => {
+    return isToday
+      ? availableSlots.filter((s) => isSlotUpcoming(s, true))
+      : availableSlots;
+  }, [availableSlots, isToday]);
+
+  // When displayed slots change, auto-select first valid upcoming slot
   useEffect(() => {
-    if (availableSlots.length > 0) {
-      const isToday = selectedDateOffset === 0;
-      const upcomingSlots = availableSlots.filter((s) => !isSlotPassed(s, isToday));
-
-      // If user is on Today and all slots have passed, auto-select Tomorrow
-      if (isToday && upcomingSlots.length === 0) {
-        setSelectedDateOffset(1);
-        return;
-      }
-
-      const currentSelectedSlot = availableSlots.find((s) => s._id === selectedSlotId);
-      const isCurrentPassed = currentSelectedSlot ? isSlotPassed(currentSelectedSlot, isToday) : true;
-
-      if (!currentSelectedSlot || isCurrentPassed) {
-        const firstValidSlot = upcomingSlots[0] || (!isToday ? availableSlots[0] : null);
-        if (firstValidSlot) {
-          setSelectedSlotId(firstValidSlot._id);
-          setErrorMessage('');
-        } else {
-          setSelectedSlotId(null);
-        }
+    if (displayedSlots.length > 0) {
+      const currentSelectedSlot = displayedSlots.find((s) => s._id === selectedSlotId);
+      if (!currentSelectedSlot) {
+        setSelectedSlotId(displayedSlots[0]._id);
+        setErrorMessage('');
       }
     } else {
       setSelectedSlotId(null);
     }
-  }, [availableSlots, selectedSlotId, selectedDateOffset]);
+  }, [displayedSlots, selectedSlotId]);
 
   // Mutation: Place Order
   const placeOrderMutation = useMutation({
@@ -359,15 +368,19 @@ export const CheckoutScreen = () => {
       return;
     }
 
-    // 3. Validate time slot strictly (Req 23)
+    // 3. Validate time slot strictly
     if (!selectedSlotId) {
-      setErrorMessage('Please select an available pickup time.');
+      setErrorMessage(
+        selectedDateOffset === 0 && displayedSlots.length === 0
+          ? 'All pickup slots for today have concluded. Please switch to tomorrow.'
+          : 'Please select an available pickup time.'
+      );
       return;
     }
 
-    const chosenSlot = availableSlots.find((s) => s._id === selectedSlotId);
-    if (selectedDateOffset === 0 && chosenSlot && isSlotPassed(chosenSlot, true)) {
-      setErrorMessage('The selected pickup slot has already passed for today. Please select an upcoming slot.');
+    const chosenSlot = displayedSlots.find((s) => s._id === selectedSlotId);
+    if (!chosenSlot || (selectedDateOffset === 0 && !isSlotUpcoming(chosenSlot, true))) {
+      setErrorMessage('The selected pickup slot is not available. Please choose an upcoming slot or switch to tomorrow.');
       return;
     }
 
@@ -581,38 +594,29 @@ export const CheckoutScreen = () => {
             <View style={styles.slotsArea}>
               {isSlotsLoading ? (
                 <Loader size="small" message="Loading store pickup slots..." />
-              ) : availableSlots.length > 0 ? (
+              ) : displayedSlots.length > 0 ? (
                 <View style={styles.slotsGrid}>
-                  {availableSlots.map((slot) => {
-                    const isToday = selectedDateOffset === 0;
-                    const passed = isSlotPassed(slot, isToday);
+                  {displayedSlots.map((slot) => {
                     const isSelected = selectedSlotId === slot._id;
                     const label = slot.label || `${slot.startTime} - ${slot.endTime}`;
 
                     return (
                       <TouchableOpacity
                         key={slot._id}
-                        activeOpacity={passed ? 1 : 0.7}
-                        disabled={passed}
+                        activeOpacity={0.7}
                         style={[
                           styles.slotChip,
                           {
-                            backgroundColor: passed
-                              ? '#F1F5F9'
-                              : isSelected
+                            backgroundColor: isSelected
                               ? colors.primary
                               : colors.surface,
-                            borderColor: passed
-                              ? '#E2E8F0'
-                              : isSelected
+                            borderColor: isSelected
                               ? colors.primary
                               : colors.borderLight,
                             borderWidth: isSelected ? 2 : 1,
-                            opacity: passed ? 0.45 : 1,
                           },
                         ]}
                         onPress={() => {
-                          if (passed) return;
                           setSelectedSlotId(slot._id);
                           setErrorMessage('');
                         }}
@@ -622,32 +626,49 @@ export const CheckoutScreen = () => {
                             variant="bodySmall"
                             weight={isSelected ? 'bold' : 'normal'}
                             style={{
-                              color: passed
-                                ? '#94A3B8'
-                                : isSelected
+                              color: isSelected
                                 ? '#FFFFFF'
                                 : colors.textPrimary,
-                              textDecorationLine: passed ? 'line-through' : 'none',
                             }}
                           >
                             ⏱ {label}
                           </Text>
-                          {passed && (
-                            <Badge label="Passed" variant="danger" size="sm" />
+                          {isSelected && (
+                            <Badge label="Selected" variant="success" size="sm" />
                           )}
                         </View>
                       </TouchableOpacity>
                     );
                   })}
                 </View>
+              ) : isToday ? (
+                <View style={[styles.noUpcomingSlotsBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+                  <Text variant="bodyMedium" weight="bold" colorVariant="primary" style={{ textAlign: 'center' }}>
+                    🌙 No More Slots Available Today
+                  </Text>
+                  <Text variant="caption" colorVariant="secondary" style={{ marginTop: 4, textAlign: 'center' }}>
+                    Pickup windows for today have ended or are currently in progress. Please schedule for tomorrow.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.switchTomorrowBtn, { backgroundColor: colors.primary }]}
+                    onPress={() => {
+                      setSelectedDateOffset(1);
+                      setSelectedSlotId(null);
+                    }}
+                  >
+                    <Text variant="bodySmall" weight="bold" style={{ color: '#FFFFFF' }}>
+                      Schedule for Tomorrow ➔
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
-              <View style={[styles.defaultSlotNotice, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
-                <Text variant="caption" colorVariant="secondary">
-                  ⚡ Standard Morning Window: 09:00 AM - 12:00 PM will be scheduled for {activeDateOption.fullDayName}.
-                </Text>
-              </View>
-            )}
-          </View>
+                <View style={[styles.defaultSlotNotice, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+                  <Text variant="caption" colorVariant="secondary">
+                    ⚡ Standard Morning Window: 09:00 AM - 12:00 PM will be scheduled for {activeDateOption.fullDayName}.
+                  </Text>
+                </View>
+              )}
+            </View>
         </Card>
 
         {/* Payment Method Selector */}
@@ -708,7 +729,7 @@ export const CheckoutScreen = () => {
               📅 {activeDateOption.fullDayName}, {activeDateOption.dateFormatted}
             </Text>
             <Text variant="bodyMedium" weight="bold" style={{ color: colors.primary, marginTop: 2 }}>
-              ⏱ {availableSlots.find((s) => s._id === selectedSlotId)?.label || (availableSlots.find((s) => s._id === selectedSlotId) ? `${availableSlots.find((s) => s._id === selectedSlotId).startTime} - ${availableSlots.find((s) => s._id === selectedSlotId).endTime}` : '⚠️ Please select a pickup slot above')}
+              ⏱ {displayedSlots.find((s) => s._id === selectedSlotId)?.label || (displayedSlots.find((s) => s._id === selectedSlotId) ? `${displayedSlots.find((s) => s._id === selectedSlotId).startTime} - ${displayedSlots.find((s) => s._id === selectedSlotId).endTime}` : (isToday && displayedSlots.length === 0 ? '⚠️ Today’s slots ended — switch to tomorrow' : '⚠️ Please select a pickup slot above'))}
             </Text>
           </View>
 
@@ -915,6 +936,21 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
+  },
+  noUpcomingSlotsBox: {
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  switchTomorrowBtn: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   paymentOption: {
     flexDirection: 'row',

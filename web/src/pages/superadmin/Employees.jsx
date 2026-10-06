@@ -4,7 +4,12 @@ import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { useEmployees, useToggleEmployeeStatus } from '../../hooks/useEmployees';
+import {
+  useEmployees,
+  useToggleEmployeeStatus,
+  useCreateDeliveryPartner,
+  useUpdateDeliveryPartner,
+} from '../../hooks/useEmployees';
 import { EmployeeHeader } from '../../components/superadmin/employees/EmployeeHeader';
 import { EmployeeSummary } from '../../components/superadmin/employees/EmployeeSummary';
 import { EmployeeFilters } from '../../components/superadmin/employees/EmployeeFilters';
@@ -15,8 +20,10 @@ import { EmployeeEmptyState } from '../../components/superadmin/employees/Employ
 import { EmployeePagination } from '../../components/superadmin/employees/EmployeePagination';
 import { EmployeeDetailsDrawer } from '../../components/superadmin/employees/EmployeeDetailsDrawer';
 import { EmployeeStatusConfirmModal } from '../../components/superadmin/employees/EmployeeStatusConfirmModal';
+import { CreateDeliveryPartnerModal } from '../../components/superadmin/employees/CreateDeliveryPartnerModal';
+import { EditDeliveryPartnerModal } from '../../components/superadmin/employees/EditDeliveryPartnerModal';
 
-const DEFAULT_FILTERS = { search: '', role: '', status: '' };
+const DEFAULT_FILTERS = { search: '', role: '', status: '', today: '' };
 const LIMIT = 20;
 
 const pageVariants = {
@@ -39,6 +46,13 @@ export const Employees = () => {
   const [targetToggleEmployee, setTargetToggleEmployee] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
+  // Delivery Agent Modal States
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [targetEditEmployee, setTargetEditEmployee] = useState(null);
+  const [createApiError, setCreateApiError] = useState(null);
+  const [editApiError, setEditApiError] = useState(null);
+
   const [debouncedFilters, setDebouncedFilters] = useState(DEFAULT_FILTERS);
   const debounceTimer = useRef(null);
 
@@ -53,17 +67,19 @@ export const Employees = () => {
   }, [filters]);
 
   // Query parameters for server-side filtering
-  // If role filter is empty, we request delivery & admin roles by default or filter client-side
   const queryParams = {
     page,
     limit: LIMIT,
     ...(debouncedFilters.role && { role: debouncedFilters.role }),
     ...(debouncedFilters.status && { status: debouncedFilters.status }),
     ...(debouncedFilters.search && { search: debouncedFilters.search }),
+    ...(debouncedFilters.today && { today: debouncedFilters.today }),
   };
 
   const { data: usersData, isLoading, isError, error, isFetching, refetch } = useEmployees(queryParams);
   const toggleStatusMutation = useToggleEmployeeStatus();
+  const createDeliveryPartnerMutation = useCreateDeliveryPartner();
+  const updateDeliveryPartnerMutation = useUpdateDeliveryPartner();
 
   const allUsers = usersData?.data || [];
   // Filter for employee roles (delivery partner or laundry admin) when no specific role filter is set
@@ -75,7 +91,7 @@ export const Employees = () => {
   const totalPages = usersData?.pages || 1;
 
   const hasActiveFilters =
-    filters.search !== '' || filters.role !== '' || filters.status !== '';
+    filters.search !== '' || filters.role !== '' || filters.status !== '' || filters.today !== '';
 
   const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);
@@ -124,6 +140,59 @@ export const Employees = () => {
     }
   };
 
+  // Create Delivery Partner Handlers
+  const handleOpenCreateModal = useCallback(() => {
+    setCreateApiError(null);
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCloseCreateModal = useCallback(() => {
+    if (createDeliveryPartnerMutation.isPending) return;
+    setIsCreateModalOpen(false);
+    setCreateApiError(null);
+  }, [createDeliveryPartnerMutation.isPending]);
+
+  const handleCreateSubmit = async (formData) => {
+    try {
+      setCreateApiError(null);
+      await createDeliveryPartnerMutation.mutateAsync(formData);
+      toast.success('Delivery Agent created successfully.');
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to create delivery agent.';
+      setCreateApiError(msg);
+      toast.error(msg);
+    }
+  };
+
+  // Edit Delivery Partner Handlers
+  const handleOpenEditModal = useCallback((employee) => {
+    setEditApiError(null);
+    setTargetEditEmployee(employee);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    if (updateDeliveryPartnerMutation.isPending) return;
+    setIsEditModalOpen(false);
+    setTargetEditEmployee(null);
+    setEditApiError(null);
+  }, [updateDeliveryPartnerMutation.isPending]);
+
+  const handleEditSubmit = async (payload) => {
+    try {
+      setEditApiError(null);
+      await updateDeliveryPartnerMutation.mutateAsync(payload);
+      toast.success('Delivery Agent updated successfully.');
+      setIsEditModalOpen(false);
+      setTargetEditEmployee(null);
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update delivery agent.';
+      setEditApiError(msg);
+      toast.error(msg);
+    }
+  };
+
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
     toast.success('Employees refreshed.');
@@ -136,9 +205,9 @@ export const Employees = () => {
       animate="visible"
       className="space-y-5"
     >
-      {/* Header */}
+      {/* Header with Create CTA */}
       <div className="glass-card rounded-2xl border border-white/8 p-5 sm:p-6">
-        <EmployeeHeader />
+        <EmployeeHeader onCreateDeliveryPartner={handleOpenCreateModal} />
       </div>
 
       {/* Summary */}
@@ -219,20 +288,36 @@ export const Employees = () => {
 
         {/* Empty state */}
         {!isLoading && !isError && employees.length === 0 && (
-          <EmployeeEmptyState hasActiveFilters={hasActiveFilters} onClear={handleClearFilters} />
+          <EmployeeEmptyState
+            hasActiveFilters={hasActiveFilters}
+            onClear={handleClearFilters}
+            onCreateDeliveryPartner={handleOpenCreateModal}
+          />
         )}
 
         {/* Desktop Table */}
         {!isLoading && !isError && employees.length > 0 && (
           <>
             <div className="hidden md:block overflow-x-auto">
-              <EmployeeTable employees={employees} onView={handleViewEmployee} onToggleStatus={handleOpenToggleModal} />
+              <EmployeeTable
+                employees={employees}
+                onView={handleViewEmployee}
+                onEdit={handleOpenEditModal}
+                onToggleStatus={handleOpenToggleModal}
+              />
             </div>
 
             {/* Mobile Cards */}
             <div className="md:hidden space-y-3 p-3 sm:p-4">
               {employees.map((emp, i) => (
-                <EmployeeCard key={emp._id} employee={emp} onView={handleViewEmployee} onToggleStatus={handleOpenToggleModal} index={i} />
+                <EmployeeCard
+                  key={emp._id}
+                  employee={emp}
+                  onView={handleViewEmployee}
+                  onEdit={handleOpenEditModal}
+                  onToggleStatus={handleOpenToggleModal}
+                  index={i}
+                />
               ))}
             </div>
 
@@ -262,6 +347,25 @@ export const Employees = () => {
         isLoading={toggleStatusMutation.isPending}
         onClose={handleCloseToggleModal}
         onConfirm={handleConfirmToggleStatus}
+      />
+
+      {/* Create Delivery Partner Modal */}
+      <CreateDeliveryPartnerModal
+        isOpen={isCreateModalOpen}
+        isLoading={createDeliveryPartnerMutation.isPending}
+        apiError={createApiError}
+        onClose={handleCloseCreateModal}
+        onSubmit={handleCreateSubmit}
+      />
+
+      {/* Edit Delivery Partner Modal */}
+      <EditDeliveryPartnerModal
+        isOpen={isEditModalOpen}
+        employee={targetEditEmployee}
+        isLoading={updateDeliveryPartnerMutation.isPending}
+        apiError={editApiError}
+        onClose={handleCloseEditModal}
+        onSubmit={handleEditSubmit}
       />
     </motion.div>
   );

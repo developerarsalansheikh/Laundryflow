@@ -17,6 +17,8 @@ export const ROUTES = Object.freeze({
     PAYMENTS: '/superadmin/payments',
     ANALYTICS: '/superadmin/analytics',
     REPORTS: '/superadmin/reports',
+    SERVICES: '/superadmin/services',
+    PAYOUTS: '/superadmin/payouts',
     SUPPORT: '/superadmin/support',
     SETTINGS: '/superadmin/settings',
   },

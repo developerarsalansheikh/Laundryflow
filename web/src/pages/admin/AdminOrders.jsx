@@ -9,6 +9,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Clock,
+  Calendar,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminApi } from '../../api/adminApi';
@@ -35,12 +36,24 @@ export const AdminOrders = () => {
   const queryClient = useQueryClient();
 
   const activeTab = searchParams.get('status') || 'all';
+  const todayOnly = searchParams.get('todayOnly') === 'true';
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const limit = 15;
 
   const handleTabChange = (tabKey) => {
-    setSearchParams(tabKey === 'all' ? {} : { status: tabKey });
+    const params = {};
+    if (tabKey !== 'all') params.status = tabKey;
+    if (todayOnly) params.todayOnly = 'true';
+    setSearchParams(params);
+    setPage(1);
+  };
+
+  const toggleTodayOnly = () => {
+    const params = {};
+    if (activeTab !== 'all') params.status = activeTab;
+    if (!todayOnly) params.todayOnly = 'true';
+    setSearchParams(params);
     setPage(1);
   };
 
@@ -69,8 +82,34 @@ export const AdminOrders = () => {
   const total = data?.total || orders.length;
   const totalPages = data?.pages || Math.max(1, Math.ceil(total / limit));
 
-  // Client search filter
+  const isCreatedToday = (dateString) => {
+    if (!dateString) return false;
+    const orderDate = new Date(dateString);
+    const today = new Date();
+    return (
+      orderDate.getFullYear() === today.getFullYear() &&
+      orderDate.getMonth() === today.getMonth() &&
+      orderDate.getDate() === today.getDate()
+    );
+  };
+
+  const formatOrderDate = (dateString) => {
+    if (!dateString) return '—';
+    const d = new Date(dateString);
+    const today = new Date();
+    const isToday = d.toDateString() === today.toDateString();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    if (isToday) return `Today, ${timeStr}`;
+    if (isYesterday) return `Yesterday, ${timeStr}`;
+    return `${d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${timeStr}`;
+  };
+
+  // Client search and date filter
   const filteredOrders = orders.filter((order) => {
+    if (todayOnly && !isCreatedToday(order.createdAt)) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     const id = (order._id || '').toLowerCase();
@@ -179,16 +218,32 @@ export const AdminOrders = () => {
           </p>
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by ID, customer name, phone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary placeholder-textMuted focus:outline-none focus:border-primaryPurple focus:ring-1 focus:ring-primaryPurple transition-all"
-          />
+        {/* Controls: Today's Orders toggle + Search */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <button
+            onClick={toggleTodayOnly}
+            className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${
+              todayOnly
+                ? 'bg-primaryPurple/20 text-purpleLight border-primaryPurple/40 shadow-glowPurple'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-textSecondary hover:text-textPrimary border-white/10'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Today&apos;s Orders</span>
+            {todayOnly && <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />}
+          </button>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by ID, customer name, phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary placeholder-textMuted focus:outline-none focus:border-primaryPurple focus:ring-1 focus:ring-primaryPurple transition-all"
+            />
+          </div>
         </div>
       </div>
 
@@ -243,13 +298,6 @@ export const AdminOrders = () => {
                   const idShort = order._id ? `#${order._id.slice(-6).toUpperCase()}` : '#ORDER';
                   const customer = order.user || order.customerId || {};
                   const total = order.totalAmount || order.pricing?.total || 0;
-                  const dateStr = order.createdAt
-                    ? new Date(order.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
-                    : 'Recent';
                   const slotStr = order.pickupSlot || order.pickupTime || 'Standard Slot';
                   const nextAction = getNextStatusAction(order.status);
 
@@ -272,7 +320,7 @@ export const AdminOrders = () => {
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-medium text-textPrimary">{dateStr}</div>
+                        <div className="font-medium text-textPrimary">{formatOrderDate(order.createdAt)}</div>
                         <div className="text-[11px] text-textMuted">{slotStr}</div>
                       </td>
 

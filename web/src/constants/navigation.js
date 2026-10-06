@@ -69,6 +69,20 @@ export const SUPER_ADMIN_NAV_ITEMS = Object.freeze([
     allowedRoles: ['superadmin', 'SUPER_ADMIN'],
   },
   {
+    id: 'services',
+    label: 'Services Oversight',
+    path: ROUTES.SUPERADMIN.SERVICES,
+    icon: 'Sparkles',
+    allowedRoles: ['superadmin', 'SUPER_ADMIN'],
+  },
+  {
+    id: 'payouts',
+    label: 'Driver Payouts',
+    path: ROUTES.SUPERADMIN.PAYOUTS,
+    icon: 'Coins',
+    allowedRoles: ['superadmin', 'SUPER_ADMIN'],
+  },
+  {
     id: 'support',
     label: 'Support',
     path: ROUTES.SUPERADMIN.SUPPORT,

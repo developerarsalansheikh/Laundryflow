@@ -35,6 +35,7 @@ export const Laundries = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
+  const [todayFilter, setTodayFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 20;
 
@@ -56,10 +57,11 @@ export const Laundries = () => {
     () => ({
       ...(statusFilter ? { status: statusFilter } : {}),
       ...(cityFilter ? { city: cityFilter } : {}),
+      ...(todayFilter ? { today: 'true' } : {}),
       page: currentPage,
       limit,
     }),
-    [statusFilter, cityFilter, currentPage, limit]
+    [statusFilter, cityFilter, todayFilter, currentPage, limit]
   );
 
   const {
@@ -224,6 +226,11 @@ export const Laundries = () => {
         cityFilter={cityFilter}
         onCityChange={(val) => {
           setCityFilter(val);
+          setCurrentPage(1);
+        }}
+        todayFilter={todayFilter}
+        onTodayChange={(val) => {
+          setTodayFilter(val);
           setCurrentPage(1);
         }}
         availableCities={availableCities}

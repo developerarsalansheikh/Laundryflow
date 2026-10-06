@@ -33,13 +33,13 @@ const AvatarCell = ({ name }) => (
 /**
  * EmployeeTable — Desktop table layout.
  */
-export const EmployeeTable = ({ employees, onView, onToggleStatus }) => {
+export const EmployeeTable = ({ employees, onView, onEdit, onToggleStatus }) => {
   return (
     <div className="overflow-x-auto rounded-xl">
-      <table className="w-full min-w-[850px] border-collapse">
+      <table className="w-full min-w-[900px] border-collapse">
         <thead>
           <tr className="border-b border-white/8">
-            {['Employee', 'Email', 'Phone', 'Role', 'Laundry', 'Status', 'Joined', ''].map((h) => (
+            {['Employee', 'Email', 'Phone', 'Role', 'Assigned Store', 'Vehicle', 'Status', 'Joined', ''].map((h) => (
               <th
                 key={h}
                 className="px-4 py-3 text-left text-[10px] font-semibold text-textMuted uppercase tracking-wider whitespace-nowrap"
@@ -51,8 +51,11 @@ export const EmployeeTable = ({ employees, onView, onToggleStatus }) => {
         </thead>
         <tbody>
           {employees.map((emp, i) => {
-            const laundryName = emp.laundryId?.name || '—';
+            const laundryName = emp.laundryId?.name || (emp.role === 'superadmin' ? 'Platform Wide' : '—');
             const joinedDate = formatDate(emp.createdAt);
+            const vehicleInfo = emp.vehicleType
+              ? `${emp.vehicleType.charAt(0).toUpperCase() + emp.vehicleType.slice(1)}${emp.vehicleNumber ? ` (${emp.vehicleNumber})` : ''}`
+              : emp.role === 'delivery' ? 'Standard' : '—';
 
             return (
               <motion.tr
@@ -86,8 +89,15 @@ export const EmployeeTable = ({ employees, onView, onToggleStatus }) => {
 
                 {/* Laundry */}
                 <td className="px-4 py-3.5">
-                  <span className="text-xs text-textSecondary truncate max-w-[120px] block">
+                  <span className="text-xs text-textSecondary truncate max-w-[140px] block" title={laundryName}>
                     {laundryName}
+                  </span>
+                </td>
+
+                {/* Vehicle */}
+                <td className="px-4 py-3.5">
+                  <span className="text-xs text-textSecondary truncate max-w-[130px] block">
+                    {vehicleInfo}
                   </span>
                 </td>
 
@@ -103,7 +113,12 @@ export const EmployeeTable = ({ employees, onView, onToggleStatus }) => {
 
                 {/* Actions */}
                 <td className="px-4 py-3.5">
-                  <EmployeeRowActions employee={emp} onView={onView} onToggleStatus={onToggleStatus} />
+                  <EmployeeRowActions
+                    employee={emp}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onToggleStatus={onToggleStatus}
+                  />
                 </td>
               </motion.tr>
             );

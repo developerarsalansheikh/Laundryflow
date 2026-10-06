@@ -128,6 +128,16 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    vehicleType: {
+      type: String,
+      enum: ["bike", "scooter", "bicycle", "van", "other"],
+      default: "bike",
+    },
+    vehicleNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     totalDeliveries: {
       type: Number,
       default: 0,

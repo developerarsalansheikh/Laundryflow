@@ -3,6 +3,10 @@ import {
   getSuperAdminEmployeesApi,
   getEmployeeByIdApi,
   toggleEmployeeStatusApi,
+  createDeliveryPartnerApi,
+  updateDeliveryPartnerApi,
+  getDeliveryPartnersApi,
+  toggleDeliveryPartnerApi,
 } from '../api/employees';
 
 /**
@@ -15,6 +19,18 @@ export const useEmployees = (params = {}) => {
     queryFn: () => getSuperAdminEmployeesApi(params),
     staleTime: 1000 * 60 * 2,
     keepPreviousData: true,
+  });
+};
+
+/**
+ * Fetch platform delivery partners.
+ * Backed by: GET /api/laundry/admin/delivery-partners
+ */
+export const useDeliveryPartners = (params = {}) => {
+  return useQuery({
+    queryKey: ['superadmin', 'delivery-partners', params],
+    queryFn: () => getDeliveryPartnersApi(params),
+    staleTime: 1000 * 60 * 2,
   });
 };
 
@@ -42,6 +58,61 @@ export const useToggleEmployeeStatus = () => {
     mutationFn: toggleEmployeeStatusApi,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employee', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
+    },
+  });
+};
+
+/**
+ * Mutation to create a new delivery partner.
+ * Backed by: POST /api/laundry/admin/delivery-partner
+ */
+export const useCreateDeliveryPartner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createDeliveryPartnerApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'dashboard'] });
+    },
+  });
+};
+
+/**
+ * Mutation to update an existing delivery partner.
+ * Backed by: PUT /api/laundry/admin/delivery-partner/:id
+ */
+export const useUpdateDeliveryPartner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateDeliveryPartnerApi,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employee', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
+    },
+  });
+};
+
+/**
+ * Mutation to toggle delivery partner active/inactive status.
+ * Backed by: PUT /api/laundry/admin/delivery-partner/:id/toggle
+ */
+export const useToggleDeliveryPartner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: toggleDeliveryPartnerApi,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'employee', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
     },

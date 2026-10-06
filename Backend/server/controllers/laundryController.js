@@ -498,29 +498,80 @@ const getLaundryDashboard = async (req, res) => {
   }
 };
 // ─────────────────────────────────────────────
-// @desc    Delivery partner add karo
-// @route   POST /api/laundry/delivery-partner
-// @access  Private/Admin
+// @desc    Delivery partner add karo (SuperAdmin only)
+// @route   POST /api/laundry/admin/delivery-partner
+// @access  Private/SuperAdmin
 // ─────────────────────────────────────────────
 const addDeliveryPartner = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    // Only Super Admin can create Delivery Agents
+    if (req.user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only Super Admin can create delivery agents.",
+      });
+    }
+
+    const { name, email, phone, password, vehicleType, vehicleNumber, laundryId, isActive } = req.body;
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, phone, and password are required",
+        message: "Full Name, email, mobile number, and password are required.",
       });
     }
 
-    // Duplicate check
-    const exists = await User.findOne({ $or: [{ email }, { phone }] });
+    if (!laundryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select an assigned laundry store.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(laundryId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Laundry ID format.",
+      });
+    }
+
+    // Validate that the assigned laundry exists
+    const laundryDoc = await Laundry.findById(laundryId);
+    if (!laundryDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "Selected Laundry store does not exist.",
+      });
+    }
+
+    const { normalizePhone, buildPhoneQuery } = require("../utils/phoneNormalizer");
+    const cleanPhone = normalizePhone(phone);
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 10-digit mobile number.",
+      });
+    }
+
+    const cleanEmail = String(email || "").toLowerCase().trim();
+
+    // Duplicate check across users
+    const exists = await User.findOne({
+      $or: [{ email: cleanEmail }, buildPhoneQuery(cleanPhone)],
+    });
     if (exists) {
       return res.status(400).json({
         success: false,
-        message: exists.email === email
-          ? "Ye email pehle se registered hai"
-          : "Ye phone number pehle se registered hai",
+        message: exists.email === cleanEmail
+          ? "This email address is already registered."
+          : "This mobile number is already registered.",
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters.",
       });
     }
 
@@ -529,27 +580,28 @@ const addDeliveryPartner = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const deliveryPartner = await User.create({
-      name,
-      email,
-      phone,
+      name: name.trim(),
+      email: cleanEmail,
+      phone: cleanPhone,
       password: hashedPassword,
       role: "delivery",
-      laundryId: req.user.laundryId, // is laundry se linked
+      laundryId: laundryDoc._id,
+      vehicleType: vehicleType || "bike",
+      vehicleNumber: vehicleNumber ? String(vehicleNumber).trim().toUpperCase() : "",
       isVerified: true,
-      isActive: true,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+      isAvailable: true,
+      availabilityStatus: "available",
     });
+
+    const populated = await User.findById(deliveryPartner._id)
+      .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
+      .populate("laundryId", "name address city phone status");
 
     return res.status(201).json({
       success: true,
-      message: "Delivery partner added successfully",
-      data: {
-        _id: deliveryPartner._id,
-        name: deliveryPartner.name,
-        email: deliveryPartner.email,
-        phone: deliveryPartner.phone,
-        role: deliveryPartner.role,
-        laundryId: deliveryPartner.laundryId,
-      },
+      message: "Delivery partner created successfully.",
+      data: populated,
     });
   } catch (error) {
     console.error("AddDeliveryPartner error:", error.message);
@@ -562,15 +614,50 @@ const addDeliveryPartner = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// @desc    Apne delivery partners dekho
-// @route   GET /api/laundry/delivery-partners
-// @access  Private/Admin
+// @desc    Delivery partners dekho (Admin & SuperAdmin)
+// @route   GET /api/laundry/admin/delivery-partners
+// @access  Private/Admin, Private/SuperAdmin
 // ─────────────────────────────────────────────
 const getDeliveryPartners = async (req, res) => {
   try {
-    const partners = await User.find({
-      role: "delivery",
-    }).select("name email phone isActive availabilityStatus isAvailable lastSeen currentLocation createdAt laundryId");
+    const filter = { role: "delivery" };
+
+    if (req.user.role === "admin") {
+      filter.laundryId = req.user.laundryId;
+    } else if (req.user.role === "superadmin") {
+      if (req.query.laundryId && mongoose.Types.ObjectId.isValid(req.query.laundryId)) {
+        filter.laundryId = req.query.laundryId;
+      }
+    }
+
+    if (req.query.status === "active") filter.isActive = true;
+    if (req.query.status === "inactive") filter.isActive = false;
+    if (req.query.availability) filter.availabilityStatus = req.query.availability;
+
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const now = new Date();
+      const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+      const istDate = new Date(istString);
+      const startOfDay = new Date(Date.UTC(istDate.getFullYear(), istDate.getMonth(), istDate.getDate(), 0, 0, 0) - (5.5 * 60 * 60 * 1000));
+      const endOfDay = new Date(Date.UTC(istDate.getFullYear(), istDate.getMonth(), istDate.getDate(), 23, 59, 59, 999) - (5.5 * 60 * 60 * 1000));
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    if (req.query.search && req.query.search.trim()) {
+      const searchRegex = new RegExp(req.query.search.trim(), "i");
+      filter.$or = [
+        { name: searchRegex },
+        { email: searchRegex },
+        { phone: searchRegex },
+        { vehicleNumber: searchRegex },
+      ];
+    }
+
+    const partners = await User.find(filter)
+      .select("name email phone isActive availabilityStatus isAvailable lastSeen currentLocation createdAt laundryId vehicleType vehicleNumber totalEarnings totalDeliveries")
+      .populate("laundryId", "name address city phone status")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -588,12 +675,82 @@ const getDeliveryPartners = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// @desc    Delivery partner activate/deactivate
-// @route   PUT /api/laundry/delivery-partner/:id/toggle
-// @access  Private/Admin
+// @desc    Delivery partner activate/deactivate (Admin & SuperAdmin)
+// @route   PUT /api/laundry/admin/delivery-partner/:id/toggle
+// @access  Private/Admin, Private/SuperAdmin
 // ─────────────────────────────────────────────
 const toggleDeliveryPartner = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Delivery Partner ID format.",
+      });
+    }
+
+    const query = {
+      _id: req.params.id,
+      role: "delivery",
+    };
+
+    if (req.user.role === "admin") {
+      query.laundryId = req.user.laundryId;
+    }
+
+    const partner = await User.findOne(query);
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery partner not found or not belonging to your store.",
+      });
+    }
+
+    const nextStatus = req.body?.isActive !== undefined ? Boolean(req.body.isActive) : !partner.isActive;
+
+    const updatedPartner = await User.findByIdAndUpdate(
+      partner._id,
+      { isActive: nextStatus },
+      { new: true }
+    ).select("-password -otp -otpExpiry -refreshToken")
+     .populate("laundryId", "name address city phone status");
+
+    return res.status(200).json({
+      success: true,
+      message: `Delivery partner ${updatedPartner.isActive ? "activated" : "deactivated"} successfully.`,
+      data: updatedPartner,
+    });
+  } catch (error) {
+    console.error("ToggleDeliveryPartner error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update status. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Delivery partner edit profile details (SuperAdmin only)
+// @route   PUT /api/laundry/admin/delivery-partner/:id
+// @access  Private/SuperAdmin
+// ─────────────────────────────────────────────
+const updateDeliveryPartner = async (req, res) => {
+  try {
+    if (req.user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only Super Admin can edit delivery agents.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Delivery Partner ID format.",
+      });
+    }
+
     const partner = await User.findOne({
       _id: req.params.id,
       role: "delivery",
@@ -606,22 +763,104 @@ const toggleDeliveryPartner = async (req, res) => {
       });
     }
 
-    const updatedPartner = await User.findByIdAndUpdate(
-      partner._id,
-      { isActive: !partner.isActive },
-      { new: true }
-    );
+    const { name, email, phone, vehicleType, vehicleNumber, laundryId, isActive, password } = req.body;
+    const updates = {};
+
+    if (name && name.trim()) {
+      updates.name = name.trim();
+    }
+
+    if (vehicleType) {
+      updates.vehicleType = vehicleType;
+    }
+
+    if (vehicleNumber !== undefined) {
+      updates.vehicleNumber = String(vehicleNumber || "").trim().toUpperCase();
+    }
+
+    if (isActive !== undefined) {
+      updates.isActive = Boolean(isActive);
+    }
+
+    if (laundryId) {
+      if (!mongoose.Types.ObjectId.isValid(laundryId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Laundry ID format.",
+        });
+      }
+      const laundryDoc = await Laundry.findById(laundryId);
+      if (!laundryDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Assigned Laundry store not found.",
+        });
+      }
+      updates.laundryId = laundryDoc._id;
+    }
+
+    const { normalizePhone, buildPhoneQuery } = require("../utils/phoneNormalizer");
+
+    if (phone) {
+      const cleanPhone = normalizePhone(phone);
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Please enter a valid 10-digit mobile number.",
+        });
+      }
+      if (cleanPhone !== partner.phone) {
+        const phoneExists = await User.findOne({
+          _id: { $ne: partner._id },
+          ...buildPhoneQuery(cleanPhone),
+        });
+        if (phoneExists) {
+          return res.status(400).json({
+            success: false,
+            message: "Mobile number is already in use by another user.",
+          });
+        }
+        updates.phone = cleanPhone;
+      }
+    }
+
+    if (email) {
+      const cleanEmail = String(email).toLowerCase().trim();
+      if (cleanEmail !== partner.email) {
+        const emailExists = await User.findOne({
+          _id: { $ne: partner._id },
+          email: cleanEmail,
+        });
+        if (emailExists) {
+          return res.status(400).json({
+            success: false,
+            message: "Email address is already in use by another user.",
+          });
+        }
+        updates.email = cleanEmail;
+      }
+    }
+
+    if (password && String(password).trim().length >= 6) {
+      const bcrypt = require("bcryptjs");
+      const salt = await bcrypt.genSalt(10);
+      updates.password = await bcrypt.hash(String(password).trim(), salt);
+    }
+
+    const updatedPartner = await User.findByIdAndUpdate(partner._id, updates, { new: true })
+      .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
+      .populate("laundryId", "name address city phone status");
 
     return res.status(200).json({
       success: true,
-      message: `Delivery partner ${updatedPartner.isActive ? "activated" : "deactivated"} successfully`,
-      data: { isActive: updatedPartner.isActive, name: updatedPartner.name },
+      message: "Delivery partner updated successfully.",
+      data: updatedPartner,
     });
   } catch (error) {
-    console.error("ToggleDeliveryPartner error:", error.message);
+    console.error("UpdateDeliveryPartner error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Unable to update status. Please try again.",
+      message: "Unable to update delivery partner. Please try again.",
       error: error.message,
     });
   }
@@ -1060,18 +1299,30 @@ const getTimeSlots = async (req, res) => {
       );
     }
 
-    const now = new Date();
+    // Use Indian Standard Time (Asia/Kolkata) to determine today and current minutes accurately
+    const istNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const dateStr = date ? String(date).split("T")[0] : null;
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const todayStr = `${istNow.getFullYear()}-${String(istNow.getMonth() + 1).padStart(2, "0")}-${String(istNow.getDate()).padStart(2, "0")}`;
     const isToday = !dateStr || dateStr === todayStr;
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = istNow.getHours() * 60 + istNow.getMinutes();
+
+    const parseSlotMinutes = (timeStr) => {
+      if (!timeStr || typeof timeStr !== "string") return null;
+      const match = timeStr.trim().toUpperCase().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/);
+      if (!match) return null;
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3];
+      if (period === "PM" && hours < 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
 
     const formattedSlots = (timeSlotDoc && Array.isArray(timeSlotDoc.slots) ? timeSlotDoc.slots.filter(s => s.isActive) : []).map(slot => {
       const slotObj = slot.toObject ? slot.toObject() : { ...slot };
       if (isToday && slotObj.startTime) {
-        const [startH, startM] = slotObj.startTime.split(":").map(Number);
-        const slotStartMinutes = (startH || 0) * 60 + (startM || 0);
-        slotObj.isPassed = currentMinutes >= slotStartMinutes;
+        const slotStartMinutes = parseSlotMinutes(slotObj.startTime);
+        slotObj.isPassed = slotStartMinutes !== null ? currentMinutes >= slotStartMinutes : false;
       } else {
         slotObj.isPassed = false;
       }
@@ -1265,6 +1516,7 @@ module.exports = {
   addDeliveryPartner,
   getDeliveryPartners,
   toggleDeliveryPartner,
+  updateDeliveryPartner,
   getAllLaundries,
   getLaundryById,
   addTimeSlot,

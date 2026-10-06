@@ -16,7 +16,7 @@ import { UserPagination } from '../../components/superadmin/users/UserPagination
 import { UserDetailsDrawer } from '../../components/superadmin/users/UserDetailsDrawer';
 import { UserStatusConfirmModal } from '../../components/superadmin/users/UserStatusConfirmModal';
 
-const DEFAULT_FILTERS = { search: '', role: '', status: '' };
+const DEFAULT_FILTERS = { search: '', role: '', status: '', today: '' };
 const LIMIT = 20;
 
 const pageVariants = {
@@ -59,6 +59,7 @@ export const Users = () => {
     ...(debouncedFilters.role && { role: debouncedFilters.role }),
     ...(debouncedFilters.status && { status: debouncedFilters.status }),
     ...(debouncedFilters.search && { search: debouncedFilters.search }),
+    ...(debouncedFilters.today && { today: debouncedFilters.today }),
   };
 
   const { data: usersData, isLoading, isError, error, isFetching, refetch } = useUsers(queryParams);
@@ -69,7 +70,7 @@ export const Users = () => {
   const totalPages = usersData?.pages || 1;
 
   const hasActiveFilters =
-    filters.search !== '' || filters.role !== '' || filters.status !== '';
+    filters.search !== '' || filters.role !== '' || filters.status !== '' || filters.today !== '';
 
   const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);

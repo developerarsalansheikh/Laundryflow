@@ -57,23 +57,29 @@ export const LoginScreen = () => {
 
       const userRole = response?.data?.user?.role;
 
-      // If a customer logged in with email/phone + password, consume intent and reset stack cleanly
+      // If a customer logged in with email/phone + password, consume intent and return cleanly
       if (userRole === 'user') {
         const intent = consumePendingIntent();
         if (intent?.returnTo) {
-          navigation.reset({
-            index: 1,
-            routes: [
-              { name: 'CustomerHome' },
-              { name: intent.returnTo, params: intent.payload },
-            ],
-          });
+          if (navigation.canGoBack()) {
+            navigation.replace(intent.returnTo, intent.payload);
+          } else {
+            navigation.reset({
+              index: 1,
+              routes: [
+                { name: 'CustomerHome' },
+                { name: intent.returnTo, params: intent.payload },
+              ],
+            });
+          }
           return;
         }
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'CustomerHome' }],
-        });
+
+        if (navigation.canGoBack()) {
+          navigation.popToTop();
+        } else {
+          navigation.replace('CustomerHome');
+        }
       }
       // Note: Admin/Delivery roles automatically trigger RootNavigator transition!
     } catch (err) {

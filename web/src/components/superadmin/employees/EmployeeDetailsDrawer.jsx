@@ -151,8 +151,33 @@ export const EmployeeDetailsDrawer = ({ employeeId, employee: initialEmployee, i
                     <>
                       <SectionTitle icon={Store} label="Laundry Assignment" iconClass="bg-purple-500/15 text-purple-400" />
                       <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
-                        <Row label="Laundry Name" value={laundryName} />
+                        <Row label="Store Name" value={laundryName} />
                         {laundryCity && <Row label="City" value={laundryCity} />}
+                        {employee?.laundryId?.address && <Row label="Address" value={employee.laundryId.address} />}
+                        {employee?.laundryId?.phone && <Row label="Store Phone" value={employee.laundryId.phone} mono />}
+                      </div>
+                    </>
+                  )}
+
+                  {role === 'delivery' && (
+                    <>
+                      <SectionTitle icon={Shield} label="Delivery & Vehicle Info" iconClass="bg-indigo-500/15 text-indigo-400" />
+                      <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                        <Row
+                          label="Vehicle Type"
+                          value={employee?.vehicleType ? employee.vehicleType.toUpperCase() : 'Standard'}
+                        />
+                        {employee?.vehicleNumber && <Row label="Vehicle Number" value={employee.vehicleNumber} mono />}
+                        <Row
+                          label="Availability Status"
+                          value={employee?.availabilityStatus ? employee.availabilityStatus.toUpperCase() : 'Available'}
+                        />
+                        {employee?.totalDeliveries !== undefined && (
+                          <Row label="Total Deliveries" value={String(employee.totalDeliveries)} />
+                        )}
+                        {employee?.totalEarnings !== undefined && (
+                          <Row label="Total Earnings" value={`₹${employee.totalEarnings}`} />
+                        )}
                       </div>
                     </>
                   )}

@@ -3,6 +3,21 @@ const Laundry = require("../models/laundryModels");
 const User = require("../models/userModels");
 const Order = require("../models/orderModels");
 const Payment = require("../models/paymentModels");
+const Service = require("../models/serviceModels");
+
+// Helper to compute start and end of current day in IST (Indian Standard Time)
+const getTodayDateRange = () => {
+  const now = new Date();
+  const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const istDate = new Date(istString);
+  const year = istDate.getFullYear();
+  const month = istDate.getMonth();
+  const day = istDate.getDate();
+
+  const startOfDay = new Date(Date.UTC(year, month, day, 0, 0, 0) - (5.5 * 60 * 60 * 1000));
+  const endOfDay = new Date(Date.UTC(year, month, day, 23, 59, 59, 999) - (5.5 * 60 * 60 * 1000));
+  return { startOfDay, endOfDay };
+};
 
 // ─────────────────────────────────────────────
 // @desc    Platform dashboard — sab stats
@@ -11,12 +26,16 @@ const Payment = require("../models/paymentModels");
 // ─────────────────────────────────────────────
 const getDashboard = async (req, res) => {
   try {
+    const { startOfDay, endOfDay } = getTodayDateRange();
+
     const [
       totalLaundries,
       activeLaundries,
       pendingLaundries,
       totalUsers,
       totalOrders,
+      todayOrders,
+      todayRevenueData,
       revenueData,
       commissionData,
     ] = await Promise.all([
@@ -25,6 +44,23 @@ const getDashboard = async (req, res) => {
       Laundry.countDocuments({ status: "pending" }),
       User.countDocuments({ role: "user" }),
       Order.countDocuments(),
+      Order.countDocuments({ createdAt: { $gte: startOfDay, $lte: endOfDay } }),
+      Order.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startOfDay, $lte: endOfDay },
+            isPaid: true,
+            status: { $ne: "cancelled" },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: "$totalAmount" },
+            totalCommission: { $sum: "$commissionAmount" },
+          },
+        },
+      ]),
       Order.aggregate([
         {
           $match: {
@@ -151,6 +187,9 @@ const getDashboard = async (req, res) => {
           pendingLaundries,
           totalUsers,
           totalOrders,
+          todayOrders,
+          todayRevenue: todayRevenueData[0]?.totalRevenue || 0,
+          todayCommission: todayRevenueData[0]?.totalCommission || 0,
           totalRevenue: revenueData[0]?.total || 0,
           totalCommission: commissionData[0]?.total || 0,
         },
@@ -179,6 +218,11 @@ const getAllLaundries = async (req, res) => {
     const filter = {};
     if (status) filter.status = status;
     if (city) filter.city = { $regex: city, $options: "i" };
+
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
 
     if (search && search.trim()) {
       const searchRegex = new RegExp(search.trim(), "i");
@@ -446,6 +490,11 @@ const getAllUsers = async (req, res) => {
     if (status === "active") filter.isActive = true;
     if (status === "inactive") filter.isActive = false;
 
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
     if (search && search.trim()) {
       const searchRegex = new RegExp(search.trim(), "i");
       filter.$or = [
@@ -460,7 +509,7 @@ const getAllUsers = async (req, res) => {
 
     const users = await User.find(filter)
       .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
-      .populate("laundryId", "name city status")
+      .populate("laundryId", "name city address phone status")
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
@@ -504,7 +553,7 @@ const getUserById = async (req, res) => {
 
     const user = await User.findById(id)
       .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
-      .populate("laundryId", "name city address status")
+      .populate("laundryId", "name city address phone status")
       .lean();
 
     if (!user) {
@@ -637,7 +686,10 @@ const getAllOrders = async (req, res) => {
       filter.isPaid = false;
     }
 
-    if (startDate || endDate) {
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    } else if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
@@ -765,7 +817,10 @@ const getAllPayments = async (req, res) => {
     if (method) filter.method = method;
     if (laundryId && mongoose.Types.ObjectId.isValid(laundryId)) filter.laundryId = laundryId;
 
-    if (startDate || endDate) {
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    } else if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
@@ -939,7 +994,10 @@ const getReports = async (req, res) => {
     const { startDate, endDate } = req.query;
 
     const filter = {};
-    if (startDate || endDate) {
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    } else if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
@@ -1095,9 +1153,180 @@ const getReports = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
+// @desc    Platform-wide Services oversight (SuperAdmin)
+// @route   GET /api/super-admin/services
+// @access  Private/SuperAdmin
+// ─────────────────────────────────────────────
+const getServicesOversight = async (req, res) => {
+  try {
+    const { laundryId, category, search, status, page = 1, limit = 50 } = req.query;
+    const filter = {};
+
+    if (laundryId && mongoose.Types.ObjectId.isValid(laundryId)) {
+      filter.laundryId = laundryId;
+    }
+    if (category) filter.category = category;
+    if (status === "active") filter.isActive = true;
+    if (status === "inactive") filter.isActive = false;
+
+    if (req.query.today === "true" || req.query.timeframe === "today") {
+      const { startOfDay, endOfDay } = getTodayDateRange();
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    if (search && search.trim()) {
+      filter.name = { $regex: search.trim(), $options: "i" };
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 50);
+
+    const services = await Service.find(filter)
+      .populate("laundryId", "name city address phone")
+      .sort({ laundryId: 1, category: 1, name: 1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .lean();
+
+    const total = await Service.countDocuments(filter);
+
+    return res.status(200).json({
+      success: true,
+      count: services.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      data: services,
+    });
+  } catch (error) {
+    console.error("GetServicesOversight error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch services catalog. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Delivery Commission & Payout Oversight (SuperAdmin)
+// @route   GET /api/super-admin/delivery-payouts
+// @access  Private/SuperAdmin
+// ─────────────────────────────────────────────
+const getDeliveryPayouts = async (req, res) => {
+  try {
+    const { driverId, laundryId, status, timeframe, today, startDate, endDate, page = 1, limit = 30 } = req.query;
+
+    const { startOfDay, endOfDay } = getTodayDateRange();
+    const isToday = today === "true" || timeframe === "today";
+
+    const filter = {
+      deliveryPartner: { $ne: null },
+    };
+
+    if (driverId && mongoose.Types.ObjectId.isValid(driverId)) {
+      filter.deliveryPartner = driverId;
+    }
+    if (laundryId && mongoose.Types.ObjectId.isValid(laundryId)) {
+      filter.laundryId = laundryId;
+    }
+    if (status) {
+      filter.status = status;
+    }
+
+    if (isToday) {
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    } else if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 30);
+
+    const orders = await Order.find(filter)
+      .select("deliveryPartner laundryId user status totalAmount deliveryFee pickupDistanceCharge deliveryDistanceCharge isPaid paidAt deliveredAt createdAt assignmentInfo")
+      .populate("deliveryPartner", "name phone email vehicleType vehicleNumber totalEarnings")
+      .populate("laundryId", "name city deliveryPartnerEarningPerOrder")
+      .populate("user", "name phone")
+      .sort({ createdAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .lean();
+
+    const total = await Order.countDocuments(filter);
+
+    // Format with verified earning amount from laundry configured driverPay or default 50
+    const payouts = orders.map((order) => {
+      const perOrderEarning = order.laundryId?.deliveryPartnerEarningPerOrder ?? 50;
+      const isDelivered = order.status === "delivered";
+      return {
+        _id: order._id,
+        orderId: order._id,
+        deliveryAgent: order.deliveryPartner || null,
+        laundry: order.laundryId || null,
+        customer: order.user || null,
+        orderStatus: order.status,
+        orderTotal: order.totalAmount,
+        commissionAmount: perOrderEarning,
+        payoutStatus: isDelivered ? "earned" : "pending",
+        deliveredAt: order.deliveredAt || null,
+        createdAt: order.createdAt,
+      };
+    });
+
+    // Compute today-specific metrics across platform
+    const todayOrders = await Order.find({
+      deliveryPartner: { $ne: null },
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    })
+      .select("status laundryId")
+      .populate("laundryId", "deliveryPartnerEarningPerOrder")
+      .lean();
+
+    let todayEarned = 0;
+    let todayDeliveredCount = 0;
+    let todayPendingCount = 0;
+
+    todayOrders.forEach((o) => {
+      const rate = o.laundryId?.deliveryPartnerEarningPerOrder ?? 50;
+      if (o.status === "delivered") {
+        todayEarned += rate;
+        todayDeliveredCount++;
+      } else {
+        todayPendingCount++;
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: payouts.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      todaySummary: {
+        todayEarned,
+        todayDeliveredCount,
+        todayPendingCount,
+        todayTotalAssigned: todayOrders.length,
+      },
+      data: payouts,
+    });
+  } catch (error) {
+    console.error("GetDeliveryPayouts error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch delivery commissions. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
 // @desc    SuperAdmin account banao (sirf ek baar)
 // @route   POST /api/super-admin/create
-// @access  Public (first time only)
+// @access  Public (secure setup token required)
 // ─────────────────────────────────────────────
 const createSuperAdmin = async (req, res) => {
   try {
@@ -1105,7 +1334,17 @@ const createSuperAdmin = async (req, res) => {
     if (superAdminExists) {
       return res.status(400).json({
         success: false,
-        message: "SuperAdmin already exists",
+        message: "SuperAdmin setup is already completed. This endpoint is permanently disabled.",
+      });
+    }
+
+    // Protection check: require setup token
+    const setupToken = req.headers["x-setup-token"] || req.body?.setupToken;
+    const expectedToken = process.env.SUPERADMIN_SETUP_TOKEN || process.env.JWT_SECRET;
+    if (expectedToken && setupToken !== expectedToken) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Valid setup token is required for initial SuperAdmin creation.",
       });
     }
 
@@ -1114,7 +1353,7 @@ const createSuperAdmin = async (req, res) => {
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "All fields (name, email, phone, password) are required.",
       });
     }
 
@@ -1123,9 +1362,9 @@ const createSuperAdmin = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const superAdmin = await User.create({
-      name,
-      email,
-      phone,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone.trim(),
       password: hashedPassword,
       role: "superadmin",
       isVerified: true,
@@ -1168,5 +1407,7 @@ module.exports = {
   getPaymentById,
   getAnalytics,
   getReports,
+  getServicesOversight,
+  getDeliveryPayouts,
   createSuperAdmin,
 };

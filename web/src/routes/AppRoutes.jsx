@@ -27,6 +27,8 @@ const Subscriptions = lazy(() => import('../pages/superadmin/Subscriptions'));
 const Payments = lazy(() => import('../pages/superadmin/Payments'));
 const Analytics = lazy(() => import('../pages/superadmin/Analytics'));
 const Reports = lazy(() => import('../pages/superadmin/Reports'));
+const Services = lazy(() => import('../pages/superadmin/Services'));
+const Payouts = lazy(() => import('../pages/superadmin/Payouts'));
 const Support = lazy(() => import('../pages/superadmin/Support'));
 const Settings = lazy(() => import('../pages/superadmin/Settings'));
 
@@ -184,6 +186,22 @@ export const AppRoutes = () => {
               element={
                 <Suspense fallback={<PageLoadingFallback />}>
                   <Reports />
+                </Suspense>
+              }
+            />
+            <Route
+              path={ROUTES.SUPERADMIN.SERVICES}
+              element={
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Services />
+                </Suspense>
+              }
+            />
+            <Route
+              path={ROUTES.SUPERADMIN.PAYOUTS}
+              element={
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Payouts />
                 </Suspense>
               }
             />

@@ -12,8 +12,19 @@ import { parseApiError } from '../utils/errorHandler';
  *  - Request: attach Authorization: Bearer <accessToken>
  *  - Response: on 401 → attempt token refresh → retry → logout if refresh fails
  */
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    return ''; // Route through Vite proxy to eliminate browser CORS errors
+  }
+  return envUrl || '';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+  baseURL: getBaseURL(),
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // Required for HttpOnly refreshToken cookie
 });
@@ -74,8 +85,9 @@ api.interceptors.response.use(
 
       try {
         // Attempt refresh — uses HttpOnly cookie automatically
+        const refreshBase = getBaseURL();
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/refresh-token`,
+          `${refreshBase}/api/auth/refresh-token`,
           {},
           { withCredentials: true }
         );

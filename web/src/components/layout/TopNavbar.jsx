@@ -1,7 +1,8 @@
-import { Menu, MessageCircle } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { IconButton } from '../ui/IconButton';
 import { SearchBar } from '../common/SearchBar';
+import { MessagesMenu } from '../common/MessagesMenu';
 import { NotificationMenu } from '../common/NotificationMenu';
 import { UserMenu } from '../common/UserMenu';
 
@@ -44,10 +45,8 @@ export const TopNavbar = () => {
 
       {/* Right actions */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* Messages — UI foundation */}
-        <IconButton aria-label="Messages">
-          <MessageCircle className="w-[18px] h-[18px]" />
-        </IconButton>
+        {/* Messages & Helpdesk Inquiries */}
+        <MessagesMenu />
 
         {/* Notifications */}
         <NotificationMenu />

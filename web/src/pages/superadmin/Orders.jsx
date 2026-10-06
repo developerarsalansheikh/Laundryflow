@@ -20,6 +20,7 @@ const DEFAULT_FILTERS = {
   status: '',
   paymentStatus: '',
   laundryId: '',
+  today: '',
   startDate: '',
   endDate: '',
 };
@@ -63,6 +64,7 @@ export const Orders = () => {
     ...(debouncedFilters.paymentStatus && { paymentStatus: debouncedFilters.paymentStatus }),
     ...(debouncedFilters.laundryId && { laundryId: debouncedFilters.laundryId }),
     ...(debouncedFilters.search && { search: debouncedFilters.search }),
+    ...(debouncedFilters.today && { today: debouncedFilters.today }),
     ...(debouncedFilters.startDate && { startDate: debouncedFilters.startDate }),
     ...(debouncedFilters.endDate && { endDate: debouncedFilters.endDate }),
   };
@@ -82,6 +84,7 @@ export const Orders = () => {
     filters.status !== '' ||
     filters.paymentStatus !== '' ||
     filters.laundryId !== '' ||
+    filters.today !== '' ||
     filters.startDate !== '' ||
     filters.endDate !== '';
 

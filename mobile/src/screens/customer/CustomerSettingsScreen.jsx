@@ -8,9 +8,11 @@ import {
   Alert,
   Modal,
   Image,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -31,6 +33,7 @@ import Icon from '../../components/ui/Icon';
 export const CustomerSettingsScreen = () => {
   const { colors, spacing, radius } = useTheme();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -77,7 +80,42 @@ export const CustomerSettingsScreen = () => {
 
   const handlePickPhoto = () => {
     promptImageSource((asset) => {
-      setSelectedPhotoAsset(asset);
+      if (asset?.uri) {
+        setSelectedPhotoAsset(asset);
+      }
+    });
+  };
+
+  const handleDirectAvatarChange = () => {
+    if (!isAuthenticated) {
+      navigation.navigate('Login');
+      return;
+    }
+    promptImageSource(async (asset) => {
+      if (!asset?.uri) return;
+      setSavingProfile(true);
+      try {
+        const formData = new FormData();
+        const cleanUri = Platform.OS === 'android' ? asset.uri : asset.uri.replace('file://', '');
+        formData.append('image', {
+          uri: cleanUri,
+          name: asset.fileName || `avatar_${Date.now()}.jpg`,
+          type: asset.type || 'image/jpeg',
+        });
+        const uploadRes = await authService.updateProfileImage(formData);
+        if (uploadRes?.data?.profileImage) {
+          useAuthStore.getState().setUser({
+            ...useAuthStore.getState().user,
+            profileImage: uploadRes.data.profileImage,
+          });
+        }
+        await queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+        Alert.alert('Profile Photo Updated', 'Your profile picture has been updated successfully!');
+      } catch (err) {
+        Alert.alert('Upload Failed', err?.response?.data?.message || err?.message || 'Failed to upload profile photo.');
+      } finally {
+        setSavingProfile(false);
+      }
     });
   };
 
@@ -94,21 +132,33 @@ export const CustomerSettingsScreen = () => {
 
     setSavingProfile(true);
     try {
-      if (selectedPhotoAsset) {
+      if (selectedPhotoAsset?.uri) {
         const formData = new FormData();
+        const cleanUri = Platform.OS === 'android' ? selectedPhotoAsset.uri : selectedPhotoAsset.uri.replace('file://', '');
         formData.append('image', {
-          uri: selectedPhotoAsset.uri,
-          name: selectedPhotoAsset.fileName || 'profile.jpg',
+          uri: cleanUri,
+          name: selectedPhotoAsset.fileName || `avatar_${Date.now()}.jpg`,
           type: selectedPhotoAsset.type || 'image/jpeg',
         });
-        await authService.updateProfileImage(formData);
+        const uploadRes = await authService.updateProfileImage(formData);
+        if (uploadRes?.data?.profileImage) {
+          useAuthStore.getState().setUser({
+            ...useAuthStore.getState().user,
+            profileImage: uploadRes.data.profileImage,
+          });
+        }
       }
 
-      await authService.updateProfile({
+      const updatedUserRes = await authService.updateProfile({
         name: editName.trim(),
         phone: cleanPhone || undefined,
         email: editEmail.trim() || undefined,
       });
+
+      if (updatedUserRes?.data) {
+        useAuthStore.getState().setUser(updatedUserRes.data);
+      }
+      await queryClient.invalidateQueries({ queryKey: ['userProfile'] });
 
       setEditModalVisible(false);
       Alert.alert('Profile Saved', 'Your profile details have been saved successfully.');
@@ -162,15 +212,30 @@ export const CustomerSettingsScreen = () => {
         {/* Profile Card */}
         <Card variant="elevated" style={styles.profileCard}>
           <View style={styles.profileRow}>
-            {activeUser?.profileImage ? (
-              <Image source={{ uri: activeUser.profileImage }} style={styles.avatarImage} />
-            ) : (
-              <View style={[styles.avatarCircle, { backgroundColor: colors.primary }]}>
-                <Text variant="h2" weight="bold" style={{ color: '#FFFFFF' }}>
-                  {activeUser?.name ? activeUser.name.charAt(0).toUpperCase() : 'G'}
-                </Text>
-              </View>
-            )}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleDirectAvatarChange}
+              style={styles.avatarTouchable}
+            >
+              {activeUser?.profileImage ? (
+                <Image source={{ uri: activeUser.profileImage }} style={styles.avatarImage} />
+              ) : (
+                <View style={[styles.avatarCircle, { backgroundColor: colors.primary }]}>
+                  <Text variant="h2" weight="bold" style={{ color: '#FFFFFF' }}>
+                    {activeUser?.name ? activeUser.name.charAt(0).toUpperCase() : 'G'}
+                  </Text>
+                </View>
+              )}
+              {isAuthenticated && (
+                <View style={[styles.avatarCameraBadge, { backgroundColor: colors.primary }]}>
+                  {savingProfile ? (
+                    <ActivityIndicator size={10} color="#FFFFFF" />
+                  ) : (
+                    <Text style={{ fontSize: 10 }}>📷</Text>
+                  )}
+                </View>
+              )}
+            </TouchableOpacity>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text variant="title" weight="bold" colorVariant="primary">
                 {isAuthenticated ? (activeUser?.name || 'LaundryFlow Customer') : 'Guest Customer'}
@@ -590,6 +655,21 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  avatarTouchable: {
+    position: 'relative',
+  },
+  avatarCameraBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarCircle: {
     width: 52,

@@ -158,7 +158,7 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
  * Responsive 4-column stats grid for Super Admin Dashboard.
  * Receives real backend stats object. All values formatted in Indian system.
  */
-export const StatsGrid = ({ stats = {} }) => {
+export const StatsGrid = ({ stats = {}, timeframe = 'all' }) => {
   const {
     totalRevenue = 0,
     totalOrders = 0,
@@ -166,7 +166,12 @@ export const StatsGrid = ({ stats = {} }) => {
     totalLaundries = 0,
     activeLaundries = 0,
     pendingLaundries = 0,
+    todayRevenue = 0,
+    todayOrders = 0,
+    todayCommission = 0,
   } = stats;
+
+  const isToday = timeframe === 'today';
 
   return (
     <motion.div
@@ -175,32 +180,44 @@ export const StatsGrid = ({ stats = {} }) => {
       animate="visible"
       className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5"
     >
-      {/* 1. Total Revenue */}
+      {/* 1. Revenue */}
       <StatCard
         icon={CreditCard}
-        title="Total Revenue"
-        subTitle="Platform Gross (Paid Orders)"
-        value={formatIndianCurrency(totalRevenue)}
+        title={isToday ? "Today's Revenue" : "Total Revenue"}
+        subTitle={
+          isToday
+            ? `All-time Gross: ${formatIndianCurrency(totalRevenue)}`
+            : (stats.todayRevenue !== undefined ? `Today: ${formatIndianCurrency(todayRevenue)}` : "Platform Gross (Paid Orders)")
+        }
+        value={formatIndianCurrency(isToday ? todayRevenue : totalRevenue)}
         SparkComponent={RevenueSpark}
         color="#8B5CF6"
       />
 
-      {/* 2. Total Orders */}
+      {/* 2. Orders */}
       <StatCard
         icon={ShoppingBag}
-        title="Total Orders"
-        subTitle="All-time Platform Orders"
-        value={formatIndianNumber(totalOrders)}
+        title={isToday ? "Today's Orders" : "Total Orders"}
+        subTitle={
+          isToday
+            ? `All-time Volume: ${formatIndianNumber(totalOrders)} orders`
+            : (stats.todayOrders !== undefined ? `Today: ${formatIndianNumber(todayOrders)} orders` : "All-time Platform Orders")
+        }
+        value={formatIndianNumber(isToday ? todayOrders : totalOrders)}
         SparkComponent={OrdersSpark}
         color="#3B82F6"
       />
 
-      {/* 3. Total Customers */}
+      {/* 3. Customers or Today's Commission */}
       <StatCard
         icon={Users}
-        title="Total Customers"
-        subTitle="Registered User Accounts"
-        value={formatIndianNumber(totalUsers)}
+        title={isToday ? "Today's Commission" : "Total Customers"}
+        subTitle={
+          isToday
+            ? `Registered Customers: ${formatIndianNumber(totalUsers)}`
+            : "Registered User Accounts"
+        }
+        value={isToday ? formatIndianCurrency(todayCommission) : formatIndianNumber(totalUsers)}
         SparkComponent={CustomersSpark}
         color="#06B6D4"
       />

@@ -90,9 +90,11 @@ export const AdminLayout = () => {
       >
         {/* Brand Header */}
         <div className="flex items-center gap-3 px-6 h-16 border-b border-white/[0.07]">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primaryPurple to-brandIndigo text-white font-bold text-lg shadow-glowPurple flex-shrink-0">
-            🧺
-          </div>
+          <img
+            src="/logo.png"
+            alt="LaundryFlow"
+            className="w-10 h-10 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-bold truncate text-textPrimary leading-tight tracking-tight">
               {storeName}
@@ -188,9 +190,11 @@ export const AdminLayout = () => {
             >
               <div className="flex items-center justify-between px-5 h-16 border-b border-white/[0.07]">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-primaryPurple to-brandIndigo text-white font-bold">
-                    🧺
-                  </div>
+                  <img
+                    src="/logo.png"
+                    alt="LaundryFlow"
+                    className="w-8 h-8 rounded-lg object-cover border border-white/10"
+                  />
                   <span className="text-sm font-bold truncate text-textPrimary">{storeName}</span>
                 </div>
                 <button

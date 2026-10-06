@@ -42,10 +42,51 @@ export const toggleEmployeeStatusApi = async ({ id, isActive }) => {
   return response.data;
 };
 
+/**
+ * Create a new Delivery Agent account (SuperAdmin only).
+ * POST /api/laundry/admin/delivery-partner
+ */
+export const createDeliveryPartnerApi = async (payload) => {
+  const response = await api.post('/api/laundry/admin/delivery-partner', payload);
+  return response.data;
+};
+
+/**
+ * Edit an existing Delivery Agent account (SuperAdmin only).
+ * PUT /api/laundry/admin/delivery-partner/:id
+ */
+export const updateDeliveryPartnerApi = async ({ id, ...payload }) => {
+  const response = await api.put(`/api/laundry/admin/delivery-partner/${id}`, payload);
+  return response.data;
+};
+
+/**
+ * Fetch all platform delivery partners with assigned laundries.
+ * GET /api/laundry/admin/delivery-partners
+ */
+export const getDeliveryPartnersApi = async (params = {}) => {
+  const response = await api.get('/api/laundry/admin/delivery-partners', { params });
+  return response.data;
+};
+
+/**
+ * Toggle active/inactive status of a delivery partner.
+ * PUT /api/laundry/admin/delivery-partner/:id/toggle
+ */
+export const toggleDeliveryPartnerApi = async ({ id, isActive }) => {
+  const payload = isActive !== undefined ? { isActive } : {};
+  const response = await api.put(`/api/laundry/admin/delivery-partner/${id}/toggle`, payload);
+  return response.data;
+};
+
 export const employeesApi = {
   getSuperAdminEmployeesApi,
   getEmployeeByIdApi,
   toggleEmployeeStatusApi,
+  createDeliveryPartnerApi,
+  updateDeliveryPartnerApi,
+  getDeliveryPartnersApi,
+  toggleDeliveryPartnerApi,
 };
 
 export default employeesApi;

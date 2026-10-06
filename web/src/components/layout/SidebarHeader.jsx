@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Waves, Zap, ChevronLeft } from 'lucide-react';
+import { Zap, ChevronLeft } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
 /**
@@ -12,9 +12,11 @@ export const SidebarHeader = () => {
     <div className="flex items-center justify-between px-4 py-5 border-b border-borderSubtle">
       <div className="flex items-center gap-3 min-w-0">
         {/* Logo Icon */}
-        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-primaryPurple to-brandIndigo flex items-center justify-center shadow-glowPurple">
-          <Waves className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
+        <img
+          src="/logo.png"
+          alt="LaundryFlow"
+          className="flex-shrink-0 w-9 h-9 rounded-xl object-cover shadow-glowPurple border border-white/10"
+        />
 
         {/* Brand Text */}
         <AnimatePresence initial={false}>

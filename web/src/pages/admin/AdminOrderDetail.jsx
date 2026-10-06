@@ -13,6 +13,7 @@ import {
   Printer,
   CreditCard,
   Ban,
+  Camera,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminApi } from '../../api/adminApi';
@@ -599,6 +600,59 @@ export const AdminOrderDetail = () => {
 
         {/* Right Column: Customer Profile & Schedule */}
         <div className="space-y-6">
+          {/* Physical Package Identification / Pickup Photo Card */}
+          {Boolean(order.pickupPhoto?.url) && (
+            <div className="glass-card p-6 space-y-4 border border-sky-500/30 bg-sky-950/20 shadow-glowSky">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-textPrimary flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-sky-400" />
+                    <span>Package Identification (Pickup Photo)</span>
+                  </h3>
+                  <p className="text-[11px] text-textMuted mt-0.5">
+                    Laundry bag photo captured at customer pickup
+                  </p>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                  VERIFIED PHOTO
+                </span>
+              </div>
+
+              <div className="rounded-xl overflow-hidden bg-slate-950/80 border border-white/10 flex items-center justify-center p-1.5">
+                <img
+                  src={order.pickupPhoto.url}
+                  alt="Pickup Package"
+                  className="max-h-72 w-full object-contain rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-1.5 text-xs text-textSecondary pt-2 border-t border-white/[0.06]">
+                <div className="flex justify-between">
+                  <span className="text-textMuted">Order ID:</span>
+                  <span className="font-mono font-semibold text-textPrimary">#{order._id?.slice(-8).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-textMuted">Customer:</span>
+                  <span className="font-semibold text-textPrimary">{customer.name || 'Customer'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-textMuted">Delivery Agent:</span>
+                  <span className="font-semibold text-textPrimary">{order.deliveryPartner?.name || 'Delivery Partner'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-textMuted">Destination Store:</span>
+                  <span className="font-semibold text-textPrimary">{order.laundryId?.name || 'Laundry Store'}</span>
+                </div>
+                {order.pickupPhoto.uploadedAt && (
+                  <div className="flex justify-between">
+                    <span className="text-textMuted">Pickup Timestamp:</span>
+                    <span className="text-textPrimary">{new Date(order.pickupPhoto.uploadedAt).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Customer Info Card */}
           <div className="glass-card p-6 space-y-4">
             <h3 className="text-sm font-bold text-textPrimary flex items-center gap-2">

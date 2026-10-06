@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ShoppingBag,
   ArrowUpRight,
+  Ban,
 } from 'lucide-react';
 import {
   BarChart,
@@ -59,6 +60,13 @@ export const AdminDashboard = () => {
   const totalOrders = metrics.totalOrders || 0;
   const activeOrders = metrics.activeOrders || 0;
   const pendingOrders = metrics.pendingOrders || 0;
+  const todayTotalOrders = metrics.todayTotalOrders ?? totalOrders;
+  const todayPendingOrders = metrics.todayPendingOrders ?? pendingOrders;
+  const todayInProgressOrders = metrics.todayInProgressOrders ?? (metrics.inProgressOrders || activeOrders);
+  const todayReadyOrders = metrics.todayReadyOrders ?? (metrics.readyOrders || 0);
+  const todayOutForDeliveryOrders = metrics.todayOutForDeliveryOrders ?? (metrics.outForDeliveryOrders || 0);
+  const todayDeliveredOrders = metrics.todayDeliveredOrders ?? (metrics.deliveredOrders || 0);
+  const todayCancelledOrders = metrics.todayCancelledOrders ?? (metrics.cancelledOrders || 0);
 
   // Chart data
   const chartData = stats?.revenueByDay || [
@@ -123,19 +131,26 @@ export const AdminDashboard = () => {
     <div className="space-y-6">
       {/* ── Top Header & Actions ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-textPrimary">
-              Store Operations
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Live & Open
-            </span>
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="LaundryFlow"
+            className="w-11 h-11 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-textPrimary">
+                Store Operations
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live & Open
+              </span>
+            </div>
+            <p className="text-xs text-textMuted mt-0.5">
+              Real-time analytics, order dispatch and catalog management
+            </p>
           </div>
-          <p className="text-xs text-textMuted mt-1">
-            Real-time analytics, order dispatch and catalog management
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -189,12 +204,12 @@ export const AdminDashboard = () => {
         </motion.div>
       )}
 
-      {/* ── 4 Primary Metric Stat Cards (Super Admin Style) ─────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── Operational Metric Stat Cards (Mobile Admin Parity) ─────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Revenue */}
         <div className="glass-card p-5 relative overflow-hidden group hover:border-emerald-500/40 transition-colors duration-300">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-textSecondary">Total Sales Revenue</span>
+            <span className="text-xs font-semibold text-textSecondary">Net Store Revenue</span>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
               <CreditCard className="w-4 h-4" />
             </div>
@@ -211,55 +226,148 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Total Orders */}
-        <div className="glass-card p-5 relative overflow-hidden group hover:border-primaryPurple/40 transition-colors duration-300">
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-primaryPurple/40 transition-colors duration-300 cursor-pointer"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-textSecondary">Total Store Orders</span>
+            <span className="text-xs font-semibold text-textSecondary">Today&apos;s Total Orders</span>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-primaryPurple/15 border border-primaryPurple/30 text-primaryPurple">
               <Package className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold text-textPrimary tracking-tight">
-              {totalOrders}
+              {todayTotalOrders}
             </div>
             <p className="text-[11px] text-textMuted mt-1">
-              Lifetime customer orders
+              Total volume scheduled today
             </p>
           </div>
         </div>
 
-        {/* Active Processing */}
-        <div className="glass-card p-5 relative overflow-hidden group hover:border-blue-500/40 transition-colors duration-300">
+        {/* Pending Pickup */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=pending&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-amber-500/40 transition-colors duration-300 cursor-pointer"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-textSecondary">Active Processing</span>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30 text-blue-400">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-textPrimary tracking-tight">
-              {activeOrders}
-            </div>
-            <p className="text-[11px] text-textMuted mt-1">
-              In pickup, wash, dry, or delivery
-            </p>
-          </div>
-        </div>
-
-        {/* Pending Action */}
-        <div className="glass-card p-5 relative overflow-hidden group hover:border-amber-500/40 transition-colors duration-300">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-textSecondary">Pending Review</span>
+            <span className="text-xs font-semibold text-textSecondary">Pending Pickup</span>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-500/15 border border-amber-500/30 text-amber-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-bold text-textPrimary tracking-tight">
-              {pendingOrders}
+            <div className="text-2xl font-bold text-amber-400 tracking-tight">
+              {todayPendingOrders}
             </div>
             <p className="text-[11px] text-textMuted mt-1">
-              Needs pickup verification
+              Awaiting customer pickup
+            </p>
+          </div>
+        </div>
+
+        {/* Processing */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=in_progress&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-blue-500/40 transition-colors duration-300 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-textSecondary">Processing</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30 text-blue-400">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold text-blue-400 tracking-tight">
+              {todayInProgressOrders}
+            </div>
+            <p className="text-[11px] text-textMuted mt-1">
+              In wash / iron / cleaning
+            </p>
+          </div>
+        </div>
+
+        {/* Ready */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=ready&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-sky-500/40 transition-colors duration-300 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-textSecondary">Ready</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-sky-500/15 border border-sky-500/30 text-sky-400">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold text-sky-400 tracking-tight">
+              {todayReadyOrders}
+            </div>
+            <p className="text-[11px] text-textMuted mt-1">
+              Ready for dispatch / pickup
+            </p>
+          </div>
+        </div>
+
+        {/* Out for Delivery */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=out_for_delivery&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-orange-500/40 transition-colors duration-300 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-textSecondary">Out for Delivery</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-orange-500/15 border border-orange-500/30 text-orange-400">
+              <Truck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold text-orange-400 tracking-tight">
+              {todayOutForDeliveryOrders}
+            </div>
+            <p className="text-[11px] text-textMuted mt-1">
+              En route to customer
+            </p>
+          </div>
+        </div>
+
+        {/* Delivered */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=delivered&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-emerald-500/40 transition-colors duration-300 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-textSecondary">Delivered</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold text-emerald-400 tracking-tight">
+              {todayDeliveredOrders}
+            </div>
+            <p className="text-[11px] text-textMuted mt-1">
+              Completed & verified today
+            </p>
+          </div>
+        </div>
+
+        {/* Cancelled */}
+        <div
+          onClick={() => navigate(`${ROUTES.ADMIN.ORDERS}?status=cancelled&todayOnly=true`)}
+          className="glass-card p-5 relative overflow-hidden group hover:border-red-500/40 transition-colors duration-300 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-textSecondary">Cancelled</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-500/15 border border-red-500/30 text-red-400">
+              <Ban className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold text-red-400 tracking-tight">
+              {todayCancelledOrders}
+            </div>
+            <p className="text-[11px] text-textMuted mt-1">
+              Cancelled today
             </p>
           </div>
         </div>

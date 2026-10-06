@@ -18,6 +18,8 @@ export const LaundryFilters = ({
   onStatusChange,
   cityFilter = '',
   onCityChange,
+  todayFilter = false,
+  onTodayChange,
   availableCities = [],
   totalResults = 0,
 }) => {
@@ -41,6 +43,19 @@ export const LaundryFilters = ({
             </button>
           );
         })}
+
+        {/* Today Filter Button */}
+        <button
+          onClick={() => onTodayChange && onTodayChange(!todayFilter)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
+            todayFilter
+              ? 'bg-purple-600 text-white border border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              : 'text-textMuted hover:text-textPrimary hover:bg-white/5 border border-transparent'
+          }`}
+          title="Filter stores registered today"
+        >
+          Today
+        </button>
 
         <span className="px-2 py-1 rounded-lg bg-white/5 text-[10px] font-mono text-purple-300 border border-white/10 ml-1">
           {totalResults} {totalResults === 1 ? 'laundry' : 'laundries'}

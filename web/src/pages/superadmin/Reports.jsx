@@ -263,6 +263,18 @@ export const Reports = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
+              id="report-today-filter"
+              type="button"
+              onClick={() => {
+                setStartDate(today);
+                setEndDate(today);
+                setAppliedParams({ today: 'true' });
+              }}
+              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.3)]"
+            >
+              Today
+            </button>
+            <button
               id="report-apply-filter"
               onClick={handleApplyFilter}
               className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-all"

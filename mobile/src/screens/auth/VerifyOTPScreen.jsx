@@ -61,18 +61,23 @@ export const VerifyOTPScreen = () => {
       if (role === 'user' || !role) {
         const intent = consumePendingIntent();
         if (intent?.returnTo) {
-          navigation.reset({
-            index: 1,
-            routes: [
-              { name: 'CustomerHome' },
-              { name: intent.returnTo, params: intent.payload },
-            ],
-          });
+          if (navigation.canGoBack()) {
+            navigation.replace(intent.returnTo, intent.payload);
+          } else {
+            navigation.reset({
+              index: 1,
+              routes: [
+                { name: 'CustomerHome' },
+                { name: intent.returnTo, params: intent.payload },
+              ],
+            });
+          }
         } else {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'CustomerHome' }],
-          });
+          if (navigation.canGoBack()) {
+            navigation.popToTop();
+          } else {
+            navigation.replace('CustomerHome');
+          }
         }
       }
     } catch (err) {

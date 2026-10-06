@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const STATUS_OPTIONS = [
@@ -96,6 +96,21 @@ export const PaymentFilters = ({ filters, onChange, onClear, hasActiveFilters })
             ))}
           </select>
         </div>
+
+        {/* Today Filter Button */}
+        <button
+          type="button"
+          onClick={() => onChange({ ...filters, today: filters.today === 'true' ? '' : 'true' })}
+          className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap ${
+            filters.today === 'true'
+              ? 'bg-emerald-500 text-slate-950 font-bold shadow-[0_0_12px_rgba(16,185,129,0.35)]'
+              : 'bg-white/5 border-white/10 text-textMuted hover:text-textPrimary hover:bg-white/10'
+          }`}
+          title="Filter payments processed today"
+        >
+          <Clock className="w-3.5 h-3.5" />
+          Today
+        </button>
 
         {/* Clear Filters */}
         {hasActiveFilters && (

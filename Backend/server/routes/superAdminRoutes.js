@@ -15,6 +15,8 @@ const {
   getPaymentById,
   getAnalytics,
   getReports,
+  getServicesOversight,
+  getDeliveryPayouts,
   createSuperAdmin,
 } = require("../controllers/superAdminController");
 const { protect, restrictTo } = require("../middleware/authMiddleware");
@@ -31,6 +33,12 @@ router.use(protect, restrictTo("superadmin")); // sab routes superadmin only
 router.get("/dashboard", getDashboard); // GET /api/super-admin/dashboard
 router.get("/analytics", getAnalytics); // GET /api/super-admin/analytics
 router.get("/reports", getReports); // GET /api/super-admin/reports
+
+// Services Oversight (Platform-Wide)
+router.get("/services", getServicesOversight); // GET /api/super-admin/services
+
+// Delivery Partner Payouts & Commissions
+router.get("/delivery-payouts", getDeliveryPayouts); // GET /api/super-admin/delivery-payouts
 
 // Laundries
 router.get("/laundries", getAllLaundries); // GET /api/super-admin/laundries

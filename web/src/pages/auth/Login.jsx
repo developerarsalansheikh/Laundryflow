@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Waves, Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { loginApi } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
@@ -166,9 +166,11 @@ export const Login = () => {
             className="text-center mb-8"
           >
             {/* Logo */}
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primaryPurple to-brandIndigo shadow-glowPurple mb-5">
-              <Waves className="w-8 h-8 text-white" strokeWidth={2.5} />
-            </div>
+            <img
+              src="/logo.png"
+              alt="LaundryFlow"
+              className="inline-block w-16 h-16 rounded-2xl object-cover shadow-glowPurple border border-white/10 mb-5"
+            />
 
             <h1 className="text-2xl font-bold text-textPrimary tracking-tight">
               LaundryFlow

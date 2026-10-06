@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Clock } from 'lucide-react';
 import {
   useDashboardStats,
   useTopLaundries,
@@ -8,11 +10,11 @@ import {
 import { DashboardHeader } from '../../components/superadmin/DashboardHeader';
 import { StatsGrid } from '../../components/superadmin/StatsGrid';
 import { RevenueOverview } from '../../components/superadmin/RevenueOverview';
-import { BusinessInsights } from '../../components/superadmin/BusinessInsights';
+import { PendingStoreApprovals } from '../../components/superadmin/PendingStoreApprovals';
+import { PlatformOperationsDistribution } from '../../components/superadmin/PlatformOperationsDistribution';
 import { TopLaundries } from '../../components/superadmin/TopLaundries';
 import { RecentOrders } from '../../components/superadmin/RecentOrders';
 import { PaymentsOverview } from '../../components/superadmin/PaymentsOverview';
-import { LiveActivity } from '../../components/superadmin/LiveActivity';
 import { DashboardSkeleton } from '../../components/superadmin/DashboardSkeleton';
 import { DashboardError } from '../../components/superadmin/DashboardError';
 
@@ -27,6 +29,8 @@ import { DashboardError } from '../../components/superadmin/DashboardError';
  * No fabricated data. Empty states shown when backend data is absent.
  */
 export const Dashboard = () => {
+  const [timeframe, setTimeframe] = useState('all'); // 'all' | 'today'
+
   // ── Primary dashboard stats ──────────────────────────────────────────────────
   const {
     data: dashData,
@@ -84,19 +88,57 @@ export const Dashboard = () => {
       {/* Dynamic time-based greeting + authenticated user name + Add Laundry CTA */}
       <DashboardHeader />
 
+      {/* ── Timeframe Mode Quick Selector ─────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl glass-card border border-white/8">
+        <div className="flex items-center gap-2">
+          <div className={`w-2.5 h-2.5 rounded-full ${timeframe === 'today' ? 'bg-emerald-400 animate-pulse' : 'bg-purple-400'}`} />
+          <span className="text-xs font-semibold text-textPrimary">
+            {timeframe === 'today' ? "Today's Operational Highlights (IST)" : "Platform Cumulative Overview"}
+          </span>
+          <span className="hidden md:inline text-xs text-textMuted">
+            {timeframe === 'today'
+              ? '— Focusing on transactions, deliveries, and orders placed today'
+              : '— All-time platform aggregates across all laundry stores'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setTimeframe('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              timeframe === 'all'
+                ? 'bg-purple-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.4)]'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            All Time
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeframe('today')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              timeframe === 'today'
+                ? 'bg-emerald-500 text-slate-950 font-bold shadow-[0_0_12px_rgba(16,185,129,0.35)]'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Today
+          </button>
+        </div>
+      </div>
+
       {/* ── 2. Stats Grid ───────────────────────────────────────────────────── */}
-      {/* Revenue · Orders · Customers · Laundries — from /api/super-admin/dashboard */}
-      <StatsGrid stats={stats} />
+      {/* Revenue · Orders · Customers · Laundries — with timeframe toggle support */}
+      <StatsGrid stats={stats} timeframe={timeframe} />
 
       {/* ── 3. Middle Row ───────────────────────────────────────────────────── */}
-      {/* Revenue (7 cols) | AI Insights (2 cols) | Live Activity (3 cols) */}
+      {/* Revenue (6 cols) | Pending Store Approvals (3 cols) | Store Health Distribution (3 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Revenue Overview — 7/12 cols
-            totalRevenue and totalCommission from /api/super-admin/dashboard stats.
-            historyData empty: backend does not expose time-series revenue history.
-            Renders polished empty state inside the chart area. */}
-        <div className="lg:col-span-7">
+        {/* Revenue Overview — 6/12 cols */}
+        <div className="lg:col-span-6">
           <RevenueOverview
             totalRevenue={stats.totalRevenue || 0}
             totalCommission={totalCommission}
@@ -104,19 +146,17 @@ export const Dashboard = () => {
           />
         </div>
 
-        {/* AI Business Insights — 2/12 cols
-            Backend has no AI insights endpoint.
-            Clearly-labeled coming-soon placeholder — no fabricated insights. */}
-        <div className="lg:col-span-2">
-          <BusinessInsights insights={[]} />
+        {/* Pending Approvals Queue — 3/12 cols */}
+        <div className="lg:col-span-3">
+          <PendingStoreApprovals
+            recentLaundries={dashData?.recentLaundries || []}
+            pendingCount={stats.pendingLaundries || 0}
+          />
         </div>
 
-        {/* Live Activity — 3/12 cols
-            Backend has no audit/activity events endpoint.
-            Socket.IO integration point — future phase.
-            Empty state with "Socket.IO integration ready" indicator. */}
+        {/* Store Network Health & Workforce — 3/12 cols */}
         <div className="lg:col-span-3">
-          <LiveActivity activities={[]} />
+          <PlatformOperationsDistribution stats={stats} />
         </div>
       </div>
 

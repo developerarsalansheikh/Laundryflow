@@ -45,6 +45,13 @@ export const API_ENDPOINTS = Object.freeze({
     REGISTER: '/laundry/register',
   },
 
+  // Users (Backend mount is /api/users)
+  USERS: {
+    PROFILE: '/users/profile',
+    PROFILE_IMAGE: '/users/profile-image',
+    MY_ORDERS: '/users/my-orders',
+  },
+
   // Address (Backend mount is /api/users/address)
   ADDRESSES: {
     BASE: '/users/address',

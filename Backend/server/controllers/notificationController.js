@@ -8,18 +8,19 @@ const Notification = require("../models/notificationModels");
 const getMyNotifications = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
-    const query = { user: req.user._id };
+    const isSuperAdmin = req.user.role === "superadmin";
+    const query = isSuperAdmin ? {} : { user: req.user._id };
 
     const notifications = await Notification.find(query)
+      .populate("user", "name role")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(Number(limit));
+      .limit(Number(limit))
+      .lean();
 
     const total = await Notification.countDocuments(query);
-    const unreadCount = await Notification.countDocuments({
-      user: req.user._id,
-      isRead: false,
-    });
+    const unreadQuery = isSuperAdmin ? { isRead: false } : { user: req.user._id, isRead: false };
+    const unreadCount = await Notification.countDocuments(unreadQuery);
 
     return res.status(200).json({
       success: true,
@@ -47,8 +48,11 @@ const getMyNotifications = async (req, res) => {
 // ─────────────────────────────────────────────
 const markAsRead = async (req, res) => {
   try {
+    const isSuperAdmin = req.user.role === "superadmin";
+    const query = isSuperAdmin ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
+
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
+      query,
       { isRead: true },
       { new: true }
     );
@@ -82,8 +86,11 @@ const markAsRead = async (req, res) => {
 // ─────────────────────────────────────────────
 const markAllAsRead = async (req, res) => {
   try {
+    const isSuperAdmin = req.user.role === "superadmin";
+    const query = isSuperAdmin ? { isRead: false } : { user: req.user._id, isRead: false };
+
     await Notification.updateMany(
-      { user: req.user._id, isRead: false },
+      query,
       { isRead: true }
     );
 
@@ -109,10 +116,10 @@ const markAllAsRead = async (req, res) => {
 // ─────────────────────────────────────────────
 const deleteNotification = async (req, res) => {
   try {
-    const notification = await Notification.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const isSuperAdmin = req.user.role === "superadmin";
+    const query = isSuperAdmin ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
+
+    const notification = await Notification.findOneAndDelete(query);
 
     if (!notification) {
       return res.status(404).json({
@@ -143,10 +150,10 @@ const deleteNotification = async (req, res) => {
 // ─────────────────────────────────────────────
 const getUnreadCount = async (req, res) => {
   try {
-    const unreadCount = await Notification.countDocuments({
-      user: req.user._id,
-      isRead: false,
-    });
+    const isSuperAdmin = req.user.role === "superadmin";
+    const query = isSuperAdmin ? { isRead: false } : { user: req.user._id, isRead: false };
+
+    const unreadCount = await Notification.countDocuments(query);
 
     return res.status(200).json({
       success: true,
