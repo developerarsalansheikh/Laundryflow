@@ -238,7 +238,7 @@ export const CustomerSettingsScreen = () => {
             </TouchableOpacity>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text variant="title" weight="bold" colorVariant="primary">
-                {isAuthenticated ? (activeUser?.name || 'LaundryFlow Customer') : 'Guest Customer'}
+                {isAuthenticated ? (activeUser?.name || 'LaundryWave Customer') : 'Guest Customer'}
               </Text>
               <Text variant="caption" colorVariant="secondary">
                 {isAuthenticated ? (activeUser?.phone ? `+91 ${activeUser.phone}` : (activeUser?.email || 'Logged in')) : 'Sign in to sync orders & addresses'}
@@ -407,7 +407,7 @@ export const CustomerSettingsScreen = () => {
             onPress={() =>
               Alert.alert(
                 'Help & Support',
-                'For customer support, reach our 24/7 helpline at support@laundryflow.in or call 1800-LAUNDRY.'
+                'For customer support, reach our 24/7 helpline at support@laundrywave.in or call 1800-LAUNDRY.'
               )
             }
           >
@@ -427,15 +427,15 @@ export const CustomerSettingsScreen = () => {
             style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
             onPress={() =>
               Alert.alert(
-                'About LaundryFlow',
-                'LaundryFlow v1.0.0\nA production-grade laundry & dry cleaning marketplace connecting customers with verified neighborhood laundry stores.'
+                'About LaundryWave',
+                'LaundryWave v1.0.0\nA production-grade laundry & dry cleaning marketplace connecting customers with verified neighborhood laundry stores.'
               )
             }
           >
             <Text style={styles.menuIcon}>ℹ️</Text>
             <View style={{ flex: 1 }}>
               <Text variant="bodyMedium" weight="semibold" colorVariant="primary">
-                About LaundryFlow
+                About LaundryWave
               </Text>
               <Text variant="caption" colorVariant="secondary">
                 Version 1.0.0

@@ -13,7 +13,7 @@ export const UserHeader = () => {
         <div>
           <h1 className="text-2xl font-bold text-textPrimary tracking-tight">Users</h1>
           <p className="text-xs sm:text-sm text-textSecondary mt-0.5 max-w-xl">
-            Manage users and access across the LaundryFlow platform.
+            Manage users and access across the LaundryWave platform.
           </p>
         </div>
       </div>

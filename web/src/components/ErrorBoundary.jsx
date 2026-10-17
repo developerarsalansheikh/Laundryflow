@@ -78,11 +78,32 @@ export class ErrorBoundary extends React.Component {
             <p style={{
               fontSize: '14px',
               color: '#64748B',
-              margin: '0 0 24px 0',
+              margin: '0 0 16px 0',
               lineHeight: '1.5'
             }}>
               The dashboard encountered an unexpected error. Your business operations and orders remain safe.
             </p>
+
+            {import.meta.env.DEV && this.state.error && (
+              <div style={{
+                textAlign: 'left',
+                backgroundColor: '#FEF2F2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '16px',
+                fontSize: '12px',
+                color: '#991B1B',
+                fontFamily: 'monospace',
+                overflowX: 'auto',
+                maxHeight: '160px'
+              }}>
+                <strong>{this.state.error?.toString()}</strong>
+                <pre style={{ margin: '8px 0 0 0', fontSize: '10px', whiteSpace: 'pre-wrap' }}>
+                  {this.state.error?.stack}
+                </pre>
+              </div>
+            )}
 
             <button
               onClick={this.handleReload}

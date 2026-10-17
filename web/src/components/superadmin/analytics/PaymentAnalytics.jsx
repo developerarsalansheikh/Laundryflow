@@ -18,12 +18,12 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#0f172a] border border-white/10 p-3 rounded-xl shadow-xl text-xs space-y-1">
-        <p className="font-semibold text-textPrimary">{data.name}</p>
-        <p className="text-textSecondary">
-          Transactions: <span className="font-bold text-textPrimary">{data.count}</span>
+      <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl shadow-xl text-xs space-y-1 text-white">
+        <p className="font-semibold text-slate-100">{data.name}</p>
+        <p className="text-slate-300">
+          Transactions: <span className="font-bold text-white">{data.count}</span>
         </p>
-        <p className="text-textSecondary">
+        <p className="text-slate-300">
           Total Value: <span className="font-bold text-emerald-400">{formatIndianCurrency(data.totalAmount)}</span>
         </p>
       </div>
@@ -44,19 +44,19 @@ export const PaymentAnalytics = ({ paymentMethodBreakdown = [] }) => {
   }));
 
   return (
-    <div className="glass-card rounded-2xl border border-white/8 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 space-y-4 shadow-2xs">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
-          <CreditCard className="w-4 h-4 text-cyan-400" />
+        <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+          <CreditCard className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-textPrimary">Payment Method Distribution</h3>
-          <p className="text-[11px] text-textMuted">Transaction volume split by payment gateway & mode</p>
+          <h3 className="text-sm font-bold text-slate-900">Payment Method Distribution</h3>
+          <p className="text-[11px] text-slate-500">Transaction volume split by payment gateway & mode</p>
         </div>
       </div>
 
       {chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-xs text-textMuted">
+        <div className="h-64 flex items-center justify-center text-xs text-slate-400">
           No payment method breakdown available.
         </div>
       ) : (

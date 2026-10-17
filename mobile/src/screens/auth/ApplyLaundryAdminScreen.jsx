@@ -118,7 +118,7 @@ export const ApplyLaundryAdminScreen = () => {
                 Application Submitted!
               </Text>
               <Text variant="body" colorVariant="secondary" align="center" style={{ marginTop: 10, lineHeight: 22 }}>
-                Thank you for applying to partner with LaundryFlow. Your application for{' '}
+                Thank you for applying to partner with LaundryWave. Your application for{' '}
                 <Text weight="bold" colorVariant="primary">
                   {storeName}
                 </Text>{' '}
@@ -153,7 +153,7 @@ export const ApplyLaundryAdminScreen = () => {
             Partner Onboarding
           </Text>
           <Text variant="subtitle" colorVariant="secondary" align="center" style={{ marginTop: spacing.xs }}>
-            Apply to register your laundry business on LaundryFlow
+            Apply to register your laundry business on LaundryWave
           </Text>
         </View>
 

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { useOrders, useOrderStats } from '../../hooks/useOrders';
@@ -39,12 +40,47 @@ const pageVariants = {
  */
 export const Orders = () => {
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlStatus = searchParams.get('status') || '';
+  const urlOrderId = searchParams.get('orderId') || '';
+
+  const [filters, setFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    status: urlStatus,
+  }));
   const [page, setPage] = useState(1);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [debouncedFilters, setDebouncedFilters] = useState(DEFAULT_FILTERS);
+  const [selectedOrder, setSelectedOrder] = useState(urlOrderId ? { _id: urlOrderId } : null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(Boolean(urlOrderId));
+  const [debouncedFilters, setDebouncedFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    status: urlStatus,
+  }));
   const debounceTimer = useRef(null);
+
+  // Sync filters if URL search params change (e.g. navbar pill click)
+  useEffect(() => {
+    const statusParam = searchParams.get('status') || '';
+    setFilters((prev) => {
+      if (prev.status !== statusParam) {
+        return { ...prev, status: statusParam };
+      }
+      return prev;
+    });
+    setDebouncedFilters((prev) => {
+      if (prev.status !== statusParam) {
+        return { ...prev, status: statusParam };
+      }
+      return prev;
+    });
+    setPage(1);
+
+    const orderIdParam = searchParams.get('orderId');
+    if (orderIdParam) {
+      setSelectedOrder({ _id: orderIdParam });
+      setIsDrawerOpen(true);
+    }
+  }, [searchParams]);
 
   // Debounce search input
   useEffect(() => {
@@ -90,12 +126,18 @@ export const Orders = () => {
 
   const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);
-  }, []);
+    // Reflect status in URL
+    const nextParams = {};
+    if (newFilters.status) nextParams.status = newFilters.status;
+    setSearchParams(nextParams, { replace: true });
+  }, [setSearchParams]);
 
   const handleClearFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
+    setDebouncedFilters(DEFAULT_FILTERS);
+    setSearchParams({}, { replace: true });
     setPage(1);
-  }, []);
+  }, [setSearchParams]);
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);

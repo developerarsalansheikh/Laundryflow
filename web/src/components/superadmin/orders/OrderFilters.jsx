@@ -43,12 +43,12 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="glass-card rounded-2xl border border-white/8 p-3 sm:p-4"
+      className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-4"
     >
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
             ref={searchRef}
             type="text"
@@ -56,12 +56,12 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
             value={filters.search || ''}
             onChange={handleSearch}
             placeholder="Search by order ID, customer, laundry..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/40 transition-all"
+            className="w-full bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl pl-9.5 pr-8 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
           />
           {filters.search && (
             <button
               onClick={() => onChange({ ...filters, search: '' })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-textMuted hover:text-textPrimary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -70,17 +70,17 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
 
         {/* Order Status */}
         <div className="flex items-center gap-2">
-          <label htmlFor="order-status-filter" className="text-xs text-textMuted whitespace-nowrap hidden sm:block">
+          <label htmlFor="order-status-filter" className="text-xs font-semibold text-slate-500 whitespace-nowrap hidden sm:block">
             Status
           </label>
           <select
             id="order-status-filter"
             value={filters.status || ''}
             onChange={handleStatus}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all min-w-[140px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all min-w-[140px] shadow-2xs cursor-pointer"
           >
             {ORDER_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-[#0f172a]">
+              <option key={opt.value} value={opt.value} className="bg-white text-slate-900">
                 {opt.label}
               </option>
             ))}
@@ -89,17 +89,17 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
 
         {/* Payment Status */}
         <div className="flex items-center gap-2">
-          <label htmlFor="payment-status-filter" className="text-xs text-textMuted whitespace-nowrap hidden sm:block">
+          <label htmlFor="payment-status-filter" className="text-xs font-semibold text-slate-500 whitespace-nowrap hidden sm:block">
             Payment
           </label>
           <select
             id="payment-status-filter"
             value={filters.paymentStatus || ''}
             onChange={handlePaymentStatus}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all min-w-[130px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all min-w-[130px] shadow-2xs cursor-pointer"
           >
             {PAYMENT_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-[#0f172a]">
+              <option key={opt.value} value={opt.value} className="bg-white text-slate-900">
                 {opt.label}
               </option>
             ))}
@@ -110,10 +110,10 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
         <button
           type="button"
           onClick={() => onChange({ ...filters, today: filters.today === 'true' ? '' : 'true' })}
-          className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap cursor-pointer shadow-2xs ${
             filters.today === 'true'
-              ? 'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.35)]'
-              : 'bg-white/5 border-white/10 text-textMuted hover:text-textPrimary hover:bg-white/10'
+              ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-500/20'
+              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
           title="Filter today's orders"
         >
@@ -127,7 +127,7 @@ export const OrderFilters = ({ filters, onChange, onClear, hasActiveFilters }) =
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={onClear}
-            className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/8 hover:bg-rose-500/15 border border-rose-500/20 rounded-xl transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200 rounded-xl transition-all whitespace-nowrap cursor-pointer shadow-2xs"
           >
             <X className="w-3.5 h-3.5" />
             Clear Filters

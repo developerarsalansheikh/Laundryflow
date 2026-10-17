@@ -76,25 +76,25 @@ export const MessagesMenu = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-80 sm:w-96 z-50 glass-dropdown overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-80 sm:w-96 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
             role="dialog"
             aria-label="Messages & Support Inquiries"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-borderSubtle bg-cardBg/60">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/60">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-textPrimary">Helpdesk & Inquiries</h3>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Helpdesk & Inquiries</h3>
                 {openCount > 0 ? (
-                  <span className="badge-warning text-[10px] px-1.5 py-0.5">{openCount} open</span>
+                  <span className="bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[10px] px-2 py-0.5 rounded-full">{openCount} open</span>
                 ) : (
-                  <span className="text-[10px] text-textMuted font-medium">All answered</span>
+                  <span className="text-[10px] text-slate-500 font-medium">All answered</span>
                 )}
               </div>
 
               <button
                 type="button"
                 onClick={handleTicketClick}
-                className="text-xs font-semibold text-primaryPurple hover:text-purpleLight flex items-center gap-1 transition-colors"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
               >
                 View all
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -102,17 +102,17 @@ export const MessagesMenu = () => {
             </div>
 
             {/* Messages / Tickets list */}
-            <div className="divide-y divide-borderSubtle max-h-80 overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
               {isLoading ? (
-                <div className="p-8 text-center text-xs text-textMuted flex flex-col items-center gap-2">
-                  <div className="w-5 h-5 rounded-full border-2 border-primaryPurple/30 border-t-primaryPurple animate-spin" />
+                <div className="p-8 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
+                  <div className="w-5 h-5 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
                   Loading messages...
                 </div>
               ) : tickets.length === 0 ? (
-                <div className="p-8 text-center text-xs text-textMuted flex flex-col items-center gap-2">
-                  <HelpCircle className="w-8 h-8 text-textMuted/40 mb-1" />
-                  <p className="font-medium text-textPrimary">No active messages</p>
-                  <p className="text-[11px]">Helpdesk tickets and inquiries from laundries will appear here.</p>
+                <div className="p-8 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
+                  <HelpCircle className="w-8 h-8 text-slate-300 mb-1" />
+                  <p className="font-semibold text-slate-800">No active messages</p>
+                  <p className="text-[11px] text-slate-500">Helpdesk tickets and inquiries will appear here.</p>
                 </div>
               ) : (
                 tickets.map((t) => {
@@ -124,17 +124,17 @@ export const MessagesMenu = () => {
                     <div
                       key={t._id}
                       onClick={handleTicketClick}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors duration-150 cursor-pointer"
+                      className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-150 cursor-pointer"
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mt-0.5 border border-purple-500/20">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mt-0.5 border border-blue-100">
                         {isStore ? <Store className="w-4 h-4" /> : <User className="w-4 h-4" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <p className="text-xs font-semibold text-textPrimary truncate">
+                          <p className="text-xs font-semibold text-slate-800 truncate">
                             {t.subject}
                           </p>
-                          <span className="text-[10px] text-textMuted whitespace-nowrap">
+                          <span className="text-[10px] text-slate-400 whitespace-nowrap">
                             {formatTimeAgo(t.createdAt)}
                           </span>
                         </div>

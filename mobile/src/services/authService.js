@@ -14,7 +14,7 @@ import { normalizePhoneNumber } from '../utils/phone';
  * Completely wipe all query caches, persisted cart, favorites, and tracking
  * to ensure strict tenant and user isolation across account switches.
  */
-export const clearUserSessionCaches = () => {
+export const clearUserSessionCaches = ({ clearCart = false } = {}) => {
   try {
     delete apiClient.defaults.headers.common.Authorization;
   } catch {}
@@ -24,9 +24,11 @@ export const clearUserSessionCaches = () => {
   try {
     OfflineCache.clearAll();
   } catch {}
-  try {
-    useCartStore.getState().clearCart();
-  } catch {}
+  if (clearCart) {
+    try {
+      useCartStore.getState().clearCart();
+    } catch {}
+  }
   try {
     useFavoriteStore.getState().clearFavorites();
   } catch {}
@@ -238,7 +240,7 @@ export const authService = {
       // Ignore server-side logout failures and clear client state
     } finally {
       useAuthStore.getState().logout();
-      clearUserSessionCaches();
+      clearUserSessionCaches({ clearCart: true });
       try {
         socketService.disconnect();
       } catch {}

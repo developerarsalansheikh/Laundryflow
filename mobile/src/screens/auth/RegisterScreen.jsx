@@ -77,7 +77,7 @@ export const RegisterScreen = () => {
             Create Account
           </Text>
           <Text variant="subtitle" colorVariant="secondary" align="center" style={{ marginTop: spacing.xs }}>
-            Join LaundryFlow for quick, reliable laundry pickups
+            Join LaundryWave for quick, reliable laundry pickups
           </Text>
         </View>
 

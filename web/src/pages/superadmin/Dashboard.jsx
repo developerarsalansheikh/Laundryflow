@@ -204,7 +204,7 @@ export const Dashboard = () => {
         transition={{ duration: 0.5, delay: 0.6 }}
         className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-white/8 text-xs text-textMuted gap-2"
       >
-        <p>&copy; {new Date().getFullYear()} LaundryFlow Platform Inc. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} LaundryWave Platform Inc. All rights reserved.</p>
         <p className="flex items-center gap-1.5">
           <span>Super Admin Portal</span>
           <span className="w-1 h-1 rounded-full bg-white/20" aria-hidden="true" />

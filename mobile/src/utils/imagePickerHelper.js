@@ -37,7 +37,7 @@ export const requestCameraPermission = async () => {
       {
         title: 'Camera Permission Required',
         message:
-          'LaundryFlow needs camera access to take the pickup photo. ' +
+          'LaundryWave needs camera access to take the pickup photo. ' +
           'This photo is required to confirm collection from the customer.',
         buttonPositive: 'Allow',
         buttonNegative: 'Deny',
@@ -68,7 +68,7 @@ export const captureImageFromCamera = async (options = {}) => {
   if (permissionStatus === 'never_ask_again') {
     Alert.alert(
       'Camera Permission Blocked',
-      'Camera access has been permanently denied. Please open Settings and enable Camera permission for LaundryFlow.',
+      'Camera access has been permanently denied. Please open Settings and enable Camera permission for LaundryWave.',
       [
         { text: 'Open Settings', onPress: openAppSettings },
         { text: 'Cancel', style: 'cancel' },

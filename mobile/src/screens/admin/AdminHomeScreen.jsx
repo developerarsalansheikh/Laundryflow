@@ -141,7 +141,7 @@ export const AdminHomeScreen = () => {
               {user?.name || 'Store Owner'}
             </Text>
             <Text variant="caption" colorVariant="secondary">
-              {user?.email || 'admin@laundryflow.com'}
+              {user?.email || 'admin@laundrywave.com'}
             </Text>
           </View>
 
@@ -155,6 +155,109 @@ export const AdminHomeScreen = () => {
         </View>
 
         <View style={styles.body}>
+          {/* ── THREE OPERATIONAL CARDS DIRECTLY BELOW NAVBAR ── */}
+          <View style={styles.primaryOpsContainer}>
+            <Text variant="caption" weight="bold" colorVariant="muted" style={styles.primaryOpsHeaderLabel}>
+              OPERATIONAL ACTIONS
+            </Text>
+            <View style={styles.primaryOpsRow}>
+              {/* Card A: Today's Pickups / Collections */}
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[
+                  styles.primaryOpCard,
+                  { backgroundColor: colors.surface, borderColor: '#38BDF8' },
+                ]}
+                onPress={() =>
+                  navigation.navigate('Orders', {
+                    status: 'pending',
+                    todayOnly: true,
+                    timestamp: Date.now(),
+                  })
+                }
+              >
+                <View style={styles.primaryOpCardTop}>
+                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#E0F2FE' }]}>
+                    <Text style={styles.primaryOpIcon}>🧺</Text>
+                  </View>
+                  <Badge label="PICKUP" variant="info" size="xs" />
+                </View>
+                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
+                  {todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)}
+                </Text>
+                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
+                  Today's Pickups
+                </Text>
+                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
+                  Collections
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card B: Today's Deliveries */}
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[
+                  styles.primaryOpCard,
+                  { backgroundColor: colors.surface, borderColor: '#34D399' },
+                ]}
+                onPress={() =>
+                  navigation.navigate('Orders', {
+                    status: 'out_for_delivery',
+                    todayOnly: true,
+                    timestamp: Date.now(),
+                  })
+                }
+              >
+                <View style={styles.primaryOpCardTop}>
+                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#D1FAE5' }]}>
+                    <Text style={styles.primaryOpIcon}>🚚</Text>
+                  </View>
+                  <Badge label="DELIVERY" variant="success" size="xs" />
+                </View>
+                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
+                  {todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)}
+                </Text>
+                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
+                  Today's Deliveries
+                </Text>
+                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
+                  Out for drop-off
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card C: Processing */}
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[
+                  styles.primaryOpCard,
+                  { backgroundColor: colors.surface, borderColor: '#818CF8' },
+                ]}
+                onPress={() =>
+                  navigation.navigate('Orders', {
+                    status: 'in_progress',
+                    timestamp: Date.now(),
+                  })
+                }
+              >
+                <View style={styles.primaryOpCardTop}>
+                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#EEF2FF' }]}>
+                    <Text style={styles.primaryOpIcon}>⚙️</Text>
+                  </View>
+                  <Badge label="WASH" variant="info" size="xs" />
+                </View>
+                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
+                  {stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0}
+                </Text>
+                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
+                  Processing
+                </Text>
+                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
+                  In wash / dry
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Attention Banner (if pending orders exist) */}
           {attentionOrdersCount > 0 && (
             <Card
@@ -1014,6 +1117,56 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 12,
     backgroundColor: '#0F172A',
+  },
+  primaryOpsContainer: {
+    marginBottom: 16,
+  },
+  primaryOpsHeaderLabel: {
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    fontSize: 11,
+  },
+  primaryOpsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'space-between',
+  },
+  primaryOpCard: {
+    flex: 1,
+    minWidth: 0,
+    padding: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  primaryOpCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  primaryOpIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryOpIcon: {
+    fontSize: 14,
+  },
+  primaryOpCount: {
+    marginVertical: 4,
+    fontSize: 20,
+    lineHeight: 24,
+  },
+  primaryOpSub: {
+    marginTop: 1,
+    fontSize: 10,
   },
 });
 

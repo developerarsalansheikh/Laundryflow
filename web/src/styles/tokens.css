@@ -3,54 +3,54 @@
  * Centralized CSS custom properties for dark navy SaaS visual language.
  */
 :root {
-  /* Primary & Secondary Backgrounds */
-  --lf-bg-primary: #070A17;
-  --lf-bg-secondary: #0A0F22;
-  --lf-bg-sidebar: #080C1D;
+  /* Canvas Backgrounds (Light Theme) */
+  --lf-bg-primary: #F8FAFC;
+  --lf-bg-secondary: #F1F5F9;
+  --lf-bg-sidebar: #090D1A;
 
-  /* Glass Surface Tokens */
-  --lf-card: rgba(255, 255, 255, 0.045);
-  --lf-card-hover: rgba(255, 255, 255, 0.065);
-  --lf-panel: rgba(255, 255, 255, 0.03);
+  /* Card and Surface Tokens (Light Theme) */
+  --lf-card: #FFFFFF;
+  --lf-card-hover: #F8FAFC;
+  --lf-panel: #F8FAFC;
 
   /* Border Tokens */
-  --lf-border: rgba(255, 255, 255, 0.08);
-  --lf-border-strong: rgba(255, 255, 255, 0.12);
-  --lf-border-purple: rgba(124, 58, 237, 0.3);
+  --lf-border: #E2E8F0;
+  --lf-border-strong: #CBD5E1;
+  --lf-border-purple: rgba(37, 99, 235, 0.25);
 
   /* Brand Palette Tokens */
-  --lf-purple: #7C3AED;
-  --lf-purple-light: #8B5CF6;
-  --lf-indigo: #6366F1;
+  --lf-purple: #2563EB;
+  --lf-purple-light: #3B82F6;
+  --lf-indigo: #4F46E5;
   --lf-blue: #2563EB;
-  --lf-cyan: #06B6D4;
+  --lf-cyan: #0284C7;
 
   /* Status Tokens */
-  --lf-success: #22C55E;
-  --lf-warning: #F59E0B;
-  --lf-danger: #EF4444;
-  --lf-info: #3B82F6;
+  --lf-success: #16A34A;
+  --lf-warning: #D97706;
+  --lf-danger: #DC2626;
+  --lf-info: #2563EB;
 
-  /* Typography Colors */
-  --lf-text-primary: #F8FAFC;
-  --lf-text-secondary: #94A3B8;
+  /* Typography Colors (Crisp Slate for Light Canvas) */
+  --lf-text-primary: #0F172A;
+  --lf-text-secondary: #475569;
   --lf-text-muted: #64748B;
 
   /* Border Radius Scale */
   --lf-radius-sm: 6px;
   --lf-radius-md: 10px;
-  --lf-radius-lg: 16px;
-  --lf-radius-xl: 20px;
-  --lf-radius-2xl: 24px;
+  --lf-radius-lg: 14px;
+  --lf-radius-xl: 18px;
+  --lf-radius-2xl: 22px;
   --lf-radius-full: 9999px;
 
-  /* Shadow Scale */
-  --lf-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --lf-shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --lf-shadow-card-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
-  --lf-shadow-floating: 0 20px 50px 0 rgba(0, 0, 0, 0.55);
-  --lf-shadow-purple-glow: 0 0 25px -5px rgba(124, 58, 237, 0.4);
-  --lf-shadow-blue-glow: 0 0 25px -5px rgba(37, 99, 235, 0.4);
+  /* Shadow Scale (Refined Modern Elevation) */
+  --lf-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --lf-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --lf-shadow-card-hover: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+  --lf-shadow-floating: 0 16px 36px -4px rgba(15, 23, 42, 0.12), 0 6px 14px -2px rgba(15, 23, 42, 0.06);
+  --lf-shadow-purple-glow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
+  --lf-shadow-blue-glow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
 
   /* Transitions */
   --lf-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);

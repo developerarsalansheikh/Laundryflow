@@ -168,12 +168,12 @@ export const Login = () => {
             {/* Logo */}
             <img
               src="/logo.png"
-              alt="LaundryFlow"
+              alt="LaundryWave"
               className="inline-block w-16 h-16 rounded-2xl object-cover shadow-glowPurple border border-white/10 mb-5"
             />
 
             <h1 className="text-2xl font-bold text-textPrimary tracking-tight">
-              LaundryFlow
+              LaundryWave
             </h1>
             <div className="flex items-center justify-center gap-1.5 mt-1.5 mb-3">
               <Zap className="w-3 h-3 text-indigo-400" />
@@ -286,7 +286,7 @@ export const Login = () => {
             transition={{ delay: 0.4 }}
             className="text-center text-xs text-textMuted mt-6"
           >
-            LaundryFlow &copy; {new Date().getFullYear()} · All rights reserved
+            LaundryWave &copy; {new Date().getFullYear()} · All rights reserved
           </motion.p>
         </div>
       </div>

@@ -134,7 +134,7 @@ export const AdminDashboard = () => {
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
-            alt="LaundryFlow"
+            alt="LaundryWave"
             className="w-11 h-11 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
           />
           <div>

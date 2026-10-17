@@ -18,18 +18,18 @@ const formatDate = (d) =>
 
 const Row = ({ label, value, mono = false }) =>
   value ? (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-white/5 last:border-0">
-      <span className="text-[11px] text-textMuted font-medium whitespace-nowrap">{label}</span>
-      <span className={`text-xs text-textPrimary text-right ${mono ? 'font-mono' : 'font-medium'}`}>{value}</span>
+    <div className="flex items-start justify-between gap-4 py-2 border-b border-slate-100 last:border-0">
+      <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">{label}</span>
+      <span className={`text-xs text-slate-900 text-right ${mono ? 'font-mono' : 'font-medium'}`}>{value}</span>
     </div>
   ) : null;
 
 const SectionTitle = ({ icon: Icon, label, iconClass }) => (
-  <div className="flex items-center gap-2 mb-3 mt-5 first:mt-0">
+  <div className="flex items-center gap-2 mb-2.5 mt-5 first:mt-0">
     <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${iconClass}`}>
       <Icon className="w-3.5 h-3.5" />
     </div>
-    <span className="text-[11px] font-bold text-textMuted uppercase tracking-wider">{label}</span>
+    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
   </div>
 );
 
@@ -99,7 +99,7 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50"
             aria-hidden="true"
           />
 
@@ -111,22 +111,22 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-[#0d1526] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-white border-l border-slate-200 shadow-2xl z-50 flex flex-col"
             role="dialog"
             aria-modal="true"
             aria-label="Order Details"
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4 border-b border-white/8 flex-shrink-0">
+            <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4 border-b border-slate-200 bg-slate-50/70 flex-shrink-0">
               <div>
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Order Details</p>
-                <h2 className="text-lg font-bold text-textPrimary font-mono">{shortId}</h2>
-                <p className="text-xs text-textMuted mt-0.5">{formatDate(createdDate)}</p>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-0.5">Order Details</p>
+                <h2 className="text-lg font-bold text-slate-900 font-mono">{shortId}</h2>
+                <p className="text-xs text-slate-500 mt-0.5">{formatDate(createdDate)}</p>
               </div>
               <button
                 onClick={onClose}
                 id="order-drawer-close"
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center text-textMuted hover:text-textPrimary transition-all flex-shrink-0 mt-0.5"
+                className="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all flex-shrink-0 mt-0.5 shadow-2xs"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -136,8 +136,8 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
               {isLoading ? (
                 <div className="py-12 flex flex-col items-center justify-center gap-3">
-                  <div className="w-8 h-8 rounded-full border-2 border-indigo-500/30 border-t-indigo-400 animate-spin" />
-                  <p className="text-xs text-textMuted">Loading order details...</p>
+                  <div className="w-8 h-8 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
+                  <p className="text-xs text-slate-500 font-medium">Loading order details...</p>
                 </div>
               ) : (
                 <>
@@ -146,24 +146,24 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
                     <OrderStatusBadge status={orderStatus} />
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                       isPaid
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
                       {paymentStatus}
                     </span>
                   </div>
 
                   {/* ── Customer Info ─── */}
-                  <SectionTitle icon={User} label="Customer" iconClass="bg-indigo-500/15 text-indigo-400" />
-                  <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                  <SectionTitle icon={User} label="Customer" iconClass="bg-blue-50 text-blue-600 border border-blue-100" />
+                  <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 px-4 py-1 divide-y divide-slate-100">
                     <Row label="Name" value={customerName} />
                     {customerPhone && <Row label="Phone" value={customerPhone} />}
                     {customerEmail && <Row label="Email" value={customerEmail} />}
                   </div>
 
                   {/* ── Laundry Info ─── */}
-                  <SectionTitle icon={Store} label="Laundry" iconClass="bg-purple-500/15 text-purple-400" />
-                  <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                  <SectionTitle icon={Store} label="Laundry" iconClass="bg-indigo-50 text-indigo-600 border border-indigo-100" />
+                  <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 px-4 py-1 divide-y divide-slate-100">
                     <Row label="Name" value={laundryName} />
                     {laundryCity && <Row label="City" value={laundryCity} />}
                     {laundryAddress && <Row label="Address" value={laundryAddress} />}
@@ -172,20 +172,20 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
                   {/* ── Services Breakdown ─── */}
                   {servicesList.length > 0 && (
                     <>
-                      <SectionTitle icon={Layers} label="Services / Items" iconClass="bg-blue-500/15 text-blue-400" />
-                      <div className="glass-card rounded-xl border border-white/8 p-3 space-y-2">
+                      <SectionTitle icon={Layers} label="Services / Items" iconClass="bg-sky-50 text-sky-600 border border-sky-100" />
+                      <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 p-3 space-y-2">
                         {servicesList.map((item, idx) => {
                           const sName = item.service?.name || item.name || `Service ${idx + 1}`;
                           const qty = item.quantity || 1;
                           const price = item.price || item.service?.price || 0;
                           const lineTotal = item.lineTotal || qty * price;
                           return (
-                            <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-white/4 last:border-0">
+                            <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-slate-200/60 last:border-0">
                               <div>
-                                <p className="font-medium text-textPrimary">{sName}</p>
-                                <p className="text-[10px] text-textMuted">{qty} × {formatIndianCurrency(price)}</p>
+                                <p className="font-semibold text-slate-900">{sName}</p>
+                                <p className="text-[10px] text-slate-500">{qty} × {formatIndianCurrency(price)}</p>
                               </div>
-                              <span className="font-semibold text-textPrimary">{formatIndianCurrency(lineTotal)}</span>
+                              <span className="font-bold text-slate-900">{formatIndianCurrency(lineTotal)}</span>
                             </div>
                           );
                         })}
@@ -194,8 +194,8 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
                   )}
 
                   {/* ── Payment & Earnings Split ─── */}
-                  <SectionTitle icon={CreditCard} label="Financial Breakdown" iconClass="bg-emerald-500/15 text-emerald-400" />
-                  <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                  <SectionTitle icon={CreditCard} label="Financial Breakdown" iconClass="bg-emerald-50 text-emerald-600 border border-emerald-100" />
+                  <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 px-4 py-1 divide-y divide-slate-100">
                     {order?.subtotal > 0 && <Row label="Services Subtotal" value={formatIndianCurrency(order.subtotal)} />}
                     {order?.deliveryFee !== undefined && <Row label="Delivery Fee" value={order.deliveryFee === 0 ? "FREE" : formatIndianCurrency(order.deliveryFee)} />}
                     {order?.gst > 0 && <Row label="GST (5%)" value={formatIndianCurrency(order.gst)} />}
@@ -209,25 +209,25 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
                   {/* ── Delivery Partner Info ─── */}
                   {deliveryPartnerName && (
                     <>
-                      <SectionTitle icon={Truck} label="Delivery Partner" iconClass="bg-amber-500/15 text-amber-400" />
-                      <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                      <SectionTitle icon={Truck} label="Delivery Partner" iconClass="bg-amber-50 text-amber-600 border border-amber-100" />
+                      <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 px-4 py-1 divide-y divide-slate-100">
                         <Row label="Assigned Partner" value={deliveryPartnerName} />
                       </div>
                     </>
                   )}
 
                   {/* ── Timestamps ─── */}
-                  <SectionTitle icon={Calendar} label="Timestamps" iconClass="bg-indigo-500/15 text-indigo-400" />
-                  <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                  <SectionTitle icon={Calendar} label="Timestamps" iconClass="bg-violet-50 text-violet-600 border border-violet-100" />
+                  <div className="bg-slate-50/70 rounded-xl border border-slate-200/80 px-4 py-1 divide-y divide-slate-100">
                     <Row label="Placed At" value={formatDate(order?.createdAt)} />
                     {order?.estimatedDelivery && <Row label="Est. Delivery" value={formatDate(order.estimatedDelivery)} />}
                     {order?.deliveredAt && <Row label="Delivered At" value={formatDate(order.deliveredAt)} />}
                   </div>
 
                   {/* ── Note ─── */}
-                  <div className="glass-card rounded-xl border border-white/8 px-4 py-3 flex items-start gap-3 mt-2">
-                    <RefreshCw className="w-4 h-4 text-textMuted flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-textMuted leading-relaxed">
+                  <div className="bg-blue-50/60 rounded-xl border border-blue-200/60 px-4 py-3 flex items-start gap-3 mt-3">
+                    <RefreshCw className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-blue-900 leading-relaxed">
                       Order status transitions and delivery partner assignments are handled directly by the Laundry Admin.
                     </p>
                   </div>
@@ -236,10 +236,10 @@ export const OrderDetailsDrawer = ({ orderId, order: initialOrder, isOpen, onClo
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-4 border-t border-white/8 flex-shrink-0">
+            <div className="px-5 py-4 border-t border-slate-200 bg-slate-50/60 flex-shrink-0">
               <button
                 onClick={onClose}
-                className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-textSecondary hover:text-textPrimary transition-all"
+                className="w-full py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-sm font-semibold text-slate-700 hover:text-slate-900 shadow-2xs transition-all"
               >
                 Close
               </button>

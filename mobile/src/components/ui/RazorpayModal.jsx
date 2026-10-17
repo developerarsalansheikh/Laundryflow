@@ -43,7 +43,7 @@ export const RazorpayModal = ({
     orderId,
     razorpayOrderId = `order_${orderId || 'test'}`,
     amountInRupees = 0,
-    laundryName = 'LaundryFlow Store',
+    laundryName = 'LaundryWave Store',
   } = orderDetails;
 
   const handlePaySuccess = () => {

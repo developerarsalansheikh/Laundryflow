@@ -8,7 +8,7 @@ export const NotFound = () => {
       className="glass-card p-8 rounded-2xl border border-borderSubtle text-center max-w-md w-full mx-auto my-auto"
     >
       <h1 className="text-3xl font-extrabold text-textPrimary mb-1">404 - Page Not Found</h1>
-      <p className="text-sm text-textSecondary">LaundryFlow Super Admin</p>
+      <p className="text-sm text-textSecondary">LaundryWave Super Admin</p>
     </motion.div>
   );
 };

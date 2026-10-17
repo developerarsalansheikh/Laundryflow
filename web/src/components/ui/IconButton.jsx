@@ -9,14 +9,14 @@ export const IconButton = React.forwardRef(
       <button
         ref={ref}
         type="button"
-        className={`relative inline-flex items-center justify-center p-2 rounded-xl text-textSecondary hover:text-textPrimary bg-cardBg hover:bg-cardHover border border-borderSubtle hover:border-borderStrong transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primaryPurple focus-visible:ring-offset-2 focus-visible:ring-offset-bgPrimary active:scale-95 cursor-pointer ${
-          active ? 'bg-primaryPurple/15 text-white border-primaryPurple/40' : ''
+        className={`relative inline-flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 active:scale-95 cursor-pointer ${
+          active ? 'bg-blue-50 text-blue-600 border-blue-200' : ''
         } ${className}`}
         {...props}
       >
         {children}
-        {badge && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primaryPurple text-[10px] font-bold text-white shadow-glowPurple">
+        {badge != null && (
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
             {badge}
           </span>
         )}

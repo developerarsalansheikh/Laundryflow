@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import {
   Settings2,
   User,
@@ -43,16 +44,16 @@ const TAB_VARIANTS = {
 
 // ── Field Row ──────────────────────────────────────────────────
 const FieldRow = ({ label, value, children }) => (
-  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-4 border-b border-white/6 last:border-0">
-    <span className="text-xs font-semibold text-textMuted w-40 shrink-0">{label}</span>
-    {children || <span className="text-sm text-textPrimary font-medium">{value || '—'}</span>}
+  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-3.5 border-b border-slate-100 last:border-0">
+    <span className="text-xs font-semibold text-slate-500 w-40 shrink-0">{label}</span>
+    {children || <span className="text-sm text-slate-900 font-medium">{value || '—'}</span>}
   </div>
 );
 
 // ── Input Component ────────────────────────────────────────────
 const FormInput = ({ id, label, value, onChange, type = 'text', placeholder, disabled, rightIcon }) => (
   <div className="flex flex-col gap-1.5">
-    <label htmlFor={id} className="text-xs font-semibold text-textMuted">
+    <label htmlFor={id} className="text-xs font-semibold text-slate-700">
       {label}
     </label>
     <div className="relative">
@@ -63,7 +64,7 @@ const FormInput = ({ id, label, value, onChange, type = 'text', placeholder, dis
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full px-3 py-2.5 text-sm text-textPrimary bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all placeholder:text-textMuted disabled:opacity-50 disabled:cursor-not-allowed pr-10"
+        className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs pr-10"
       />
       {rightIcon && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">{rightIcon}</div>
@@ -74,20 +75,20 @@ const FormInput = ({ id, label, value, onChange, type = 'text', placeholder, dis
 
 // ── Toggle Row ─────────────────────────────────────────────────
 const ToggleRow = ({ label, description, value, onChange, disabled }) => (
-  <div className="flex items-center justify-between gap-4 py-3.5 border-b border-white/6 last:border-0">
+  <div className="flex items-center justify-between gap-4 py-4 border-b border-slate-100 last:border-0">
     <div>
-      <p className="text-sm font-semibold text-textPrimary">{label}</p>
-      {description && <p className="text-xs text-textMuted mt-0.5">{description}</p>}
+      <p className="text-sm font-semibold text-slate-900">{label}</p>
+      {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
     </div>
     <button
       onClick={() => !disabled && onChange(!value)}
       disabled={disabled}
-      className="shrink-0 disabled:opacity-50 transition-all"
+      className="shrink-0 disabled:opacity-50 transition-all cursor-pointer"
     >
       {value ? (
-        <ToggleRight className="w-9 h-9 text-violet-400" />
+        <ToggleRight className="w-9 h-9 text-blue-600" />
       ) : (
-        <ToggleLeft className="w-9 h-9 text-textMuted" />
+        <ToggleLeft className="w-9 h-9 text-slate-300" />
       )}
     </button>
   </div>
@@ -95,34 +96,36 @@ const ToggleRow = ({ label, description, value, onChange, disabled }) => (
 
 // ── Profile Tab ────────────────────────────────────────────────
 const ProfileTab = ({ user }) => (
-  <motion.div variants={TAB_VARIANTS} initial="hidden" animate="visible" className="space-y-6">
-    {/* Avatar + name */}
-    <div className="flex items-center gap-4 p-5 glass-card rounded-2xl border border-white/8">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/40 to-indigo-600/40 border border-violet-500/20 flex items-center justify-center text-xl font-bold text-violet-300">
+  <motion.div variants={TAB_VARIANTS} initial="hidden" animate="visible" className="space-y-5">
+    {/* Avatar + name card */}
+    <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+      <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-xs">
         {user?.name?.charAt(0)?.toUpperCase() || 'S'}
       </div>
       <div>
-        <p className="text-base font-bold text-textPrimary">{user?.name || '—'}</p>
-        <p className="text-xs text-violet-400 font-semibold capitalize mt-0.5">{user?.role}</p>
+        <p className="text-base font-bold text-slate-900">{user?.name || 'Super Admin'}</p>
+        <span className="inline-block mt-0.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full capitalize">
+          {user?.role || 'Super Admin'}
+        </span>
       </div>
     </div>
 
     {/* Profile fields */}
-    <div className="glass-card rounded-2xl border border-white/8 px-5">
-      <FieldRow label="Full Name" value={user?.name} />
-      <FieldRow label="Email Address" value={user?.email} />
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs px-5 py-2">
+      <FieldRow label="Full Name" value={user?.name || 'Super Admin'} />
+      <FieldRow label="Email Address" value={user?.email || 'admin@laundryflow.in'} />
       <FieldRow label="Phone Number" value={user?.phone || '—'} />
-      <FieldRow label="Role" value={user?.role?.toUpperCase()} />
+      <FieldRow label="Role" value={(user?.role || 'superadmin').toUpperCase()} />
       <FieldRow label="Account ID">
-        <span className="text-xs font-mono text-textMuted">{user?._id || '—'}</span>
+        <span className="text-xs font-mono text-slate-500">{user?._id || 'USR-SA-PRIMARY'}</span>
       </FieldRow>
     </div>
 
-    <div className="glass-card rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4">
-      <p className="text-xs text-amber-400 flex items-center gap-2">
-        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-        To update your name, email, or phone, please contact the platform owner or modify directly in the database.
-        Profile editing via the Super Admin portal is disabled for security reasons.
+    <div className="bg-amber-50/80 rounded-2xl border border-amber-200/80 p-4">
+      <p className="text-xs text-amber-800 flex items-start gap-2 leading-relaxed">
+        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        To update administrative credentials, contact the platform owner or modify verified database records.
+        Direct frontend editing is protected for platform security.
       </p>
     </div>
   </motion.div>
@@ -175,15 +178,15 @@ const SecurityTab = () => {
   };
 
   return (
-    <motion.div variants={TAB_VARIANTS} initial="hidden" animate="visible" className="space-y-6">
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
+    <motion.div variants={TAB_VARIANTS} initial="hidden" animate="visible" className="space-y-5">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
         <div className="flex items-center gap-2 mb-5">
-          <Shield className="w-4 h-4 text-violet-400" />
-          <h2 className="text-sm font-bold text-textPrimary">Change Password</h2>
+          <Shield className="w-4 h-4 text-blue-600" />
+          <h2 className="text-sm font-bold text-slate-900">Change Password</h2>
         </div>
 
         {success && (
-          <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
+          <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700">
             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
             Password updated successfully.
           </div>
@@ -198,7 +201,7 @@ const SecurityTab = () => {
             onChange={handleChange('currentPassword')}
             placeholder="Enter current password"
             rightIcon={
-              <button type="button" onClick={() => setShowCurrent((s) => !s)} className="text-textMuted hover:text-textPrimary transition-colors">
+              <button type="button" onClick={() => setShowCurrent((s) => !s)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             }
@@ -211,7 +214,7 @@ const SecurityTab = () => {
             onChange={handleChange('newPassword')}
             placeholder="Min. 8 characters"
             rightIcon={
-              <button type="button" onClick={() => setShowNew((s) => !s)} className="text-textMuted hover:text-textPrimary transition-colors">
+              <button type="button" onClick={() => setShowNew((s) => !s)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             }
@@ -224,7 +227,7 @@ const SecurityTab = () => {
             onChange={handleChange('confirmPassword')}
             placeholder="Repeat new password"
             rightIcon={
-              <button type="button" onClick={() => setShowConfirm((s) => !s)} className="text-textMuted hover:text-textPrimary transition-colors">
+              <button type="button" onClick={() => setShowConfirm((s) => !s)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             }
@@ -235,7 +238,7 @@ const SecurityTab = () => {
               type="submit"
               id="settings-change-password-btn"
               disabled={isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all disabled:opacity-50 cursor-pointer shadow-xs"
             >
               {isLoading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -249,16 +252,16 @@ const SecurityTab = () => {
       </div>
 
       {/* Session Info */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
-        <h2 className="text-sm font-bold text-textPrimary mb-4 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-violet-400" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
+        <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <Bell className="w-4 h-4 text-blue-600" />
           Session Security
         </h2>
-        <div className="space-y-1 text-xs text-textMuted">
-          <p>• JWT-based authentication with refresh token rotation</p>
-          <p>• Session automatically expires after token expiry</p>
-          <p>• Rate limiting applied to all auth endpoints</p>
-          <p>• HTTPS enforced in production environments</p>
+        <div className="space-y-1.5 text-xs text-slate-500">
+          <p>• JWT-based authentication with encrypted refresh token rotation</p>
+          <p>• Administrative session auto-refresh on platform navigation</p>
+          <p>• Rate limiting enforced on all authentication operations</p>
+          <p>• Full audit trail captured for super-administrative actions</p>
         </div>
       </div>
     </motion.div>
@@ -326,17 +329,17 @@ const PlatformTab = () => {
 
   if (isLoading) {
     return (
-      <div className="glass-card rounded-2xl border border-white/8 p-8 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-violet-500/40 border-t-violet-500 rounded-full animate-spin" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-8 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="glass-card rounded-2xl border border-rose-500/20 p-8 flex flex-col items-center gap-3 text-center">
-        <AlertTriangle className="w-8 h-8 text-rose-400" />
-        <p className="text-sm font-semibold text-textPrimary">Unable to load platform settings</p>
+      <div className="bg-white rounded-2xl border border-rose-200 p-8 flex flex-col items-center gap-3 text-center">
+        <AlertTriangle className="w-8 h-8 text-rose-500" />
+        <p className="text-sm font-semibold text-slate-900">Unable to load platform settings</p>
       </div>
     );
   }
@@ -344,10 +347,10 @@ const PlatformTab = () => {
   return (
     <motion.div variants={TAB_VARIANTS} initial="hidden" animate="visible" className="space-y-5">
       {/* General */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
-        <h2 className="text-sm font-bold text-textPrimary mb-5 flex items-center gap-2">
-          <Globe className="w-4 h-4 text-violet-400" />
-          General
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
+        <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-blue-600" />
+          General Platform Identity
         </h2>
         <div className="space-y-4">
           <FormInput
@@ -358,27 +361,27 @@ const PlatformTab = () => {
             placeholder="LaundryFlow"
           />
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="settings-currency" className="text-xs font-semibold text-textMuted">
+            <label htmlFor="settings-currency" className="text-xs font-semibold text-slate-700">
               Default Currency
             </label>
             <select
               id="settings-currency"
               value={form.currency}
               onChange={handleChange('currency')}
-              className="px-3 py-2.5 text-sm text-textPrimary bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/40 cursor-pointer"
+              className="px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
             >
-              <option value="INR" className="bg-[#0f1224]">INR — Indian Rupee</option>
-              <option value="USD" className="bg-[#0f1224]">USD — US Dollar</option>
-              <option value="EUR" className="bg-[#0f1224]">EUR — Euro</option>
+              <option value="INR">INR — Indian Rupee (₹)</option>
+              <option value="USD">USD — US Dollar ($)</option>
+              <option value="EUR">EUR — Euro (€)</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Business Rules */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
-        <h2 className="text-sm font-bold text-textPrimary mb-5 flex items-center gap-2">
-          <Percent className="w-4 h-4 text-violet-400" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
+        <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <Percent className="w-4 h-4 text-blue-600" />
           Business Rules
         </h2>
         <div className="space-y-4">
@@ -402,9 +405,9 @@ const PlatformTab = () => {
       </div>
 
       {/* Support Info */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
-        <h2 className="text-sm font-bold text-textPrimary mb-5 flex items-center gap-2">
-          <Mail className="w-4 h-4 text-violet-400" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
+        <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <Mail className="w-4 h-4 text-blue-600" />
           Support Contact
         </h2>
         <div className="space-y-4">
@@ -427,9 +430,9 @@ const PlatformTab = () => {
       </div>
 
       {/* Feature Flags */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5">
-        <h2 className="text-sm font-bold text-textPrimary mb-2 flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-violet-400" />
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5">
+        <h2 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-blue-600" />
           Feature Flags
         </h2>
         <ToggleRow
@@ -452,7 +455,7 @@ const PlatformTab = () => {
           id="settings-platform-save-btn"
           onClick={handleSave}
           disabled={isPending || !isDirty}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
         >
           {isPending ? (
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -469,7 +472,21 @@ const PlatformTab = () => {
 // ── Main Settings Page ─────────────────────────────────────────
 export const Settings = () => {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(urlTab || 'profile');
+
+  useEffect(() => {
+    if (urlTab && ['profile', 'security', 'platform'].includes(urlTab)) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
 
   return (
     <motion.div
@@ -479,22 +496,22 @@ export const Settings = () => {
       className="space-y-5"
     >
       {/* Header */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5 sm:p-6">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center">
-            <Settings2 className="w-5 h-5 text-violet-400" />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-2xs">
+            <Settings2 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-textPrimary">Settings</h1>
-            <p className="text-xs text-textSecondary">Profile, security, and platform configuration</p>
+            <h1 className="text-lg font-bold text-slate-900">Settings</h1>
+            <p className="text-xs text-slate-500">Profile, security, and platform configuration</p>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Sidebar Tabs */}
-        <div className="lg:w-52 shrink-0">
-          <div className="glass-card rounded-2xl border border-white/8 p-2 space-y-1">
+        <div className="lg:w-56 shrink-0">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-2 space-y-1">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -502,18 +519,18 @@ export const Settings = () => {
                 <button
                   key={tab.id}
                   id={`settings-tab-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
-                      : 'text-textSecondary hover:bg-white/5 hover:text-textPrimary border border-transparent'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200/60 shadow-2xs'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon className="w-4 h-4" />
                     {tab.label}
                   </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-500" />}
                 </button>
               );
             })}

@@ -25,7 +25,7 @@ export const AuthLoadingScreen = () => {
 
           {/* Brand name */}
           <div className="text-center">
-            <p className="text-xl font-bold text-textPrimary tracking-tight">LaundryFlow</p>
+            <p className="text-xl font-bold text-textPrimary tracking-tight">LaundryWave</p>
             <p className="text-xs text-textMuted mt-1 uppercase tracking-widest font-semibold text-primaryPurple">
               Super Admin
             </p>

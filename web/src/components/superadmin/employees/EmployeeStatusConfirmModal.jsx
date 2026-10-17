@@ -83,7 +83,7 @@ export const EmployeeStatusConfirmModal = ({
 
             <p className="text-xs text-textSecondary leading-relaxed mb-6 bg-white/4 p-3 rounded-xl border border-white/6">
               {isActive
-                ? `Deactivating "${employee.name}" will suspend their access to LaundryFlow tasks.`
+                ? `Deactivating "${employee.name}" will suspend their access to LaundryWave tasks.`
                 : `Activating "${employee.name}" will restore their account access.`}
             </p>
 

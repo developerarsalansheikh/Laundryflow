@@ -89,8 +89,8 @@ export const UserStatusConfirmModal = ({
             {/* Description */}
             <p className="text-xs text-textSecondary leading-relaxed mb-6 bg-white/4 p-3 rounded-xl border border-white/6">
               {isActive
-                ? `Deactivating "${user.name}" will suspend their access to LaundryFlow. They will not be able to log in until reactivated.`
-                : `Activating "${user.name}" will restore their full access to the LaundryFlow platform.`}
+                ? `Deactivating "${user.name}" will suspend their access to LaundryWave. They will not be able to log in until reactivated.`
+                : `Activating "${user.name}" will restore their full access to the LaundryWave platform.`}
             </p>
 
             {/* Actions */}

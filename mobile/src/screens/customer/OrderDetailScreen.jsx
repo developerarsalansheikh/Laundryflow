@@ -46,7 +46,7 @@ const STATUS_CONFIG = {
   customer_unavailable: { label: 'Customer Unavailable (Rescheduling)', desc: 'Clothes safely returned to store for tomorrow redelivery.', variant: 'danger', step: 9 },
   delivery_failed: { label: 'Delivery Attempt Failed', desc: 'Attempt failed. Items returning to store.', variant: 'danger', step: 9 },
   returned_to_laundry: { label: 'Returned to Store (Next-Day Delivery)', desc: 'Clothes safely stored for next day redelivery.', variant: 'warning', step: 9 },
-  delivered: { label: 'Delivered & Completed', desc: 'Order complete! Thank you for using LaundryFlow.', variant: 'success', step: 11 },
+  delivered: { label: 'Delivered & Completed', desc: 'Order complete! Thank you for using LaundryWave.', variant: 'success', step: 11 },
   cancelled: { label: 'Cancelled', desc: 'This order was cancelled.', variant: 'danger', step: 0 },
 };
 

@@ -45,13 +45,13 @@ export const Analytics = () => {
       className="space-y-5"
     >
       {/* Header */}
-      <div className="glass-card rounded-2xl border border-white/8 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <AnalyticsHeader />
         <button
           id="analytics-refresh-btn"
           onClick={handleRefresh}
           disabled={isFetching}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/8 text-xs font-semibold text-textSecondary hover:text-textPrimary transition-all disabled:opacity-50 self-start sm:self-auto"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 shadow-2xs transition-all disabled:opacity-50 self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
           <span>Refresh</span>

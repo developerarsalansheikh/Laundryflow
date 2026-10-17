@@ -145,7 +145,7 @@ export const LoginScreen = () => {
             </View>
             <View style={{ marginLeft: 12 }}>
               <Text variant="h1" weight="bold" style={styles.brandTitle}>
-                Laundry<Text style={{ color: colors.primary }}>Flow</Text>
+                Laundry<Text style={{ color: colors.primary }}>Wave</Text>
               </Text>
               <Text variant="caption" style={styles.tagline}>
                 Fresh Clothes, On Demand

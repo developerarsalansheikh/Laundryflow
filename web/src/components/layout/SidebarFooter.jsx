@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Server, ShieldCheck, Activity } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Activity } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
 /**
@@ -9,8 +9,8 @@ export const SidebarFooter = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
   return (
-    <div className="flex-shrink-0 border-t border-borderSubtle p-3 space-y-3">
-      {/* Project Information Card */}
+    <div className="flex-shrink-0 border-t border-white/[0.08] p-3 space-y-2.5">
+      {/* Store / Platform Information Card */}
       <AnimatePresence initial={false}>
         {!sidebarCollapsed ? (
           <motion.div
@@ -20,55 +20,46 @@ export const SidebarFooter = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div
-              className="rounded-2xl p-3.5 relative overflow-hidden group transition-all duration-300"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(30,27,75,0.6) 100%)',
-                border: '1px solid rgba(139,92,246,0.2)',
-                boxShadow: '0 4px 20px -2px rgba(0,0,0,0.3)',
-              }}
-            >
-              {/* Background ambient glow */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-emerald-500/10 blur-lg pointer-events-none" />
-
-              {/* Status Header */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="rounded-xl p-3 bg-[#0B1226] border border-white/10 shadow-xs relative overflow-hidden">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-textPrimary leading-tight">
-                      LaundryFlow Engine
-                    </h4>
-                    <p className="text-[10px] text-textMuted font-mono">v2.4.0 · Production</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-white truncate leading-tight">
+                        Poonaclub
+                      </h4>
+                      <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        Parent
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate mt-0.5">PerClean Laundry</p>
                   </div>
                 </div>
-                {/* Live Indicator */}
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
                 </div>
               </div>
 
-              {/* Node API Info */}
-              <div className="pt-2 border-t border-white/6 flex items-center justify-between text-[11px] text-textMuted">
-                <span className="flex items-center gap-1">
-                  <Server className="w-3 h-3 text-purpleLight" />
-                  Node.js API
+              <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-slate-400">
+                <span>1 store available</span>
+                <span className="text-emerald-400 font-medium flex items-center gap-1">
+                  Connected
                 </span>
-                <span className="text-emerald-400 font-semibold text-[10px]">Connected</span>
               </div>
             </div>
           </motion.div>
         ) : (
           <div className="flex justify-center py-1">
             <div
-              className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center relative"
-              title="LaundryFlow Engine: Connected (Live)"
+              className="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center relative"
+              title="Store Connected (Live)"
             >
-              <Activity className="w-4 h-4 text-emerald-400" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#0B0F17] animate-pulse" />
+              <Activity className="w-4 h-4 text-blue-400" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#0B1120] animate-pulse" />
             </div>
           </div>
         )}
@@ -80,7 +71,7 @@ export const SidebarFooter = () => {
           type="button"
           onClick={toggleSidebar}
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-textMuted hover:text-textPrimary hover:bg-cardHover transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-primaryPurple cursor-pointer"
+          className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200 outline-none cursor-pointer"
         >
           <motion.div
             animate={{ rotate: sidebarCollapsed ? 0 : 180 }}

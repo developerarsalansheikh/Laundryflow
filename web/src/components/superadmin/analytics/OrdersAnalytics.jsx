@@ -27,10 +27,10 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#0f172a] border border-white/10 p-2.5 rounded-xl shadow-xl text-xs">
-        <p className="font-semibold text-textPrimary">{data.name}</p>
-        <p className="text-textSecondary mt-0.5">
-          Orders: <span className="font-bold text-textPrimary">{data.count}</span>
+      <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-xl shadow-xl text-xs text-white">
+        <p className="font-semibold text-slate-100">{data.name}</p>
+        <p className="text-slate-300 mt-0.5">
+          Orders: <span className="font-bold text-white">{data.count}</span>
         </p>
       </div>
     );
@@ -50,36 +50,36 @@ export const OrdersAnalytics = ({ orderStatusBreakdown = [] }) => {
   }));
 
   return (
-    <div className="glass-card rounded-2xl border border-white/8 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 space-y-4 shadow-2xs">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center">
-          <ShoppingBag className="w-4 h-4 text-indigo-400" />
+        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+          <ShoppingBag className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-textPrimary">Order Status Distribution</h3>
-          <p className="text-[11px] text-textMuted">Order count broken down by lifecycle status</p>
+          <h3 className="text-sm font-bold text-slate-900">Order Status Distribution</h3>
+          <p className="text-[11px] text-slate-500">Order count broken down by lifecycle status</p>
         </div>
       </div>
 
       {chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-xs text-textMuted">
+        <div className="h-64 flex items-center justify-center text-xs text-slate-400">
           No order breakdown data available.
         </div>
       ) : (
         <div className="h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
               <XAxis
                 dataKey="name"
-                stroke="#94a3b8"
+                stroke="#94A3B8"
                 fontSize={10}
                 tickLine={false}
                 interval={0}
                 angle={-20}
                 textAnchor="end"
               />
-              <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+              <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                 {chartData.map((entry, index) => (

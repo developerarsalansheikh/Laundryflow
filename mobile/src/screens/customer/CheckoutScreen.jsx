@@ -9,6 +9,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../../theme';
+import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { useLocationStore } from '../../store/locationStore';
 import { customerService } from '../../services/customerService';
@@ -24,6 +25,7 @@ import Divider from '../../components/ui/Divider';
 import Loader from '../../components/ui/Loader';
 import GlobalLoadingOverlay from '../../components/GlobalLoadingOverlay';
 import RazorpayModal from '../../components/ui/RazorpayModal';
+import AuthGateModal from '../../components/AuthGateModal';
 
 const PAYMENT_METHODS = [
   {
@@ -44,11 +46,13 @@ export const CheckoutScreen = () => {
   const route = useRoute();
   const queryClient = useQueryClient();
 
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const cart = useCartStore();
   const cartSummary = cart.getCartSummary();
   const currentCity = useLocationStore((state) => state.city);
 
   // State
+  const [authGateVisible, setAuthGateVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedDateOffset, setSelectedDateOffset] = useState(0); // 0 = Today, 1 = Tomorrow, 2 = Day After
   const [selectedSlotId, setSelectedSlotId] = useState(null);
@@ -74,6 +78,7 @@ export const CheckoutScreen = () => {
   } = useQuery({
     queryKey: ['addresses'],
     queryFn: customerService.getAddresses,
+    enabled: Boolean(isAuthenticated),
   });
 
   const addressList = useMemo(() => {
@@ -350,6 +355,11 @@ export const CheckoutScreen = () => {
       return;
     }
     setErrorMessage('');
+
+    if (!isAuthenticated) {
+      setAuthGateVisible(true);
+      return;
+    }
 
     // 1. Verify single-laundry integrity
     if (!cart.isSingleLaundryValid() || cart.items.length === 0) {
@@ -854,6 +864,17 @@ export const CheckoutScreen = () => {
         onSuccess={handlePaymentSuccess}
         onFailure={handlePaymentFailure}
         onCancel={handlePaymentCancel}
+      />
+
+      <AuthGateModal
+        visible={authGateVisible}
+        onClose={() => setAuthGateVisible(false)}
+        title="Sign in to Complete Order"
+        description="Login or create an account to confirm your delivery address and book your laundry."
+        pendingIntent={{
+          action: 'checkout',
+          returnTo: 'Checkout',
+        }}
       />
     </ScreenContainer>
   );

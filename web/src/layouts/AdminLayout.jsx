@@ -92,7 +92,7 @@ export const AdminLayout = () => {
         <div className="flex items-center gap-3 px-6 h-16 border-b border-white/[0.07]">
           <img
             src="/logo.png"
-            alt="LaundryFlow"
+            alt="LaundryWave"
             className="w-10 h-10 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export const AdminLayout = () => {
                 <div className="flex items-center gap-2.5">
                   <img
                     src="/logo.png"
-                    alt="LaundryFlow"
+                    alt="LaundryWave"
                     className="w-8 h-8 rounded-lg object-cover border border-white/10"
                   />
                   <span className="text-sm font-bold truncate text-textPrimary">{storeName}</span>
@@ -254,28 +254,29 @@ export const AdminLayout = () => {
         <header
           className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 h-16 transition-colors duration-200"
           style={{
-            backgroundColor: 'rgba(7, 10, 23, 0.8)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderBottom: '1px solid #E2E8F0',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
           }}
         >
           {/* Left: Mobile hamburger + Store Identity */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-textMuted hover:text-textPrimary hover:bg-white/[0.05] transition-colors"
+              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="hidden sm:flex items-center gap-2 text-xs text-textMuted">
-              <span className="font-semibold text-textPrimary tracking-wide">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+              <span className="font-bold text-slate-900 tracking-tight">
                 {storeName}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-textMuted opacity-60" />
-              <span className="text-textSecondary">Laundry Operations Portal</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-500 font-medium">Laundry Operations Portal</span>
             </div>
           </div>
 
@@ -284,23 +285,23 @@ export const AdminLayout = () => {
             {/* Notifications Shortcut */}
             <button
               onClick={() => navigate(ROUTES.ADMIN.NOTIFICATIONS)}
-              className="relative p-2 rounded-xl text-textSecondary hover:text-textPrimary hover:bg-white/[0.05] border border-transparent hover:border-white/[0.08] transition-colors"
+              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors"
               title="View Notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]" />
               )}
             </button>
 
-            <div className="h-5 w-px bg-white/[0.08] hidden sm:block mx-1" />
+            <div className="h-5 w-px bg-slate-200 hidden sm:block mx-1" />
 
             {/* User Identity */}
             <div className="hidden sm:flex flex-col items-end text-right">
-              <span className="text-xs font-semibold text-textPrimary">
+              <span className="text-xs font-bold text-slate-900">
                 {user?.name || 'Laundry Admin'}
               </span>
-              <span className="text-[10px] text-textMuted">
+              <span className="text-[10px] text-slate-500">
                 {user?.email || 'admin@laundryflow.com'}
               </span>
             </div>
@@ -308,7 +309,7 @@ export const AdminLayout = () => {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-textSecondary hover:text-statusDanger bg-white/[0.04] hover:bg-statusDanger/10 rounded-xl transition-all border border-white/[0.08] hover:border-statusDanger/30"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 rounded-xl transition-all border border-rose-200/80"
               title="Sign Out"
             >
               <LogOut className="w-3.5 h-3.5" />

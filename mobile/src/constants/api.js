@@ -12,13 +12,14 @@ const PROD_HOST = 'https://laundryflow-657q.onrender.com';
 // LAN host for physical device local development (never 10.0.2.2)
 const DEV_LAN_HOST = 'http://192.168.1.122:8080';
 
-// Preserve separate production configuration path
-const isProduction = Config?.APP_ENV === 'production';
+// Explicit development mode: must be in React Native debug mode (__DEV__) AND configured as development
+const isExplicitDev = typeof __DEV__ !== 'undefined' && __DEV__ && Config?.APP_ENV === 'development';
+const isProduction = !isExplicitDev;
 const fallbackHost = isProduction ? PROD_HOST : DEV_LAN_HOST;
 
 export const API_BASE_URL = Config?.API_BASE_URL || `${fallbackHost}/api`;
 export const SOCKET_URL = Config?.SOCKET_URL || fallbackHost;
-export const API_TIMEOUT_MS = Number(Config?.API_TIMEOUT_MS) || 15000;
+export const API_TIMEOUT_MS = Number(Config?.API_TIMEOUT_MS) || 30000;
 export const APP_ENV = Config?.APP_ENV || (isProduction ? 'production' : 'development');
 
 console.log(

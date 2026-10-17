@@ -1,5 +1,5 @@
 export const APP_CONFIG = Object.freeze({
-  APP_NAME: 'LaundryFlow',
+  APP_NAME: 'LaundryWave',
   VERSION: '1.0.0',
   DEFAULT_PAGE_SIZE: 15,
   QUERY_STALE_TIME_MS: 5 * 60 * 1000, // 5 minutes

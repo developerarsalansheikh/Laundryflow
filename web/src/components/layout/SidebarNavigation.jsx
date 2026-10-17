@@ -48,49 +48,49 @@ export const SidebarNavigation = ({ onNavigate }) => {
               onClick={onNavigate}
               aria-label={item.label}
               className={() =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-primaryPurple ${
+                `flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 outline-none ${
                   isActive
-                    ? 'bg-gradient-to-r from-primaryPurple/20 to-brandIndigo/10 border border-primaryPurple/25 shadow-glowPurple text-textPrimary'
-                    : 'text-textSecondary hover:text-textPrimary hover:bg-cardBg border border-transparent'
+                    ? 'bg-blue-600 text-white font-semibold shadow-sm shadow-blue-600/30 border border-blue-500/50'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
                 }`
               }
             >
-              {/* Icon */}
-              <span className={`flex-shrink-0 transition-colors duration-200 ${isActive ? 'text-purpleLight' : 'text-textMuted group-hover:text-textSecondary'}`}>
-                <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
-              </span>
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Icon */}
+                <span className={`flex-shrink-0 transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>
+                  <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
+                </span>
 
-              {/* Label */}
-              <AnimatePresence initial={false}>
-                {!sidebarCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={`text-sm font-medium overflow-hidden whitespace-nowrap ${
-                      isActive ? 'text-textPrimary font-semibold' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
+                {/* Label */}
+                <AnimatePresence initial={false}>
+                  {!sidebarCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-xs sm:text-sm font-medium overflow-hidden whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
 
-              {/* Active indicator bar */}
-              {isActive && (
-                <motion.div
-                  layoutId="activeNavBar"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primaryPurple rounded-l-full"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
+              {/* Badges for Analytics / Reports */}
+              {!sidebarCollapsed && (item.id === 'analytics' || item.id === 'reports') && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-blue-500/15 text-blue-400 border border-blue-500/20'
+                }`}>
+                  NEW
+                </span>
               )}
             </NavLink>
 
             {/* Tooltip for collapsed mode */}
             {sidebarCollapsed && (
               <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                <div className="glass-panel px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium text-textPrimary border border-borderStrong shadow-floating">
+                <div className="px-3 py-1.5 rounded-lg whitespace-nowrap text-xs font-semibold text-white bg-[#0B1120] border border-white/10 shadow-xl">
                   {item.label}
                 </div>
               </div>

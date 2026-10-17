@@ -41,7 +41,7 @@ export const SuperAdminBlockedScreen = () => {
               Hello, <Text weight="bold">{user?.name || 'Administrator'}</Text>
             </Text>
             <Text variant="bodySmall" colorVariant="secondary" style={{ lineHeight: 20 }}>
-              Super Admin controls, platform governance, and partner settlements are managed exclusively through the desktop LaundryFlow Web Application.
+              Super Admin controls, platform governance, and partner settlements are managed exclusively through the desktop LaundryWave Web Application.
             </Text>
           </View>
 
@@ -50,7 +50,7 @@ export const SuperAdminBlockedScreen = () => {
               Please visit from your desktop browser:
             </Text>
             <Text variant="bodyMedium" weight="semibold" colorVariant="primary" align="center" style={{ marginTop: 4 }}>
-              https://admin.laundryflow.com
+              https://admin.laundrywave.com
             </Text>
           </View>
 

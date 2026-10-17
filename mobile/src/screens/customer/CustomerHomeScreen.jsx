@@ -310,7 +310,7 @@ export const CustomerHomeScreen = () => {
               Set Your Delivery Location
             </Text>
             <Text variant="bodySmall" colorVariant="secondary" align="center" style={{ marginBottom: 16 }}>
-              LaundryFlow pairs you exclusively with verified laundries in your city within 20 KM.
+              LaundryWave pairs you exclusively with verified laundries in your city within 20 KM.
             </Text>
             <Button
               title="Select Location / Use GPS"

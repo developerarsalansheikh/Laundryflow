@@ -171,7 +171,7 @@ export const DeliveryHomeScreen = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Location Permission',
-            message: 'LaundryFlow needs GPS location to route pickup and delivery dispatches.',
+            message: 'LaundryWave needs GPS location to route pickup and delivery dispatches.',
             buttonPositive: 'Allow',
             buttonNegative: 'Deny',
           }
