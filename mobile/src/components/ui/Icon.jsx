@@ -180,6 +180,63 @@ export const Icon = ({ name, size = 20, color = '#1E293B', strokeWidth = 2, styl
           <Path d="M10 11l2-4 3 1" />
         </Svg>
       );
+    case 'tag':
+    case 'offers':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+          <Line x1="7" y1="7" x2="7.01" y2="7" />
+        </Svg>
+      );
+    case 'plus':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Line x1="12" y1="5" x2="12" y2="19" />
+          <Line x1="5" y1="12" x2="19" y2="12" />
+        </Svg>
+      );
+    case 'minus':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Line x1="5" y1="12" x2="19" y2="12" />
+        </Svg>
+      );
+    case 'chevron-left':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Polyline points="15 18 9 12 15 6" />
+        </Svg>
+      );
+    case 'chevron-right':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Polyline points="9 18 15 12 9 6" />
+        </Svg>
+      );
+    case 'folded-clothes':
+    case 'layers':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Polygon points="12 2 2 7 12 12 22 7 12 2" />
+          <Polyline points="2 17 12 22 22 17" />
+          <Polyline points="2 12 12 17 22 12" />
+        </Svg>
+      );
+    case 'jeans':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Path d="M5 2h14v4l-2 15h-3l-2-10-2 10H7L5 6V2z" />
+          <Line x1="5" y1="6" x2="19" y2="6" />
+        </Svg>
+      );
+    case 'bedding':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Rect x="2" y="4" width="20" height="12" rx="2" />
+          <Path d="M6 16v4M18 16v4" />
+          <Line x1="2" y1="10" x2="22" y2="10" />
+        </Svg>
+      );
     default:
       return null;
   }

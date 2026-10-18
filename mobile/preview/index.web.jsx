@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from '../App';
 import { useAuthStore } from '../src/store/authStore';
+import { useLocationStore } from '../src/store/locationStore';
 import { queryClient } from '../src/api/queryClient';
 
 const PreviewShell = () => {
@@ -10,6 +11,18 @@ const PreviewShell = () => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const currentRole = useAuthStore((state) => state.role);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  React.useEffect(() => {
+    const loc = useLocationStore.getState();
+    if (!loc.isLocationEstablished || !loc.city) {
+      loc.setLocation({
+        city: 'Indore',
+        address: 'Palasia, Indore, MP',
+        latitude: 22.7196,
+        longitude: 75.8577,
+      });
+    }
+  }, []);
 
   const handleSwitchToCustomer = () => {
     queryClient.clear();

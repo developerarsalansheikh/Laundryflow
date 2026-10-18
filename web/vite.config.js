@@ -53,12 +53,12 @@ export default defineConfig({
     open: false,
     proxy: {
       '/api': {
-        target: 'https://laundryflow-657q.onrender.com',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
       '/socket.io': {
-        target: 'https://laundryflow-657q.onrender.com',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8080',
         ws: true,
         changeOrigin: true,
       },
@@ -68,12 +68,12 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://laundryflow-657q.onrender.com',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
       '/socket.io': {
-        target: 'https://laundryflow-657q.onrender.com',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8080',
         ws: true,
         changeOrigin: true,
       },

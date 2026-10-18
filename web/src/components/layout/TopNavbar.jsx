@@ -71,14 +71,13 @@ export const TopNavbar = () => {
 
   return (
     <header
-      className="fixed top-0 right-0 z-35 h-16 flex items-center px-4 sm:px-6 gap-3 transition-all duration-250"
+      className="fixed top-0 right-0 h-16 flex items-center px-4 sm:px-6 gap-3 transition-all duration-250"
       style={{
         left: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        zIndex: 50,
+        backgroundColor: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+        boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.06)',
       }}
     >
       {/* Desktop left offset spacer — tracks sidebar width */}

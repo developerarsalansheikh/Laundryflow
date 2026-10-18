@@ -236,10 +236,10 @@ export const SubscriptionPlanFormModal = ({
                     id="plan-cycle"
                     value={form.billingCycle}
                     onChange={(e) => setForm({ ...form, billingCycle: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
                   >
-                    <option value="monthly" className="bg-[#0f172a]">Monthly</option>
-                    <option value="yearly" className="bg-[#0f172a]">Yearly</option>
+                    <option value="monthly" className="bg-white text-slate-800">Monthly</option>
+                    <option value="yearly" className="bg-white text-slate-800">Yearly</option>
                   </select>
                 </div>
 

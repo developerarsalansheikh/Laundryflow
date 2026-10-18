@@ -44,25 +44,38 @@ const SERVICE_CATEGORIES = [
     label: 'Wash & Fold',
     sub: 'Everyday wear',
     iconName: 'shirt',
+    image: ASSETS.clothes?.tshirt,
   },
   {
     id: 'dry_clean',
     label: 'Dry Clean',
     sub: 'Suits & silks',
     iconName: 'suit',
+    image: ASSETS.clothes?.suit,
   },
   {
     id: 'iron',
     label: 'Iron Only',
     sub: 'Crisp & pressed',
     iconName: 'iron',
+    image: ASSETS.clothes?.shirt,
   },
   {
     id: 'shoe',
     label: 'Shoe Care',
     sub: 'Clean & polish',
     iconName: 'shoe',
+    image: ASSETS.clothes?.shoes,
   },
+];
+
+const POPULAR_GARMENTS = [
+  { id: 'shirt', name: "Men's Shirt", price: 80, category: 'dry_clean', clothingType: 'Shirt', image: ASSETS.clothes?.shirt },
+  { id: 'saree', name: 'Silk Saree', price: 180, category: 'dry_clean', clothingType: 'Saree', image: ASSETS.clothes?.saree },
+  { id: 'jeans', name: 'Denim Jeans', price: 110, category: 'wash', clothingType: 'Jeans', image: ASSETS.clothes?.jeans },
+  { id: 'suit', name: '2-Piece Suit', price: 280, category: 'dry_clean', clothingType: 'Suit', image: ASSETS.clothes?.suit },
+  { id: 'tshirt', name: 'Cotton T-Shirt', price: 70, category: 'wash', clothingType: 'T-Shirt', image: ASSETS.clothes?.tshirt },
+  { id: 'bedsheet', name: 'Bedsheet / Quilt', price: 150, category: 'premium', clothingType: 'Bedsheet', image: ASSETS.clothes?.bedsheet },
 ];
 
 const SORT_OPTIONS = [
@@ -230,6 +243,41 @@ export const CustomerHomeScreen = () => {
     }
   };
 
+  const handleQuickAddGarment = (garment) => {
+    if (rawLaundries.length === 0) {
+      navigation.navigate('SelectLocation', { isMandatory: false });
+      return;
+    }
+    const targetLaundry = rawLaundries[0];
+    const targetLaundryId = targetLaundry._id || targetLaundry.id;
+    const targetName = targetLaundry.name || 'Laundry Store';
+    const targetAddress = targetLaundry.address || targetLaundry.city || '';
+
+    const serviceObj = {
+      _id: `srv_${garment.category}`,
+      name: garment.category === 'dry_clean' ? 'Gentle Dry Cleaning' : 'Standard Everyday Wash & Fold',
+      category: garment.category,
+      price: garment.price,
+    };
+    const clothingItemObj = {
+      clothingType: garment.clothingType,
+      name: garment.name,
+      price: garment.price,
+    };
+
+    const result = cart.addItem({
+      laundryId: targetLaundryId,
+      laundryName: targetName,
+      laundryAddress: targetAddress,
+      service: serviceObj,
+      clothingItem: clothingItemObj,
+    });
+
+    if (result?.conflict) {
+      handleOpenLaundry(targetLaundry);
+    }
+  };
+
   const firstName = user?.name ? user.name.split(' ')[0] : 'Sarah';
 
   return (
@@ -242,7 +290,7 @@ export const CustomerHomeScreen = () => {
             <View style={styles.brandTextColumn}>
               <View style={styles.brandTitleContainer}>
                 <Text style={styles.brandTitleFirst}>Laundry</Text>
-                <Text style={styles.brandTitleSecond}>Flow</Text>
+                <Text style={styles.brandTitleSecond}>Wave</Text>
               </View>
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -365,11 +413,15 @@ export const CustomerHomeScreen = () => {
                         { backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : '#FFFFFF' },
                       ]}
                     >
-                      <Icon
-                        name={cat.iconName}
-                        size={22}
-                        color={isSelected ? '#FFFFFF' : BRAND_PRIMARY}
-                      />
+                      {cat.image ? (
+                        <Image source={cat.image} style={styles.catImageThumb} resizeMode="cover" />
+                      ) : (
+                        <Icon
+                          name={cat.iconName}
+                          size={22}
+                          color={isSelected ? '#FFFFFF' : BRAND_PRIMARY}
+                        />
+                      )}
                     </View>
                     <Text
                       variant="caption"
@@ -393,6 +445,97 @@ export const CustomerHomeScreen = () => {
                   </TouchableOpacity>
                 );
               })}
+            </View>
+
+            {/* ── SELECT BY GARMENT SECTION (REAL CLOTHING CATALOG) ── */}
+            <View style={styles.garmentSection}>
+              <View style={styles.sectionHeader}>
+                <Text variant="title" weight="bold" colorVariant="primary">
+                  Select by Garment
+                </Text>
+                <Text variant="caption" colorVariant="muted">
+                  Quick doorstep booking
+                </Text>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.garmentScroll}
+              >
+                {POPULAR_GARMENTS.map((garment) => {
+                  const targetLaundry = rawLaundries[0];
+                  const targetLaundryId = targetLaundry ? (targetLaundry._id || targetLaundry.id) : null;
+                  const itemId = targetLaundryId ? `srv_${garment.category}_${(garment.name || garment.clothingType).toLowerCase().replace(/\s+/g, '_')}` : null;
+                  const qtyInCart = (itemId && cart.laundryId === targetLaundryId) ? cart.getItemQuantity(itemId) : 0;
+
+                  return (
+                    <View
+                      key={garment.id}
+                      style={[
+                        styles.garmentCard,
+                        { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => {
+                          if (rawLaundries.length > 0) {
+                            handleOpenLaundry(rawLaundries[0]);
+                          } else {
+                            navigation.navigate('SelectLocation', { isMandatory: false });
+                          }
+                        }}
+                      >
+                        <Image
+                          source={garment.image}
+                          style={styles.garmentPhoto}
+                          resizeMode="cover"
+                        />
+                        <View style={styles.garmentInfo}>
+                          <Text variant="bodySmall" weight="bold" colorVariant="primary" numberOfLines={1}>
+                            {garment.name}
+                          </Text>
+                          <View style={styles.garmentPriceRow}>
+                            <Text variant="bodyMedium" weight="bold" style={{ color: colors.primary }}>
+                              ₹{garment.price}
+                            </Text>
+                            <Badge label={garment.category === 'dry_clean' ? 'Dry Clean' : 'Wash'} variant="neutral" size="sm" />
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+
+                      <View style={styles.garmentActionArea}>
+                        {qtyInCart > 0 ? (
+                          <View style={[styles.miniStepper, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
+                            <TouchableOpacity
+                              style={styles.miniStepperBtn}
+                              onPress={() => cart.decrementItem(itemId)}
+                            >
+                              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>−</Text>
+                            </TouchableOpacity>
+                            <Text style={{ color: colors.primary, fontWeight: 'bold', paddingHorizontal: 6 }}>{qtyInCart}</Text>
+                            <TouchableOpacity
+                              style={styles.miniStepperBtn}
+                              onPress={() => handleQuickAddGarment(garment)}
+                            >
+                              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>+</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            style={[styles.garmentAddBtn, { backgroundColor: colors.primary }]}
+                            onPress={() => handleQuickAddGarment(garment)}
+                          >
+                            <Text style={styles.garmentAddBtnText}>+ Add</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
             </View>
 
             {/* ── ACTIVE ORDERS CARD ── */}
@@ -576,30 +719,43 @@ export const CustomerHomeScreen = () => {
                   return (
                     <TouchableOpacity
                       key={laundry._id || laundry.id || `laundry_${index}`}
-                      activeOpacity={0.88}
+                      activeOpacity={0.9}
                       onPress={() => handleOpenLaundry(laundry)}
+                      style={{ marginBottom: 14 }}
                     >
-                      <Card variant="elevated" style={styles.storeCard}>
+                      <View style={styles.storeCardWrapper}>
                         <View style={styles.storeCardHeader}>
-                          {/* Store Image or Branded Initial */}
-                          <StoreLogoImage
-                            uri={laundry.logo || laundry.coverImage}
-                            name={laundry.name}
-                            style={styles.storeThumbnail}
-                            colors={colors}
-                          />
+                          {/* Store Image with Open status dot */}
+                          <View style={styles.thumbnailContainer}>
+                            <StoreLogoImage
+                              uri={laundry.logo || laundry.coverImage}
+                              name={laundry.name}
+                              style={styles.storeThumbnail}
+                              colors={colors}
+                            />
+                            <View style={styles.storeLiveTag}>
+                              <View style={styles.storeLiveDot} />
+                              <Text style={styles.storeLiveText}>OPEN</Text>
+                            </View>
+                          </View>
 
                           <View style={styles.storeInfo}>
+                            {/* Store Name + Verified Badge + Heart */}
                             <View style={styles.storeTitleRow}>
-                              <Text
-                                variant="bodyMedium"
-                                weight="bold"
-                                colorVariant="primary"
-                                numberOfLines={1}
-                                style={{ flex: 1, marginRight: 8 }}
-                              >
-                                {laundry.name}
-                              </Text>
+                              <View style={styles.storeNameWithBadge}>
+                                <Text
+                                  variant="bodyMedium"
+                                  weight="bold"
+                                  colorVariant="primary"
+                                  numberOfLines={1}
+                                  style={styles.storeNameTitle}
+                                >
+                                  {laundry.name}
+                                </Text>
+                                <View style={styles.verifiedShield}>
+                                  <Text style={styles.verifiedShieldIcon}>✓</Text>
+                                </View>
+                              </View>
 
                               <TouchableOpacity
                                 onPress={(e) => {
@@ -607,49 +763,49 @@ export const CustomerHomeScreen = () => {
                                   toggleFavorite(laundry);
                                 }}
                                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                                style={{ paddingHorizontal: 4 }}
+                                style={{ padding: 4 }}
                               >
-                                <Icon name="heart" size={20} color={isFav ? '#EF4444' : colors.textMuted} />
+                                <Icon name="heart" size={20} color={isFav ? '#EF4444' : '#94A3B8'} />
                               </TouchableOpacity>
                             </View>
 
-                            <Text variant="caption" colorVariant="secondary" numberOfLines={1} style={{ marginTop: 2 }}>
+                            {/* Location & Distance with Pin */}
+                            <Text variant="caption" colorVariant="secondary" numberOfLines={1} style={styles.storeAddressText}>
                               📍 {formattedDistance} • {laundry.address || laundry.city}
                             </Text>
 
-                            {/* Service and Price Badges */}
+                            {/* Rating and Features */}
                             <View style={styles.badgesRow}>
-                              <View style={[styles.ratingPill, { backgroundColor: colors.surface }]}>
-                                <Text variant="caption" weight="bold" style={{ color: colors.status.warning }}>
-                                  ★ {Number(storeRating).toFixed(1)}
-                                </Text>
-                                <Text variant="caption" colorVariant="muted">
-                                  {' '}
-                                  ({ordersCount}+)
-                                </Text>
+                              <View style={styles.storeRatingBadge}>
+                                <Text style={styles.storeRatingStar}>★</Text>
+                                <Text style={styles.storeRatingValue}>{Number(storeRating).toFixed(1)}</Text>
+                                <Text style={styles.storeRatingCount}>({ordersCount}+)</Text>
                               </View>
 
-                              {isUnder3Km ? (
-                                <Badge label="FREE Pickup (≥ ₹100)" variant="success" size="sm" />
-                              ) : (
-                                <Badge label="Standard Distance Rates" variant="neutral" size="sm" />
-                              )}
+                              <View style={styles.expressTurnaroundBadge}>
+                                <Text style={styles.expressTurnaroundText}>⚡ {laundry.defaultTurnaroundHours || 24}h</Text>
+                              </View>
 
-                              <Badge label={`⚡ ${laundry.defaultTurnaroundHours || 24}h`} variant="info" size="sm" />
+                              {isUnder3Km && (
+                                <View style={styles.freePickupBadge}>
+                                  <Text style={styles.freePickupText}>FREE Pickup</Text>
+                                </View>
+                              )}
                             </View>
                           </View>
                         </View>
 
                         {/* Store Footer */}
-                        <View style={[styles.storeFooter, { borderTopColor: colors.borderLight }]}>
-                          <Text variant="caption" colorVariant="muted">
-                            🕒 {laundry.openTime || '10:00'} - {laundry.closeTime || '21:00'}
+                        <View style={styles.storeCardFooter}>
+                          <Text style={styles.storeTimingText}>
+                            🕒 {laundry.openTime || '09:00'} - {laundry.closeTime || '21:00'}
                           </Text>
-                          <Text variant="bodySmall" weight="bold" style={{ color: colors.primary }}>
-                            View Services & Prices →
-                          </Text>
+                          <View style={styles.viewMenuButton}>
+                            <Text style={styles.viewMenuButtonText}>View Services & Prices</Text>
+                            <Text style={styles.viewMenuArrow}>›</Text>
+                          </View>
                         </View>
-                      </Card>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -1006,19 +1162,57 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  storeCard: {
+  storeCardWrapper: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     padding: 14,
-    borderRadius: 14,
-    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   storeCardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  thumbnailContainer: {
+    position: 'relative',
+    width: 76,
+    height: 76,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   storeThumbnail: {
-    width: 68,
-    height: 68,
-    borderRadius: 10,
+    width: 76,
+    height: 76,
+    borderRadius: 12,
+  },
+  storeLiveTag: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  storeLiveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#22C55E',
+  },
+  storeLiveText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   fallbackLogo: {
     alignItems: 'center',
@@ -1034,27 +1228,126 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  storeNameWithBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 6,
+  },
+  storeNameTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+    flexShrink: 1,
+  },
+  verifiedShield: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 5,
+  },
+  verifiedShieldIcon: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    lineHeight: 12,
+  },
+  storeAddressText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 3,
+  },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 6,
+    marginTop: 8,
     flexWrap: 'wrap',
   },
-  ratingPill: {
+  storeRatingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 6,
+    gap: 3,
   },
-  storeFooter: {
+  storeRatingStar: {
+    fontSize: 11,
+    color: '#16A34A',
+    fontWeight: 'bold',
+  },
+  storeRatingValue: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  storeRatingCount: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#15803D',
+  },
+  expressTurnaroundBadge: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  expressTurnaroundText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  freePickupBadge: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  freePickupText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  storeCardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  storeTimingText: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  viewMenuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  viewMenuButtonText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  viewMenuArrow: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#2563EB',
+    marginTop: -1,
   },
   loaderContainer: {
     paddingVertical: 40,
@@ -1099,6 +1392,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 2,
     minWidth: 60,
+  },
+  catImageThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  garmentSection: {
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  garmentScroll: {
+    paddingHorizontal: 2,
+    gap: 12,
+  },
+  garmentCard: {
+    width: 140,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 8,
+    overflow: 'hidden',
+  },
+  garmentPhoto: {
+    width: '100%',
+    height: 100,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+  },
+  garmentInfo: {
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  garmentPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  garmentActionArea: {
+    marginTop: 4,
+  },
+  garmentAddBtn: {
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  garmentAddBtnText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  miniStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+  },
+  miniStepperBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   locationPromptCard: {
     padding: 24,

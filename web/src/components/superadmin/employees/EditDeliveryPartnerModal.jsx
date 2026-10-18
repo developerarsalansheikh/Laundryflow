@@ -12,6 +12,9 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
     vehicleType: 'bike',
     vehicleNumber: '',
     laundryId: '',
+    accessMode: 'single_laundry',
+    authorizedLaundries: [],
+    serviceRadiusKm: 15,
     isActive: true,
   });
   const [errors, setErrors] = useState({});
@@ -29,6 +32,11 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
         vehicleType: employee.vehicleType || 'bike',
         vehicleNumber: employee.vehicleNumber || '',
         laundryId: employee.laundryId?._id || employee.laundryId || '',
+        accessMode: employee.accessMode || (employee.createdSource === 'legacy' ? 'all_laundries' : 'single_laundry'),
+        authorizedLaundries: Array.isArray(employee.authorizedLaundries)
+          ? employee.authorizedLaundries.map((l) => (l?._id ? l._id : l))
+          : [],
+        serviceRadiusKm: employee.areaPolicy?.serviceRadiusKm || 15,
         isActive: employee.isActive !== false,
       });
       setErrors({});
@@ -56,6 +64,18 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
     }
   };
 
+  const toggleAuthorizedLaundry = (id) => {
+    setFormData((prev) => {
+      const exists = prev.authorizedLaundries.includes(id);
+      return {
+        ...prev,
+        authorizedLaundries: exists
+          ? prev.authorizedLaundries.filter((lId) => lId !== id)
+          : [...prev.authorizedLaundries, id],
+      };
+    });
+  };
+
   const validate = () => {
     const errs = {};
     if (!formData.name.trim()) errs.name = 'Full Name is required.';
@@ -75,8 +95,8 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
       errs.password = 'New password must be at least 6 characters.';
     }
 
-    if (!formData.laundryId) {
-      errs.laundryId = 'Please assign a laundry store.';
+    if (formData.accessMode === 'single_laundry' && !formData.laundryId) {
+      errs.laundryId = 'Please assign a primary laundry store.';
     }
 
     setErrors(errs);
@@ -86,6 +106,10 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
+    const finalAuthorized = formData.accessMode === 'multi_laundry'
+      ? Array.from(new Set([...formData.authorizedLaundries, formData.laundryId].filter(Boolean)))
+      : (formData.laundryId ? [formData.laundryId] : []);
+
     const payload = {
       id: employee._id,
       name: formData.name.trim(),
@@ -93,7 +117,13 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
       email: formData.email.trim().toLowerCase(),
       vehicleType: formData.vehicleType,
       vehicleNumber: formData.vehicleNumber.trim().toUpperCase(),
-      laundryId: formData.laundryId,
+      laundryId: formData.laundryId || (finalAuthorized[0] || null),
+      accessMode: formData.accessMode,
+      authorizedLaundries: finalAuthorized,
+      areaPolicy: {
+        mode: Number(formData.serviceRadiusKm) > 0 ? 'fixed_radius' : 'none',
+        serviceRadiusKm: Number(formData.serviceRadiusKm) || 15,
+      },
       isActive: formData.isActive,
     };
     if (formData.password && formData.password.trim().length >= 6) {
@@ -244,6 +274,96 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
               {errors.laundryId && <p className="text-[11px] text-rose-400 mt-1">{errors.laundryId}</p>}
             </div>
 
+            {/* Access Scope (Super Admin Configurable) */}
+            <div>
+              <label className="block text-xs font-medium text-textSecondary mb-1">
+                Access Scope <span className="text-rose-400">*</span>
+              </label>
+              <select
+                name="accessMode"
+                value={formData.accessMode}
+                onChange={handleChange}
+                className="input-glass w-full"
+              >
+                <option value="single_laundry">Single Laundry Store (Standard)</option>
+                <option value="multi_laundry">Multi-Laundry Cluster (Selected Stores)</option>
+                <option value="all_laundries">All Laundries (Platform Wide Dispatch)</option>
+              </select>
+            </div>
+
+            {/* Assigned Laundry Store (Single Mode) */}
+            {formData.accessMode === 'single_laundry' && (
+              <div>
+                <label className="block text-xs font-medium text-textSecondary mb-1">
+                  Assigned Laundry Store <span className="text-rose-400">*</span>
+                </label>
+                <div className="relative">
+                  <Store className="absolute left-3 top-2.5 w-4 h-4 text-textMuted pointer-events-none" />
+                  <select
+                    name="laundryId"
+                    value={formData.laundryId}
+                    onChange={handleChange}
+                    disabled={laundriesLoading}
+                    className={`input-glass pl-9 w-full appearance-none ${errors.laundryId ? 'border-rose-500/50' : ''}`}
+                  >
+                    <option value="">
+                      {laundriesLoading ? 'Loading stores...' : 'Select a laundry store'}
+                    </option>
+                    {laundries.map((l) => (
+                      <option key={l._id} value={l._id}>
+                        {l.name} — {l.city} ({l.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {errors.laundryId && <p className="text-[11px] text-rose-400 mt-1">{errors.laundryId}</p>}
+              </div>
+            )}
+
+            {/* Multi-Laundry Store Selection (Multi Mode) */}
+            {formData.accessMode === 'multi_laundry' && (
+              <div>
+                <label className="block text-xs font-medium text-textSecondary mb-1">
+                  Select Authorized Laundry Stores <span className="text-rose-400">*</span>
+                </label>
+                <div className="max-h-36 overflow-y-auto p-2 rounded-xl border border-white/10 bg-white/[0.02] space-y-1.5">
+                  {laundries.map((l) => {
+                    const isChecked = formData.authorizedLaundries.includes(l._id) || formData.laundryId === l._id;
+                    return (
+                      <label key={l._id} className="flex items-center gap-2 text-xs text-textSecondary hover:text-textPrimary cursor-pointer p-1 rounded hover:bg-white/5">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleAuthorizedLaundry(l._id)}
+                          className="rounded border-white/20 text-indigo-600 focus:ring-0"
+                        />
+                        <span className="truncate">{l.name} ({l.city})</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {errors.laundryId && <p className="text-[11px] text-rose-400 mt-1">{errors.laundryId}</p>}
+              </div>
+            )}
+
+            {/* Service Radius (km) */}
+            <div>
+              <label className="block text-xs font-medium text-textSecondary mb-1">
+                Max Service Dispatch Radius (KM)
+              </label>
+              <input
+                type="number"
+                name="serviceRadiusKm"
+                min="1"
+                max="100"
+                value={formData.serviceRadiusKm}
+                onChange={handleChange}
+                placeholder="e.g. 15 km"
+                className="input-glass w-full"
+              />
+              <p className="text-[10px] text-textMuted mt-0.5">Orders outside this radius from store base will not be eligible.</p>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-textSecondary mb-1">Vehicle Type</label>
@@ -253,11 +373,11 @@ export const EditDeliveryPartnerModal = ({ isOpen, onClose, onSubmit, employee, 
                   onChange={handleChange}
                   className="input-glass w-full"
                 >
-                  <option value="bike" className="bg-slate-900 text-slate-100">Motorcycle / Bike</option>
-                  <option value="scooter" className="bg-slate-900 text-slate-100">Scooter</option>
-                  <option value="bicycle" className="bg-slate-900 text-slate-100">Bicycle</option>
-                  <option value="van" className="bg-slate-900 text-slate-100">Delivery Van</option>
-                  <option value="other" className="bg-slate-900 text-slate-100">Other</option>
+                  <option value="bike">Motorcycle / Bike</option>
+                  <option value="scooter">Scooter</option>
+                  <option value="bicycle">Bicycle</option>
+                  <option value="van">Delivery Van</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
 

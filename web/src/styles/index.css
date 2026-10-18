@@ -8,7 +8,16 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
+  }
+
+  select {
+    color-scheme: light;
+  }
+
+  option {
+    background-color: #ffffff;
+    color: #0f172a;
   }
 
   body {

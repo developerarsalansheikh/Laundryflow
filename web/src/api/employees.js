@@ -79,6 +79,24 @@ export const toggleDeliveryPartnerApi = async ({ id, isActive }) => {
   return response.data;
 };
 
+/**
+ * Approve a pending delivery partner (SuperAdmin only).
+ * PUT /api/laundry/admin/delivery-partner/:id/approve
+ */
+export const approveDeliveryPartnerApi = async (id) => {
+  const response = await api.put(`/api/laundry/admin/delivery-partner/${id}/approve`);
+  return response.data;
+};
+
+/**
+ * Reject a delivery partner request (SuperAdmin only).
+ * PUT /api/laundry/admin/delivery-partner/:id/reject
+ */
+export const rejectDeliveryPartnerApi = async ({ id, rejectionReason }) => {
+  const response = await api.put(`/api/laundry/admin/delivery-partner/${id}/reject`, { rejectionReason });
+  return response.data;
+};
+
 export const employeesApi = {
   getSuperAdminEmployeesApi,
   getEmployeeByIdApi,
@@ -87,6 +105,8 @@ export const employeesApi = {
   updateDeliveryPartnerApi,
   getDeliveryPartnersApi,
   toggleDeliveryPartnerApi,
+  approveDeliveryPartnerApi,
+  rejectDeliveryPartnerApi,
 };
 
 export default employeesApi;

@@ -502,17 +502,36 @@ const getLaundryDashboard = async (req, res) => {
 // @route   POST /api/laundry/admin/delivery-partner
 // @access  Private/SuperAdmin
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// @desc    Delivery partner add karo (Laundry Admin: Pending Approval | SuperAdmin: Direct Active)
+// @route   POST /api/laundry/admin/delivery-partner
+// @access  Private/Admin, Private/SuperAdmin
+// ─────────────────────────────────────────────
 const addDeliveryPartner = async (req, res) => {
   try {
-    // Only Super Admin can create Delivery Agents
-    if (req.user.role !== "superadmin") {
+    const isSuperAdmin = req.user.role === "superadmin";
+    const isLaundryAdmin = req.user.role === "admin";
+
+    if (!isSuperAdmin && !isLaundryAdmin) {
       return res.status(403).json({
         success: false,
-        message: "Access denied. Only Super Admin can create delivery agents.",
+        message: "Access denied. Only Super Admin or Laundry Admin can add delivery agents.",
       });
     }
 
-    const { name, email, phone, password, vehicleType, vehicleNumber, laundryId, isActive } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      password,
+      vehicleType,
+      vehicleNumber,
+      laundryId: inputLaundryId,
+      accessMode,
+      authorizedLaundries,
+      areaPolicy,
+      isActive,
+    } = req.body;
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
@@ -521,14 +540,28 @@ const addDeliveryPartner = async (req, res) => {
       });
     }
 
-    if (!laundryId) {
+    // Determine target laundry
+    let targetLaundryId = null;
+    if (isLaundryAdmin) {
+      if (!req.user.laundryId) {
+        return res.status(400).json({
+          success: false,
+          message: "Your admin account is not linked to any authorized laundry.",
+        });
+      }
+      targetLaundryId = req.user.laundryId;
+    } else {
+      targetLaundryId = inputLaundryId || req.user.laundryId;
+    }
+
+    if (!targetLaundryId) {
       return res.status(400).json({
         success: false,
         message: "Please select an assigned laundry store.",
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(laundryId)) {
+    if (!mongoose.Types.ObjectId.isValid(targetLaundryId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Laundry ID format.",
@@ -536,7 +569,7 @@ const addDeliveryPartner = async (req, res) => {
     }
 
     // Validate that the assigned laundry exists
-    const laundryDoc = await Laundry.findById(laundryId);
+    const laundryDoc = await Laundry.findById(targetLaundryId);
     if (!laundryDoc) {
       return res.status(404).json({
         success: false,
@@ -579,6 +612,55 @@ const addDeliveryPartner = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Delivery Agent Model Category Settings
+    let agentSource = "super_admin";
+    let agentApproval = "approved";
+    let agentAccessMode = "single_laundry";
+    let agentAuthorizedLaundries = [laundryDoc._id];
+    let agentAreaPolicy = {
+      mode: "none",
+      fixedBaseLocation: { address: "", lat: null, lng: null },
+      serviceRadiusKm: 10,
+    };
+    let agentActive = true;
+
+    if (isLaundryAdmin) {
+      // Category B: Laundry Admin Created
+      agentSource = "laundry_admin";
+      agentApproval = "pending";
+      agentAccessMode = "single_laundry";
+      agentAuthorizedLaundries = [laundryDoc._id];
+      agentActive = false; // Cannot operate until Super Admin approval
+    } else {
+      // Category C: Super Admin Created
+      agentSource = "super_admin";
+      agentApproval = "approved";
+      agentAccessMode = accessMode === "multi_laundry" ? "multi_laundry" : "single_laundry";
+
+      if (agentAccessMode === "multi_laundry" && Array.isArray(authorizedLaundries) && authorizedLaundries.length > 0) {
+        agentAuthorizedLaundries = authorizedLaundries.filter((id) => mongoose.Types.ObjectId.isValid(id));
+        if (!agentAuthorizedLaundries.some((id) => id.toString() === laundryDoc._id.toString())) {
+          agentAuthorizedLaundries.push(laundryDoc._id);
+        }
+      } else {
+        agentAuthorizedLaundries = [laundryDoc._id];
+      }
+
+      if (areaPolicy && typeof areaPolicy === "object") {
+        agentAreaPolicy = {
+          mode: ["none", "fixed", "live", "both"].includes(areaPolicy.mode) ? areaPolicy.mode : "none",
+          fixedBaseLocation: {
+            address: areaPolicy.fixedBaseLocation?.address || "",
+            lat: areaPolicy.fixedBaseLocation?.lat != null ? Number(areaPolicy.fixedBaseLocation.lat) : null,
+            lng: areaPolicy.fixedBaseLocation?.lng != null ? Number(areaPolicy.fixedBaseLocation.lng) : null,
+          },
+          serviceRadiusKm: Number(areaPolicy.serviceRadiusKm) > 0 ? Number(areaPolicy.serviceRadiusKm) : 10,
+        };
+      }
+
+      agentActive = isActive !== undefined ? Boolean(isActive) : true;
+    }
+
     const deliveryPartner = await User.create({
       name: name.trim(),
       email: cleanEmail,
@@ -589,18 +671,28 @@ const addDeliveryPartner = async (req, res) => {
       vehicleType: vehicleType || "bike",
       vehicleNumber: vehicleNumber ? String(vehicleNumber).trim().toUpperCase() : "",
       isVerified: true,
-      isActive: isActive !== undefined ? Boolean(isActive) : true,
-      isAvailable: true,
-      availabilityStatus: "available",
+      isActive: agentActive,
+      isAvailable: isSuperAdmin,
+      availabilityStatus: isSuperAdmin ? "available" : "offline",
+      createdSource: agentSource,
+      approvalStatus: agentApproval,
+      accessMode: agentAccessMode,
+      authorizedLaundries: agentAuthorizedLaundries,
+      areaPolicy: agentAreaPolicy,
     });
 
     const populated = await User.findById(deliveryPartner._id)
       .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
-      .populate("laundryId", "name address city phone status");
+      .populate("laundryId", "name address city phone status")
+      .populate("authorizedLaundries", "name address city phone status");
+
+    const message = isLaundryAdmin
+      ? "Delivery partner requested successfully. It is currently Pending Approval from Super Admin."
+      : "Delivery partner created successfully.";
 
     return res.status(201).json({
       success: true,
-      message: "Delivery partner created successfully.",
+      message,
       data: populated,
     });
   } catch (error) {
@@ -628,6 +720,12 @@ const getDeliveryPartners = async (req, res) => {
       if (req.query.laundryId && mongoose.Types.ObjectId.isValid(req.query.laundryId)) {
         filter.laundryId = req.query.laundryId;
       }
+      if (req.query.approvalStatus) {
+        filter.approvalStatus = req.query.approvalStatus;
+      }
+      if (req.query.createdSource) {
+        filter.createdSource = req.query.createdSource;
+      }
     }
 
     if (req.query.status === "active") filter.isActive = true;
@@ -654,8 +752,12 @@ const getDeliveryPartners = async (req, res) => {
     }
 
     const partners = await User.find(filter)
-      .select("name email phone isActive availabilityStatus isAvailable lastSeen currentLocation createdAt laundryId vehicleType vehicleNumber totalEarnings totalDeliveries")
+      .select(
+        "name email phone isActive availabilityStatus isAvailable lastSeen currentLocation createdAt laundryId vehicleType vehicleNumber totalEarnings totalDeliveries createdSource approvalStatus rejectionReason accessMode authorizedLaundries areaPolicy approvedBy approvedAt"
+      )
       .populate("laundryId", "name address city phone status")
+      .populate("authorizedLaundries", "name address city phone status")
+      .populate("approvedBy", "name email")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -668,7 +770,123 @@ const getDeliveryPartners = async (req, res) => {
     console.error("GetDeliveryPartners error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch delivery partners. Please try again.",
+      message: "Unable to fetch delivery partners.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Approve Delivery Agent (SuperAdmin only)
+// @route   PUT /api/laundry/admin/delivery-partner/:id/approve
+// @access  Private/SuperAdmin
+// ─────────────────────────────────────────────
+const approveDeliveryPartner = async (req, res) => {
+  try {
+    if (req.user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only Super Admin can approve delivery agents.",
+      });
+    }
+
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Delivery Partner ID format.",
+      });
+    }
+
+    const partner = await User.findOne({ _id: id, role: "delivery" });
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery partner not found.",
+      });
+    }
+
+    partner.approvalStatus = "approved";
+    partner.approvedBy = req.user._id;
+    partner.approvedAt = new Date();
+    partner.rejectionReason = "";
+    partner.isActive = true;
+    await partner.save();
+
+    const populated = await User.findById(partner._id)
+      .select("-password -otp -otpExpiry -refreshToken -passwordResetToken")
+      .populate("laundryId", "name address city phone status")
+      .populate("authorizedLaundries", "name address city phone status")
+      .populate("approvedBy", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: `Delivery agent ${partner.name} approved successfully.`,
+      data: populated,
+    });
+  } catch (error) {
+    console.error("ApproveDeliveryPartner error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to approve delivery agent.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Reject Delivery Agent (SuperAdmin only)
+// @route   PUT /api/laundry/admin/delivery-partner/:id/reject
+// @access  Private/SuperAdmin
+// ─────────────────────────────────────────────
+const rejectDeliveryPartner = async (req, res) => {
+  try {
+    if (req.user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only Super Admin can reject delivery agents.",
+      });
+    }
+
+    const { id } = req.params;
+    const { rejectionReason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Delivery Partner ID format.",
+      });
+    }
+
+    const partner = await User.findOne({ _id: id, role: "delivery" });
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery partner not found.",
+      });
+    }
+
+    partner.approvalStatus = "rejected";
+    partner.rejectionReason = String(rejectionReason || "Application does not meet platform requirements.").trim();
+    partner.isActive = false;
+    await partner.save();
+
+    const populated = await User.findById(partner._id)
+      .select("-password -otp -otpExpiry -refreshToken -passwordResetToken")
+      .populate("laundryId", "name address city phone status")
+      .populate("authorizedLaundries", "name address city phone status")
+      .populate("approvedBy", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: `Delivery agent ${partner.name} was rejected.`,
+      data: populated,
+    });
+  } catch (error) {
+    console.error("RejectDeliveryPartner error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to reject delivery agent.",
       error: error.message,
     });
   }
@@ -763,7 +981,7 @@ const updateDeliveryPartner = async (req, res) => {
       });
     }
 
-    const { name, email, phone, vehicleType, vehicleNumber, laundryId, isActive, password } = req.body;
+    const { name, email, phone, vehicleType, vehicleNumber, laundryId, isActive, password, accessMode, authorizedLaundries, areaPolicy } = req.body;
     const updates = {};
 
     if (name && name.trim()) {
@@ -780,6 +998,26 @@ const updateDeliveryPartner = async (req, res) => {
 
     if (isActive !== undefined) {
       updates.isActive = Boolean(isActive);
+    }
+
+    if (accessMode && ["single_laundry", "multi_laundry", "all_laundries"].includes(accessMode)) {
+      updates.accessMode = accessMode;
+    }
+
+    if (Array.isArray(authorizedLaundries)) {
+      updates.authorizedLaundries = authorizedLaundries.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    }
+
+    if (areaPolicy && typeof areaPolicy === "object") {
+      updates.areaPolicy = {
+        mode: ["none", "fixed", "live", "both"].includes(areaPolicy.mode) ? areaPolicy.mode : partner.areaPolicy?.mode || "none",
+        fixedBaseLocation: {
+          address: areaPolicy.fixedBaseLocation?.address ?? partner.areaPolicy?.fixedBaseLocation?.address ?? "",
+          lat: areaPolicy.fixedBaseLocation?.lat != null ? Number(areaPolicy.fixedBaseLocation.lat) : partner.areaPolicy?.fixedBaseLocation?.lat ?? null,
+          lng: areaPolicy.fixedBaseLocation?.lng != null ? Number(areaPolicy.fixedBaseLocation.lng) : partner.areaPolicy?.fixedBaseLocation?.lng ?? null,
+        },
+        serviceRadiusKm: Number(areaPolicy.serviceRadiusKm) > 0 ? Number(areaPolicy.serviceRadiusKm) : partner.areaPolicy?.serviceRadiusKm || 10,
+      };
     }
 
     if (laundryId) {
@@ -849,7 +1087,8 @@ const updateDeliveryPartner = async (req, res) => {
 
     const updatedPartner = await User.findByIdAndUpdate(partner._id, updates, { new: true })
       .select("-password -otp -otpExpiry -refreshToken -passwordResetToken -passwordResetExpiry")
-      .populate("laundryId", "name address city phone status");
+      .populate("laundryId", "name address city phone status")
+      .populate("authorizedLaundries", "name address city phone status");
 
     return res.status(200).json({
       success: true,
@@ -1517,6 +1756,8 @@ module.exports = {
   getDeliveryPartners,
   toggleDeliveryPartner,
   updateDeliveryPartner,
+  approveDeliveryPartner,
+  rejectDeliveryPartner,
   getAllLaundries,
   getLaundryById,
   addTimeSlot,

@@ -72,11 +72,11 @@ export const SubscriptionFilters = ({
               id="sub-plan-filter"
               value={filters.planId || ''}
               onChange={handlePlan}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all min-w-[140px]"
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all min-w-[140px] cursor-pointer"
             >
-              <option value="" className="bg-[#0f172a]">All Plans</option>
+              <option value="" className="bg-white text-slate-800 py-1">All Plans</option>
               {plans.map((p) => (
-                <option key={p._id} value={p._id} className="bg-[#0f172a]">
+                <option key={p._id} value={p._id} className="bg-white text-slate-800 py-1">
                   {p.name}
                 </option>
               ))}
@@ -90,10 +90,10 @@ export const SubscriptionFilters = ({
             id="sub-status-filter"
             value={filters.status || ''}
             onChange={handleStatus}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all min-w-[140px]"
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all min-w-[140px] cursor-pointer"
           >
             {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-[#0f172a]">
+              <option key={opt.value} value={opt.value} className="bg-white text-slate-800 py-1">
                 {opt.label}
               </option>
             ))}

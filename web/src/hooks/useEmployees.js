@@ -7,6 +7,8 @@ import {
   updateDeliveryPartnerApi,
   getDeliveryPartnersApi,
   toggleDeliveryPartnerApi,
+  approveDeliveryPartnerApi,
+  rejectDeliveryPartnerApi,
 } from '../api/employees';
 
 /**
@@ -114,6 +116,40 @@ export const useToggleDeliveryPartner = () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'employee', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
+    },
+  });
+};
+
+/**
+ * Mutation to approve a pending delivery partner (SuperAdmin only).
+ * Backed by: PUT /api/laundry/admin/delivery-partner/:id/approve
+ */
+export const useApproveDeliveryPartner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => approveDeliveryPartnerApi(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
+    },
+  });
+};
+
+/**
+ * Mutation to reject a pending delivery partner (SuperAdmin only).
+ * Backed by: PUT /api/laundry/admin/delivery-partner/:id/reject
+ */
+export const useRejectDeliveryPartner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, rejectionReason }) => rejectDeliveryPartnerApi({ id, rejectionReason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin', 'delivery-partners'] });
       queryClient.invalidateQueries({ queryKey: ['superadmin', 'users'] });
     },
   });

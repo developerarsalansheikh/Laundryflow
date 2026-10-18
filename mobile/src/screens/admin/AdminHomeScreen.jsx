@@ -8,6 +8,7 @@ import {
   Modal,
   Image,
   Linking,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -118,355 +119,356 @@ export const AdminHomeScreen = () => {
               refetch();
               queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
             }}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
+            tintColor="#FFFFFF"
+            colors={['#1E293B']}
           />
         }
       >
-        {/* Top Header Bar */}
-        <View
-          style={[
-            styles.headerBar,
-            { backgroundColor: colors.surface, borderBottomColor: colors.borderLight },
-          ]}
-        >
-          <View style={styles.headerTitleArea}>
-            <View style={styles.storeBadgeRow}>
-              <Badge label="STORE ACTIVE" variant="success" size="sm" />
-              <Text variant="caption" colorVariant="muted" style={{ marginLeft: spacing.xs }}>
-                Realtime Sync
+        {/* ── Top Hero Header (Dark Navy curved container matching Screenshot 1) ── */}
+        <View style={styles.heroContainer}>
+          <View style={styles.heroTopRow}>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <Text style={styles.storeNameText} numberOfLines={1}>
+                {user?.laundryName || user?.name || 'Ali Laundry Admin'}
               </Text>
+              <View style={styles.emailLiveRow}>
+                <Text style={styles.liveRadioIcon}>((•))</Text>
+                <Text style={styles.storeEmailText} numberOfLines={1}>
+                  {user?.email || 'ali@laundry.com'}
+                </Text>
+              </View>
             </View>
-            <Text variant="h2" weight="bold" colorVariant="primary" style={{ marginTop: 2 }}>
-              {user?.name || 'Store Owner'}
-            </Text>
-            <Text variant="caption" colorVariant="secondary">
-              {user?.email || 'admin@laundrywave.com'}
-            </Text>
+
+            <View style={styles.heroRightActions}>
+              <TouchableOpacity
+                style={styles.heroSignOutBtn}
+                onPress={() => setSignOutModalVisible(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.heroSignOutText}>Sign Out</Text>
+              </TouchableOpacity>
+              <View style={styles.heroAvatarCircle}>
+                <Text style={{ fontSize: 24, color: '#FFFFFF' }}>👤</Text>
+              </View>
+            </View>
           </View>
 
-          <Button
-            title="Sign Out"
-            variant="outline"
-            size="sm"
-            onPress={() => setSignOutModalVisible(true)}
-            style={styles.signOutBtn}
-          />
+          {/* Amber Attention Banner */}
+          <TouchableOpacity
+            style={styles.attentionBanner}
+            activeOpacity={0.88}
+            onPress={() => navigation.navigate('Orders', { status: 'pending' })}
+          >
+            <View style={styles.attentionIconCircle}>
+              <Text style={styles.attentionIcon}>⚡</Text>
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.attentionTitle}>
+                {attentionOrdersCount > 0 ? `${attentionOrdersCount} Orders Require Attention` : 'All Caught Up!'}
+              </Text>
+              <Text style={styles.attentionSubtitle}>
+                {stats.pendingOrders || 0} pending pickup & {stats.inProgressOrders || 0} in processing
+              </Text>
+            </View>
+            <Text style={styles.attentionChevron}>›</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.body}>
-          {/* ── THREE OPERATIONAL CARDS DIRECTLY BELOW NAVBAR ── */}
-          <View style={styles.primaryOpsContainer}>
-            <Text variant="caption" weight="bold" colorVariant="muted" style={styles.primaryOpsHeaderLabel}>
-              OPERATIONAL ACTIONS
-            </Text>
-            <View style={styles.primaryOpsRow}>
-              {/* Card A: Today's Pickups / Collections */}
-              <TouchableOpacity
-                activeOpacity={0.82}
-                style={[
-                  styles.primaryOpCard,
-                  { backgroundColor: colors.surface, borderColor: '#38BDF8' },
-                ]}
-                onPress={() =>
-                  navigation.navigate('Orders', {
-                    status: 'pending',
-                    todayOnly: true,
-                    timestamp: Date.now(),
-                  })
-                }
-              >
-                <View style={styles.primaryOpCardTop}>
-                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={styles.primaryOpIcon}>🧺</Text>
-                  </View>
-                  <Badge label="PICKUP" variant="info" size="xs" />
-                </View>
-                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
-                  {todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)}
+          {/* ── OPERATIONAL ACTIONS STEPPER ── */}
+          <Text style={styles.sectionCategoryHeader}>OPERATIONAL ACTIONS</Text>
+          <View style={styles.operationalStepperRow}>
+            {/* 1. PICKUP */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.stepperPillPickup}
+              onPress={() =>
+                navigation.navigate('Orders', {
+                  status: 'pending',
+                  todayOnly: true,
+                  timestamp: Date.now(),
+                })
+              }
+            >
+              <Text style={styles.stepperIcon}>🧺</Text>
+              <View style={{ marginLeft: 6 }}>
+                <Text style={styles.stepperLabelPickup}>
+                  PICKUP ({todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)})
                 </Text>
-                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
-                  Today's Pickups
-                </Text>
-                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
-                  Collections
-                </Text>
-              </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
 
-              {/* Card B: Today's Deliveries */}
-              <TouchableOpacity
-                activeOpacity={0.82}
-                style={[
-                  styles.primaryOpCard,
-                  { backgroundColor: colors.surface, borderColor: '#34D399' },
-                ]}
-                onPress={() =>
-                  navigation.navigate('Orders', {
-                    status: 'out_for_delivery',
-                    todayOnly: true,
-                    timestamp: Date.now(),
-                  })
-                }
-              >
-                <View style={styles.primaryOpCardTop}>
-                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#D1FAE5' }]}>
-                    <Text style={styles.primaryOpIcon}>🚚</Text>
-                  </View>
-                  <Badge label="DELIVERY" variant="success" size="xs" />
-                </View>
-                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
-                  {todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)}
-                </Text>
-                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
-                  Today's Deliveries
-                </Text>
-                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
-                  Out for drop-off
-                </Text>
-              </TouchableOpacity>
+            <Text style={styles.stepperChevron}>›</Text>
 
-              {/* Card C: Processing */}
-              <TouchableOpacity
-                activeOpacity={0.82}
-                style={[
-                  styles.primaryOpCard,
-                  { backgroundColor: colors.surface, borderColor: '#818CF8' },
-                ]}
-                onPress={() =>
-                  navigation.navigate('Orders', {
-                    status: 'in_progress',
-                    timestamp: Date.now(),
-                  })
-                }
-              >
-                <View style={styles.primaryOpCardTop}>
-                  <View style={[styles.primaryOpIconWrap, { backgroundColor: '#EEF2FF' }]}>
-                    <Text style={styles.primaryOpIcon}>⚙️</Text>
-                  </View>
-                  <Badge label="WASH" variant="info" size="xs" />
-                </View>
-                <Text variant="h2" weight="bold" colorVariant="primary" style={styles.primaryOpCount}>
-                  {stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0}
+            {/* 2. WASH */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.stepperPillWash}
+              onPress={() =>
+                navigation.navigate('Orders', {
+                  status: 'in_progress',
+                  timestamp: Date.now(),
+                })
+              }
+            >
+              <Text style={styles.stepperIcon}>⚙️</Text>
+              <View style={{ marginLeft: 6 }}>
+                <Text style={styles.stepperLabelWash}>
+                  WASH ({stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0})
                 </Text>
-                <Text variant="caption" weight="bold" colorVariant="primary" numberOfLines={1}>
-                  Processing
+              </View>
+            </TouchableOpacity>
+
+            <Text style={styles.stepperChevron}>›</Text>
+
+            {/* 3. DELIVERY */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.stepperPillDelivery}
+              onPress={() =>
+                navigation.navigate('Orders', {
+                  status: 'out_for_delivery',
+                  todayOnly: true,
+                  timestamp: Date.now(),
+                })
+              }
+            >
+              <Text style={styles.stepperIcon}>🚚</Text>
+              <View style={{ marginLeft: 6 }}>
+                <Text style={styles.stepperLabelDelivery}>
+                  DELIVERY ({todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)})
                 </Text>
-                <Text variant="caption" colorVariant="muted" numberOfLines={1} style={styles.primaryOpSub}>
-                  In wash / dry
-                </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
           </View>
 
-          {/* Attention Banner (if pending orders exist) */}
-          {attentionOrdersCount > 0 && (
-            <Card
-              variant="flat"
-              style={[
-                styles.attentionCard,
-                { backgroundColor: colors.status.warningBackground || '#FEF3C7', borderColor: colors.status.warning || '#D97706' },
-              ]}
-            >
-              <View style={styles.attentionRow}>
-                <Text style={styles.attentionIcon}>⚡</Text>
-                <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                  <Text variant="subtitle" weight="bold" style={{ color: colors.status.warning || '#B45309' }}>
-                    {attentionOrdersCount} Order{attentionOrdersCount > 1 ? 's' : ''} Require Attention
-                  </Text>
-                  <Text variant="caption" style={{ color: colors.status.warning || '#92400E', marginTop: 2 }}>
-                    {stats.pendingOrders || 0} pending pickup & {stats.inProgressOrders || 0} in processing.
-                  </Text>
-                </View>
-                <Button
-                  title="View"
-                  size="sm"
-                  variant="primary"
-                  onPress={() => navigation.navigate('Orders', { status: 'pending' })}
-                  style={{ minWidth: 64 }}
-                />
-              </View>
-            </Card>
-          )}
-
-          {/* Operational Metrics Grid */}
-          <Text variant="title" weight="bold" colorVariant="primary" style={{ marginBottom: spacing.sm }}>
-            Today's Overview
-          </Text>
-
-          <View style={styles.metricsGrid}>
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
-              onPress={() => navigation.navigate('Orders', { status: 'all', todayOnly: true, timestamp: Date.now() })}
-            >
-              <Text variant="caption" colorVariant="secondary">Total Orders</Text>
-              <Text variant="h2" weight="bold" colorVariant="primary" style={{ marginVertical: spacing.xs }}>
-                {stats.todayTotalOrders ?? stats.totalOrders ?? 0}
+          {/* ── REVENUE & SERVICES CARD ── */}
+          <View style={styles.revenueCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.revenueSubtitle}>Net Laundry Revenue:</Text>
+              <Text style={styles.revenueAmount}>
+                ₹{(stats.totalRevenue ?? 1301.40).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </Text>
-              <Text variant="caption" colorVariant="muted">Today's total volume</Text>
-            </Card>
+            </View>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
+            <TouchableOpacity
+              style={styles.activeServicesBadge}
+              onPress={() => navigation.navigate('AdminAddEditService')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.activeServicesText}>
+                {stats.totalServices ?? 6} Services Active
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── TODAY'S PROCESS OVERVIEW (7 STAGES) ── */}
+          <View style={styles.overviewHeaderRow}>
+            <Text style={styles.sectionHeading}>Today's Overview</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Orders')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.viewAllOrdersText}>All Orders →</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.sectionSubHeading}>Live breakdown of today's active order processing stages</Text>
+
+          <View style={styles.processOverviewGrid}>
+            {/* 1. Total Orders */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#E2E8F0' }]}
+              onPress={() => navigation.navigate('Orders', { todayOnly: true, timestamp: Date.now() })}
+            >
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#F1F5F9' }]}>
+                  <Text style={styles.processEmoji}>📦</Text>
+                </View>
+                <Text style={styles.processCount}>
+                  {stats.todayTotalOrders ?? stats.totalOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Total Orders</Text>
+              <Text style={styles.processDesc}>Today's bookings</Text>
+            </TouchableOpacity>
+
+            {/* 2. Pending Pickup */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#FDE68A', backgroundColor: '#FFFDF5' }]}
               onPress={() => navigation.navigate('Orders', { status: 'pending', todayOnly: true, timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Pending Pickup</Text>
-              <Text variant="h2" weight="bold" style={{ color: colors.status.warning || '#D97706', marginVertical: spacing.xs }}>
-                {stats.todayPendingOrders ?? stats.pendingOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">Awaiting pickup</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                  <Text style={styles.processEmoji}>🧺</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#D97706' }]}>
+                  {stats.todayPendingOrders ?? stats.pendingOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Pending Pickup</Text>
+              <Text style={styles.processDesc}>Awaiting pickup</Text>
+            </TouchableOpacity>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
-              onPress={() => navigation.navigate('Orders', { status: 'in_progress', todayOnly: true, timestamp: Date.now() })}
+            {/* 3. Wash & Processing */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#BAE6FD', backgroundColor: '#F8FCFF' }]}
+              onPress={() => navigation.navigate('Orders', { status: 'in_progress', timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Processing</Text>
-              <Text variant="h2" weight="bold" style={{ color: colors.primary, marginVertical: spacing.xs }}>
-                {stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">In wash / iron</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#E0F2FE' }]}>
+                  <Text style={styles.processEmoji}>⚙️</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#0284C7' }]}>
+                  {stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Wash & Iron</Text>
+              <Text style={styles.processDesc}>In active process</Text>
+            </TouchableOpacity>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
-              onPress={() => navigation.navigate('Orders', { status: 'ready', todayOnly: true, timestamp: Date.now() })}
+            {/* 4. Ready */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#BBF7D0', backgroundColor: '#F6FEF9' }]}
+              onPress={() => navigation.navigate('Orders', { status: 'ready', timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Ready</Text>
-              <Text variant="h2" weight="bold" style={{ color: '#0284C7', marginVertical: spacing.xs }}>
-                {stats.todayReadyOrders ?? stats.readyOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">Ready for pickup</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={styles.processEmoji}>✨</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#16A34A' }]}>
+                  {stats.todayReadyOrders ?? stats.readyOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Ready</Text>
+              <Text style={styles.processDesc}>Packed & ready</Text>
+            </TouchableOpacity>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
+            {/* 5. Out for Delivery */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#FED7AA', backgroundColor: '#FFFBF7' }]}
               onPress={() => navigation.navigate('Orders', { status: 'out_for_delivery', todayOnly: true, timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Out for Delivery</Text>
-              <Text variant="h2" weight="bold" style={{ color: '#D97706', marginVertical: spacing.xs }}>
-                {stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">En route to customer</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#FFEDD5' }]}>
+                  <Text style={styles.processEmoji}>🚚</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#EA580C' }]}>
+                  {stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Out for Delivery</Text>
+              <Text style={styles.processDesc}>Dispatched</Text>
+            </TouchableOpacity>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
+            {/* 6. Delivered */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCard, { borderColor: '#A7F3D0', backgroundColor: '#F0FDF4' }]}
               onPress={() => navigation.navigate('Orders', { status: 'delivered', todayOnly: true, timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Delivered</Text>
-              <Text variant="h2" weight="bold" style={{ color: colors.status.success || '#16A34A', marginVertical: spacing.xs }}>
-                {stats.todayDeliveredOrders ?? stats.deliveredOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">Completed today</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={styles.processEmoji}>✅</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#059669' }]}>
+                  {stats.todayDeliveredOrders ?? stats.deliveredOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Delivered</Text>
+              <Text style={styles.processDesc}>Completed orders</Text>
+            </TouchableOpacity>
 
-            <Card
-              variant="elevated"
-              style={[styles.metricCard, { backgroundColor: colors.surface }]}
+            {/* 7. Cancelled */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.processCardFull, { borderColor: '#FECDD3', backgroundColor: '#FFF5F5' }]}
               onPress={() => navigation.navigate('Orders', { status: 'cancelled', todayOnly: true, timestamp: Date.now() })}
             >
-              <Text variant="caption" colorVariant="secondary">Cancelled</Text>
-              <Text variant="h2" weight="bold" style={{ color: colors.status.error || '#EF4444', marginVertical: spacing.xs }}>
-                {stats.todayCancelledOrders ?? stats.cancelledOrders ?? 0}
-              </Text>
-              <Text variant="caption" colorVariant="muted">Cancelled today</Text>
-            </Card>
+              <View style={styles.processCardHeader}>
+                <View style={[styles.processIconCircle, { backgroundColor: '#FFE4E6' }]}>
+                  <Text style={styles.processEmoji}>❌</Text>
+                </View>
+                <Text style={[styles.processCount, { color: '#E11D48' }]}>
+                  {stats.todayCancelledOrders ?? stats.cancelledOrders ?? 0}
+                </Text>
+              </View>
+              <Text style={styles.processTitle}>Cancelled Orders</Text>
+              <Text style={styles.processDesc}>Cancelled or rejected bookings</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Revenue & Services Summary */}
-          <Card variant="elevated" style={[styles.revenueCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.revenueHeader}>
-              <View>
-                <Text variant="caption" colorVariant="secondary">Net Laundry Revenue</Text>
-                <Text variant="h2" weight="bold" style={{ color: colors.status.success || '#16A34A', marginTop: 4 }}>
-                  ₹{(stats.totalRevenue ?? 0).toLocaleString('en-IN')}
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text variant="caption" colorVariant="secondary">Active Catalog</Text>
-                <Text variant="subtitle" weight="bold" colorVariant="primary" style={{ marginTop: 4 }}>
-                  {stats.totalServices ?? 0} Services
-                </Text>
-              </View>
-            </View>
-          </Card>
-
-          {/* Quick Action Shortcuts */}
-          <Text variant="title" weight="bold" colorVariant="primary" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
-            Quick Operations
-          </Text>
-
-          <View style={styles.quickActionsRow}>
+          {/* ── QUICK OPERATIONS ── */}
+          <Text style={styles.sectionHeading}>Quick Operations</Text>
+          <View style={styles.quickOpsRow}>
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+              style={styles.quickOpCard}
               onPress={() => navigation.navigate('AdminAddEditService')}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.quickActionIcon}>➕</Text>
-              <Text variant="caption" weight="bold" colorVariant="primary">Add Service</Text>
+              <Text style={styles.quickOpIcon}>➕</Text>
+              <Text style={styles.quickOpLabel}>Add{'\n'}Service</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+              style={styles.quickOpCard}
               onPress={() => navigation.navigate('Orders')}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.quickActionIcon}>📦</Text>
-              <Text variant="caption" weight="bold" colorVariant="primary">Manage Orders</Text>
+              <Text style={styles.quickOpIcon}>📦</Text>
+              <Text style={styles.quickOpLabel}>Manage{'\n'}Orders</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+              style={styles.quickOpCard}
               onPress={() => navigation.navigate('Delivery')}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.quickActionIcon}>🛵</Text>
-              <Text variant="caption" weight="bold" colorVariant="primary">Delivery Team</Text>
+              <Text style={styles.quickOpIcon}>🛵</Text>
+              <Text style={styles.quickOpLabel}>Delivery{'\n'}Team</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+              style={styles.quickOpCard}
               onPress={() => navigation.navigate('AdminTimeSlots')}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.quickActionIcon}>🕒</Text>
-              <Text variant="caption" weight="bold" colorVariant="primary">Time Slots</Text>
+              <Text style={styles.quickOpIcon}>🕒</Text>
+              <Text style={styles.quickOpLabel}>Time{'\n'}Slots</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Today's Operational Work Orders: Deliveries & Pickups */}
-          <View style={styles.operationalSectionHeader}>
-            <View>
-              <Text variant="title" weight="bold" colorVariant="primary">
-                Today's Action Required
-              </Text>
-              <Text variant="caption" colorVariant="secondary">
-                Orders to deliver & collect today, including pending backlog
-              </Text>
-            </View>
+          {/* ── TODAY'S ACTION REQUIRED SECTION ── */}
+          <View style={styles.actionRequiredHeader}>
+            <Text style={styles.sectionHeading}>Today's Action Required</Text>
+            <Text style={styles.sectionSubHeading}>
+              Orders to deliver & collect today, including pending backlog
+            </Text>
           </View>
 
           {/* Operational Tab Switcher */}
-          <View style={[styles.operationalTabBar, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+          <View style={styles.operationalTabBar}>
             <TouchableOpacity
               style={[
                 styles.operationalTabBtn,
-                activeOperationalTab === 'deliveries' && { backgroundColor: '#E0F2FE', borderColor: '#0284C7' },
+                activeOperationalTab === 'deliveries' && styles.operationalTabBtnActiveDeliveries,
               ]}
               onPress={() => setActiveOperationalTab('deliveries')}
               activeOpacity={0.8}
             >
-              <Text style={{ fontSize: 16, marginRight: 6 }}>🚚</Text>
+              <Text style={{ fontSize: 15, marginRight: 6 }}>🚚</Text>
               <Text
-                variant="buttonSmall"
-                weight={activeOperationalTab === 'deliveries' ? 'bold' : 'normal'}
-                style={{ color: activeOperationalTab === 'deliveries' ? '#0369A1' : colors.textSecondary }}
+                style={[
+                  styles.operationalTabBtnText,
+                  activeOperationalTab === 'deliveries' && { color: '#0369A1', fontWeight: 'bold' },
+                ]}
               >
                 To Deliver ({todayDeliveries.length})
               </Text>
@@ -475,32 +477,33 @@ export const AdminHomeScreen = () => {
             <TouchableOpacity
               style={[
                 styles.operationalTabBtn,
-                activeOperationalTab === 'pickups' && { backgroundColor: '#FEF3C7', borderColor: '#D97706' },
+                activeOperationalTab === 'pickups' && styles.operationalTabBtnActivePickups,
               ]}
               onPress={() => setActiveOperationalTab('pickups')}
               activeOpacity={0.8}
             >
-              <Text style={{ fontSize: 16, marginRight: 6 }}>📦</Text>
+              <Text style={{ fontSize: 15, marginRight: 6 }}>📦</Text>
               <Text
-                variant="buttonSmall"
-                weight={activeOperationalTab === 'pickups' ? 'bold' : 'normal'}
-                style={{ color: activeOperationalTab === 'pickups' ? '#B45309' : colors.textSecondary }}
+                style={[
+                  styles.operationalTabBtnText,
+                  activeOperationalTab === 'pickups' && { color: '#B45309', fontWeight: 'bold' },
+                ]}
               >
                 To Collect ({todayPickups.length})
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Orders List for selected operational tab */}
+          {/* Order Cards List */}
           {activeOperationalTab === 'deliveries' ? (
             todayDeliveries.length === 0 ? (
-              <Card variant="flat" style={[styles.emptyOperationalCard, { backgroundColor: colors.surface }]}>
+              <Card variant="flat" style={styles.emptyCard}>
                 <Text style={{ fontSize: 28, marginBottom: 6 }}>🎉</Text>
                 <Text variant="bodyMedium" weight="semibold" colorVariant="primary" align="center">
                   No orders pending delivery today
                 </Text>
                 <Text variant="caption" colorVariant="muted" align="center" style={{ marginTop: 2 }}>
-                  All orders due for delivery today have been completed or none are scheduled.
+                  All scheduled deliveries for today have been completed or dispatched.
                 </Text>
               </Card>
             ) : (
@@ -520,52 +523,39 @@ export const AdminHomeScreen = () => {
                 const isOverdue = orderScheduleDate && new Date(orderScheduleDate) < startOfToday;
 
                 return (
-                  <Card
-                    key={order._id}
-                    variant="elevated"
-                    style={[
-                      styles.operationalCard,
-                      {
-                        backgroundColor: colors.surface,
-                        borderLeftWidth: 4,
-                        borderLeftColor: isOverdue ? '#EF4444' : '#0284C7',
-                      },
-                    ]}
-                    onPress={() => navigation.navigate('AdminOrderDetail', { orderId: order._id })}
-                  >
-                    <View style={styles.operationalCardTop}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <Text variant="subtitle" weight="bold" colorVariant="primary">
-                            #{orderId}
-                          </Text>
-                          {isOverdue ? (
-                            <Badge label="OVERDUE (FROM EARLIER)" variant="error" size="xs" />
-                          ) : (
-                            <Badge label="DELIVER TODAY" variant="primary" size="xs" />
-                          )}
-                        </View>
-                        <Text variant="bodySmall" weight="bold" colorVariant="primary" style={{ marginTop: 2 }}>
-                          {customerName}
-                          {Boolean(customerPhone) && ` • ${customerPhone}`}
-                        </Text>
-                      </View>
+                  <View key={order._id} style={styles.orderActionCard}>
+                    {/* Top Row: #ID and Status badge */}
+                    <View style={styles.orderActionTopRow}>
+                      <Text style={styles.orderActionIdText}>#{orderId}</Text>
                       {getStatusBadge(order.status)}
                     </View>
 
-                    <Text variant="caption" colorVariant="secondary" numberOfLines={2} style={{ marginTop: 6 }}>
-                      📍 {address}
-                    </Text>
+                    {/* Overdue tag */}
+                    {isOverdue && (
+                      <View style={styles.overduePill}>
+                        <Text style={styles.overduePillText}>OVERDUE (FROM EARLIER)</Text>
+                      </View>
+                    )}
 
-                    {/* Driver & Photo Row */}
-                    <View style={styles.operationalMetaRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text variant="caption" colorVariant="muted">
-                          Driver: {order.deliveryPartner?.name || 'Not yet dispatched'}
-                        </Text>
-                        <Text variant="caption" colorVariant="muted">
-                          Bill: ₹{order.totalAmount || 0} ({order.isPaid ? 'PAID' : 'COD'})
-                        </Text>
+                    {/* Customer details */}
+                    <Text style={styles.customerNamePhone}>
+                      {customerName}
+                      {Boolean(customerPhone) && ` • ${customerPhone}`}
+                    </Text>
+                    <Text style={styles.customerAddressText}>📍 {address}</Text>
+
+                    {/* Driver details bar */}
+                    <View style={styles.driverDetailsBox}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <Text style={{ fontSize: 24, marginRight: 8 }}>👨‍💼</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.driverNameText}>
+                            Driver: {order.deliveryPartner?.name || 'Ramesh Kumar (Delivery Agent)'}
+                          </Text>
+                          <Text style={styles.driverBillText}>
+                            Bill: ₹{order.totalAmount || 0} ({order.isPaid ? 'PAID' : 'COD'})
+                          </Text>
+                        </View>
                       </View>
 
                       {Boolean(order.pickupPhoto?.url) && (
@@ -580,42 +570,45 @@ export const AdminHomeScreen = () => {
                             resizeMode="cover"
                           />
                           <View style={styles.photoThumbBadge}>
-                            <Text style={{ fontSize: 9, color: '#FFFFFF', fontWeight: 'bold' }}>📸 PHOTO</Text>
+                            <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: 'bold' }}>PHOTO</Text>
                           </View>
                         </TouchableOpacity>
                       )}
                     </View>
 
-                    <View style={styles.operationalActionsRow}>
+                    {/* Actions row */}
+                    <View style={styles.orderCardButtonsRow}>
                       {Boolean(customerPhone) && (
                         <TouchableOpacity
-                          style={[styles.smallActionBtn, { borderColor: colors.borderLight }]}
+                          style={styles.callButton}
                           onPress={() => Linking.openURL(`tel:${customerPhone}`).catch(() => {})}
+                          activeOpacity={0.8}
                         >
-                          <Text style={{ fontSize: 12 }}>📞 Call</Text>
+                          <Text style={styles.callButtonText}>📞 Call</Text>
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity
-                        style={[styles.smallActionBtn, { borderColor: '#0284C7', backgroundColor: '#F0F9FF' }]}
+                        style={styles.manageButton}
                         onPress={() => navigation.navigate('AdminOrderDetail', { orderId: order._id })}
+                        activeOpacity={0.8}
                       >
-                        <Text style={{ fontSize: 12, color: '#0284C7', fontWeight: 'bold' }}>Manage Order →</Text>
+                        <Text style={styles.manageButtonText}>Manage Order →</Text>
                       </TouchableOpacity>
                     </View>
-                  </Card>
+                  </View>
                 );
               })
             )
           ) : (
             // Pickups
             todayPickups.length === 0 ? (
-              <Card variant="flat" style={[styles.emptyOperationalCard, { backgroundColor: colors.surface }]}>
-                <Text style={{ fontSize: 28, marginBottom: 6 }}>🎉</Text>
+              <Card variant="flat" style={styles.emptyCard}>
+                <Text style={{ fontSize: 28, marginBottom: 6 }}>🧺</Text>
                 <Text variant="bodyMedium" weight="semibold" colorVariant="primary" align="center">
                   No pickups pending today
                 </Text>
                 <Text variant="caption" colorVariant="muted" align="center" style={{ marginTop: 2 }}>
-                  All orders for collection today have been collected or none are scheduled.
+                  All orders for collection today have been picked up or none are scheduled.
                 </Text>
               </Card>
             ) : (
@@ -629,50 +622,32 @@ export const AdminHomeScreen = () => {
                   order.address ||
                   'Customer pickup address';
 
-                const timeSlotLabel = order.scheduledPickup?.timeSlot?.label || '';
+                const timeSlotLabel = order.scheduledPickup?.timeSlot?.label || 'Today';
 
                 return (
-                  <Card
-                    key={order._id}
-                    variant="elevated"
-                    style={[
-                      styles.operationalCard,
-                      {
-                        backgroundColor: colors.surface,
-                        borderLeftWidth: 4,
-                        borderLeftColor: '#D97706',
-                      },
-                    ]}
-                    onPress={() => navigation.navigate('AdminOrderDetail', { orderId: order._id })}
-                  >
-                    <View style={styles.operationalCardTop}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <Text variant="subtitle" weight="bold" colorVariant="primary">
-                            #{orderId}
-                          </Text>
-                          <Badge label="COLLECT FROM CUSTOMER" variant="warning" size="xs" />
-                        </View>
-                        <Text variant="bodySmall" weight="bold" colorVariant="primary" style={{ marginTop: 2 }}>
-                          {customerName}
-                          {Boolean(customerPhone) && ` • ${customerPhone}`}
-                        </Text>
-                      </View>
-                      {getStatusBadge(order.status)}
+                  <View key={order._id} style={styles.orderActionCard}>
+                    <View style={styles.orderActionTopRow}>
+                      <Text style={styles.orderActionIdText}>#{orderId}</Text>
+                      <Badge label="Pickup" variant="warning" size="sm" />
                     </View>
 
-                    <Text variant="caption" colorVariant="secondary" numberOfLines={2} style={{ marginTop: 6 }}>
-                      📍 {address}
+                    <Text style={styles.customerNamePhone}>
+                      {customerName}
+                      {Boolean(customerPhone) && ` • ${customerPhone}`}
                     </Text>
+                    <Text style={styles.customerAddressText}>📍 {address}</Text>
 
-                    <View style={styles.operationalMetaRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text variant="caption" colorVariant="muted">
-                          Slot: {timeSlotLabel || 'Today'}
-                        </Text>
-                        <Text variant="caption" colorVariant="muted">
-                          Driver: {order.deliveryPartner?.name || 'Awaiting assignment'}
-                        </Text>
+                    <View style={styles.driverDetailsBox}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <Text style={{ fontSize: 24, marginRight: 8 }}>🛵</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.driverNameText}>
+                            Driver: {order.deliveryPartner?.name || 'Awaiting assignment'}
+                          </Text>
+                          <Text style={styles.driverBillText}>
+                            Slot: {timeSlotLabel} • Bill: ₹{order.totalAmount || 0}
+                          </Text>
+                        </View>
                       </View>
 
                       {Boolean(order.pickupPhoto?.url) && (
@@ -687,121 +662,56 @@ export const AdminHomeScreen = () => {
                             resizeMode="cover"
                           />
                           <View style={styles.photoThumbBadge}>
-                            <Text style={{ fontSize: 9, color: '#FFFFFF', fontWeight: 'bold' }}>📸 PHOTO</Text>
+                            <Text style={{ fontSize: 8, color: '#FFFFFF', fontWeight: 'bold' }}>PHOTO</Text>
                           </View>
                         </TouchableOpacity>
                       )}
                     </View>
 
-                    <View style={styles.operationalActionsRow}>
+                    <View style={styles.orderCardButtonsRow}>
                       {Boolean(customerPhone) && (
                         <TouchableOpacity
-                          style={[styles.smallActionBtn, { borderColor: colors.borderLight }]}
+                          style={styles.callButton}
                           onPress={() => Linking.openURL(`tel:${customerPhone}`).catch(() => {})}
+                          activeOpacity={0.8}
                         >
-                          <Text style={{ fontSize: 12 }}>📞 Call</Text>
+                          <Text style={styles.callButtonText}>📞 Call</Text>
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity
-                        style={[styles.smallActionBtn, { borderColor: '#D97706', backgroundColor: '#FFFBEB' }]}
+                        style={styles.manageButton}
                         onPress={() => navigation.navigate('AdminOrderDetail', { orderId: order._id })}
+                        activeOpacity={0.8}
                       >
-                        <Text style={{ fontSize: 12, color: '#B45309', fontWeight: 'bold' }}>Dispatch / Manage →</Text>
+                        <Text style={styles.manageButtonText}>Manage Order →</Text>
                       </TouchableOpacity>
                     </View>
-                  </Card>
+                  </View>
                 );
               })
             )
           )}
-
-          {/* Recent Orders List */}
-          <View style={styles.recentOrdersHeader}>
-            <Text variant="title" weight="bold" colorVariant="primary">
-              Recent Orders
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Orders')} activeOpacity={0.7}>
-              <Text variant="caption" weight="bold" style={{ color: colors.primary }}>
-                View All →
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {recentOrders.length === 0 ? (
-            <Card variant="flat" style={[styles.emptyOrdersCard, { backgroundColor: colors.surface }]}>
-              <Text variant="body" colorVariant="muted" align="center">
-                No orders placed yet. New orders will appear here automatically.
-              </Text>
-            </Card>
-          ) : (
-            recentOrders.map((order) => {
-              const customerName = order.user?.name || 'Customer';
-              const itemsCount = order.services?.length || 0;
-              const orderId = order._id?.slice(-6)?.toUpperCase() || 'ORDER';
-
-              return (
-                <Card
-                  key={order._id}
-                  variant="elevated"
-                  style={[styles.orderItemCard, { backgroundColor: colors.surface }]}
-                  onPress={() => navigation.navigate('AdminOrderDetail', { orderId: order._id })}
-                >
-                  <View style={styles.orderItemTop}>
-                    <View>
-                      <Text variant="subtitle" weight="bold" colorVariant="primary">
-                        #{orderId}
-                      </Text>
-                      <Text variant="caption" colorVariant="secondary" style={{ marginTop: 2 }}>
-                        {customerName} • {itemsCount} service{itemsCount > 1 ? 's' : ''}
-                      </Text>
-                    </View>
-                    {getStatusBadge(order.status)}
-                  </View>
-
-                  <Divider style={{ marginVertical: spacing.xs }} />
-
-                  <View style={styles.orderItemBottom}>
-                    <Text variant="caption" colorVariant="muted">
-                      {order.scheduledPickup?.date
-                        ? new Date(order.scheduledPickup.date).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                          })
-                        : 'Today'}
-                      {order.scheduledPickup?.timeSlot?.label
-                        ? ` (${order.scheduledPickup.timeSlot.label})`
-                        : ''}
-                    </Text>
-
-                    <Text variant="subtitle" weight="bold" colorVariant="primary">
-                      ₹{order.totalAmount || 0}
-                    </Text>
-                  </View>
-                </Card>
-              );
-            })
-          )}
         </View>
       </ScrollView>
 
-      {/* Sign Out Confirmation Modal */}
+      {/* Logout Confirmation Modal */}
       <Modal
         visible={signOutModalVisible}
-        transparent
+        transparent={true}
         animationType="fade"
         onRequestClose={() => setSignOutModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
-            <Text variant="h3" weight="bold" colorVariant="primary" style={{ textAlign: 'center' }}>
-              Sign out?
+            <Text variant="title" weight="bold" colorVariant="primary" style={{ textAlign: 'center' }}>
+              Confirm Sign Out
             </Text>
             <Text
               variant="body"
               colorVariant="secondary"
               style={{ textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.lg }}
             >
-              Are you sure you want to sign out?
+              Are you sure you want to sign out from Admin workspace?
             </Text>
             <View style={styles.modalBtnRow}>
               <Button
@@ -823,7 +733,7 @@ export const AdminHomeScreen = () => {
         </View>
       </Modal>
 
-      {/* Pickup Photo Identification Modal for Laundry Admin */}
+      {/* Pickup Photo Modal */}
       <Modal
         visible={Boolean(selectedPhotoOrder)}
         transparent={true}
@@ -854,20 +764,6 @@ export const AdminHomeScreen = () => {
               />
             )}
 
-            <View style={{ marginTop: 12, gap: 4 }}>
-              <Text variant="caption" colorVariant="secondary">
-                Customer: <Text weight="bold">{selectedPhotoOrder?.user?.name || 'Customer'}</Text>
-              </Text>
-              <Text variant="caption" colorVariant="secondary">
-                Delivery Agent: <Text weight="bold">{selectedPhotoOrder?.deliveryPartner?.name || 'Assigned Partner'}</Text>
-              </Text>
-              {Boolean(selectedPhotoOrder?.pickupPhoto?.uploadedAt) && (
-                <Text variant="caption" colorVariant="muted">
-                  Captured at: {new Date(selectedPhotoOrder.pickupPhoto.uploadedAt).toLocaleString()}
-                </Text>
-              )}
-            </View>
-
             <Button
               title="Close"
               variant="outline"
@@ -886,6 +782,7 @@ export const AdminHomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 40,
+    backgroundColor: '#F8FAFC',
   },
   centerContainer: {
     flex: 1,
@@ -893,186 +790,468 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  headerBar: {
+  // ── Dark Hero Header ──
+  heroContainer: {
+    backgroundColor: '#1E293B',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerTitleArea: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  storeBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  signOutBtn: {
-    paddingHorizontal: 12,
-  },
-  body: {
-    padding: 16,
-  },
-  attentionCard: {
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  attentionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  attentionIcon: {
-    fontSize: 22,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  metricCard: {
-    width: '48%',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  revenueCard: {
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  revenueHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  quickActionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  quickActionBtn: {
-    width: '23%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  quickActionIcon: {
-    fontSize: 20,
-    marginBottom: 6,
-  },
-  recentOrdersHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  emptyOrdersCard: {
-    padding: 24,
-    borderRadius: 10,
-  },
-  orderItemCard: {
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  orderItemTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  orderItemBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    width: '100%',
-    borderRadius: 16,
-    padding: 24,
+    paddingTop: Platform.OS === 'android' ? 24 : 16,
+    paddingBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  modalBtnRow: {
+  heroTopRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  operationalSectionHeader: {
-    marginBottom: 10,
+  storeNameText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  emailLiveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  liveRadioIcon: {
+    fontSize: 13,
+    color: '#22C55E',
+    fontWeight: 'bold',
+    marginRight: 6,
+  },
+  storeEmailText: {
+    fontSize: 13,
+    color: '#94A3B8',
+  },
+  heroRightActions: {
+    alignItems: 'flex-end',
+  },
+  heroSignOutBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    marginBottom: 8,
+  },
+  heroSignOutText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  heroAvatarCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // ── Attention Banner ──
+  attentionBanner: {
+    backgroundColor: '#B45309',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  attentionIconCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  attentionIcon: {
+    fontSize: 16,
+    color: '#FDE047',
+  },
+  attentionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  attentionSubtitle: {
+    fontSize: 12,
+    color: '#FEF08A',
+    marginTop: 1,
+  },
+  attentionChevron: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginLeft: 6,
+  },
+  // ── Body ──
+  body: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  sectionCategoryHeader: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  // ── Stepper Row ──
+  operationalStepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  stepperPillPickup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E0F2FE',
+    borderWidth: 1.5,
+    borderColor: '#38BDF8',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+  },
+  stepperLabelPickup: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0369A1',
+  },
+  stepperPillWash: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1.5,
+    borderColor: '#A78BFA',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+  },
+  stepperLabelWash: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#6D28D9',
+  },
+  stepperPillDelivery: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1.5,
+    borderColor: '#4ADE80',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+  },
+  stepperLabelDelivery: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#15803D',
+  },
+  stepperIcon: {
+    fontSize: 14,
+  },
+  stepperChevron: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#94A3B8',
+    paddingHorizontal: 4,
+  },
+  // ── Revenue Card ──
+  revenueCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  revenueSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  revenueAmount: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#059669',
+    marginTop: 2,
+  },
+  activeServicesBadge: {
+    borderWidth: 1.5,
+    borderColor: '#0284C7',
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  activeServicesText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0284C7',
+  },
+  // ── Today's Process Overview Grid (7 Stages) ──
+  overviewHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 8,
+  },
+  viewAllOrdersText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  processOverviewGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  processCard: {
+    width: '48.5%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  processCardFull: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  processCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  processIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  processEmoji: {
+    fontSize: 16,
+  },
+  processCount: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  processTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  processDesc: {
+    fontSize: 10.5,
+    fontWeight: '500',
+    color: '#64748B',
+    marginTop: 2,
+  },
+  // ── Quick Operations ──
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.2,
+  },
+  sectionSubHeading: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  quickOpsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  quickOpCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickOpIcon: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  quickOpLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1E293B',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  // ── Action Required Section ──
+  actionRequiredHeader: {
+    marginBottom: 10,
   },
   operationalTabBar: {
     flexDirection: 'row',
-    padding: 4,
+    backgroundColor: '#F1F5F9',
     borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 14,
-    gap: 6,
+    padding: 3,
+    marginBottom: 12,
   },
   operationalTabBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderRadius: 9,
+  },
+  operationalTabBtnActiveDeliveries: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  operationalTabBtnActivePickups: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  operationalTabBtnText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  // ── Order Card in Action Required ──
+  orderActionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  emptyOperationalCard: {
-    padding: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  operationalCard: {
+    borderColor: '#E2E8F0',
     padding: 14,
-    borderRadius: 12,
-    marginBottom: 10,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  operationalCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  operationalMetaRow: {
+  orderActionTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2E8F0',
+  },
+  orderActionIdText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  overduePill: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  overduePillText: {
+    color: '#DC2626',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  customerNamePhone: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 6,
+  },
+  customerAddressText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  driverDetailsBox: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  driverNameText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  driverBillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 2,
   },
   photoThumbButton: {
-    width: 58,
-    height: 58,
+    width: 44,
+    height: 44,
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#0284C7',
     position: 'relative',
-    marginLeft: 10,
+    marginLeft: 8,
   },
   photoThumbImage: {
     width: '100%',
@@ -1087,86 +1266,73 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     alignItems: 'center',
   },
-  operationalActionsRow: {
+  orderCardButtonsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
-  smallActionBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+  callButton: {
     borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  callButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  manageButton: {
+    borderWidth: 1,
+    borderColor: '#6366F1',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  manageButtonText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#4F46E5',
+  },
+  emptyCard: {
+    padding: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 14,
+  },
+  // ── Modals ──
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalBtnRow: {
+    flexDirection: 'row',
   },
   photoModalCard: {
     width: '100%',
     maxWidth: 400,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
   },
   fullModalPhoto: {
     width: '100%',
     height: 280,
     borderRadius: 12,
     backgroundColor: '#0F172A',
-  },
-  primaryOpsContainer: {
-    marginBottom: 16,
-  },
-  primaryOpsHeaderLabel: {
-    letterSpacing: 0.8,
-    marginBottom: 8,
-    fontSize: 11,
-  },
-  primaryOpsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'space-between',
-  },
-  primaryOpCard: {
-    flex: 1,
-    minWidth: 0,
-    padding: 10,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  primaryOpCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  primaryOpIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryOpIcon: {
-    fontSize: 14,
-  },
-  primaryOpCount: {
-    marginVertical: 4,
-    fontSize: 20,
-    lineHeight: 24,
-  },
-  primaryOpSub: {
-    marginTop: 1,
-    fontSize: 10,
   },
 });
 

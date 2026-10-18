@@ -13,6 +13,15 @@ import orderSuccess from './illustrations/order_success.jpg';
 
 import logo from './logo.png';
 
+// Real Clothes Photography Assets
+import shirtImg from './clothes/shirt.jpg';
+import suitImg from './clothes/suit.jpg';
+import sareeImg from './clothes/saree.jpg';
+import jeansImg from './clothes/jeans.jpg';
+import tshirtImg from './clothes/tshirt.jpg';
+import bedsheetImg from './clothes/bedsheet.jpg';
+import shoesImg from './clothes/shoes.jpg';
+
 export const illustrations = {
   washingMachine,
   laundryWashing,
@@ -23,8 +32,27 @@ export const illustrations = {
   orderSuccess,
 };
 
+export const clothes = {
+  shirt: shirtImg,
+  suit: suitImg,
+  blazer: suitImg,
+  coat: suitImg,
+  saree: sareeImg,
+  dress: sareeImg,
+  kurta: sareeImg,
+  sherwani: suitImg,
+  jeans: jeansImg,
+  trouser: jeansImg,
+  tshirt: tshirtImg,
+  bedsheet: bedsheetImg,
+  blanket: bedsheetImg,
+  shoes: shoesImg,
+  other: shirtImg,
+};
+
 export const ASSETS = {
   illustrations,
+  clothes,
   logo,
 };
 

@@ -1,18 +1,42 @@
-import { Eye, Edit3, UserCheck, UserX } from 'lucide-react';
+import { Eye, Edit3, UserCheck, UserX, Check, X } from 'lucide-react';
 
 /**
  * EmployeeRowActions — Actions per employee row.
  */
-export const EmployeeRowActions = ({ employee, onView, onEdit, onToggleStatus }) => {
+export const EmployeeRowActions = ({ employee, onView, onEdit, onToggleStatus, onApprove, onReject }) => {
   const isActive = Boolean(employee?.isActive);
+  const isPendingApproval = employee?.role === 'delivery' && employee?.approvalStatus === 'pending';
 
   return (
     <div className="flex items-center gap-1.5">
+      {/* Quick Approve / Reject for Pending Delivery Agents */}
+      {isPendingApproval && onApprove && (
+        <button
+          id={`employee-approve-btn-${employee._id}`}
+          onClick={() => onApprove(employee)}
+          title="Approve Delivery Agent"
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 border border-emerald-500/30 transition-all duration-150 cursor-pointer"
+        >
+          <Check className="w-4 h-4" />
+        </button>
+      )}
+
+      {isPendingApproval && onReject && (
+        <button
+          id={`employee-reject-btn-${employee._id}`}
+          onClick={() => onReject(employee)}
+          title="Reject Delivery Agent"
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 border border-rose-500/30 transition-all duration-150 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+
       <button
         id={`employee-view-btn-${employee._id}`}
         onClick={() => onView(employee)}
         title="View details"
-        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-amber-500/15 text-textMuted hover:text-amber-400 border border-white/8 hover:border-amber-500/30 transition-all duration-150"
+        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-amber-500/15 text-textMuted hover:text-amber-500 border border-white/8 hover:border-amber-500/30 transition-all duration-150"
       >
         <Eye className="w-4 h-4" />
       </button>
@@ -22,7 +46,7 @@ export const EmployeeRowActions = ({ employee, onView, onEdit, onToggleStatus })
           id={`employee-edit-btn-${employee._id}`}
           onClick={() => onEdit(employee)}
           title="Edit details"
-          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-indigo-500/15 text-textMuted hover:text-indigo-400 border border-white/8 hover:border-indigo-500/30 transition-all duration-150"
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-indigo-500/15 text-textMuted hover:text-indigo-500 border border-white/8 hover:border-indigo-500/30 transition-all duration-150"
         >
           <Edit3 className="w-3.5 h-3.5" />
         </button>
@@ -34,8 +58,8 @@ export const EmployeeRowActions = ({ employee, onView, onEdit, onToggleStatus })
         title={isActive ? 'Deactivate employee' : 'Activate employee'}
         className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all duration-150 ${
           isActive
-            ? 'bg-white/5 hover:bg-rose-500/15 text-textMuted hover:text-rose-400 border-white/8 hover:border-rose-500/30'
-            : 'bg-white/5 hover:bg-emerald-500/15 text-textMuted hover:text-emerald-400 border-white/8 hover:border-emerald-500/30'
+            ? 'bg-white/5 hover:bg-rose-500/15 text-textMuted hover:text-rose-500 border-white/8 hover:border-rose-500/30'
+            : 'bg-white/5 hover:bg-emerald-500/15 text-textMuted hover:text-emerald-500 border-white/8 hover:border-emerald-500/30'
         }`}
       >
         {isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}

@@ -57,6 +57,27 @@ const DEFAULT_DRY_CLEAN_ITEMS = [
   { clothingType: 'Other', name: 'Other Delicate Item', price: 120 },
 ];
 
+const getClothingImage = (clothingType = '') => {
+  const t = (clothingType || '').toLowerCase();
+  if (t.includes('shirt') && !t.includes('t-shirt') && !t.includes('tshirt')) return ASSETS.clothes?.shirt;
+  if (t.includes('t-shirt') || t.includes('tshirt')) return ASSETS.clothes?.tshirt;
+  if (t.includes('suit') || t.includes('blazer') || t.includes('coat') || t.includes('sherwani')) return ASSETS.clothes?.suit;
+  if (t.includes('saree') || t.includes('dress') || t.includes('kurta')) return ASSETS.clothes?.saree;
+  if (t.includes('jean') || t.includes('trouser') || t.includes('pant')) return ASSETS.clothes?.jeans;
+  if (t.includes('bedsheet') || t.includes('blanket') || t.includes('quilt') || t.includes('linen') || t.includes('duvet')) return ASSETS.clothes?.bedsheet;
+  if (t.includes('shoe') || t.includes('sneaker')) return ASSETS.clothes?.shoes;
+  return ASSETS.clothes?.shirt;
+};
+
+const getServiceImage = (category = '') => {
+  const c = (category || '').toLowerCase();
+  if (c === 'iron') return ASSETS.clothes?.shirt;
+  if (c === 'dry_clean') return ASSETS.clothes?.suit;
+  if (c === 'premium') return ASSETS.clothes?.bedsheet;
+  if (c === 'shoe') return ASSETS.clothes?.shoes;
+  return ASSETS.clothes?.tshirt;
+};
+
 const DEFAULT_FALLBACK_SERVICES = [
   {
     _id: 'def_1',
@@ -514,13 +535,18 @@ export const LaundryDetailScreen = () => {
                             key={cItem.name || cItem.clothingType}
                             style={[styles.clothingItemRow, { borderBottomColor: colors.borderLight }]}
                           >
-                            <View style={{ flex: 1, paddingRight: 8 }}>
+                            <Image
+                              source={getClothingImage(cItem.name || cItem.clothingType)}
+                              style={styles.clothingThumbnail}
+                              resizeMode="cover"
+                            />
+                            <View style={{ flex: 1, paddingHorizontal: 10 }}>
                               <Text variant="bodySmall" weight="bold" colorVariant="primary">
                                 {cItem.name || cItem.clothingType}
                               </Text>
                               <Text variant="caption" colorVariant="secondary">
                                 ₹{cItem.price} / piece
-                                {qty > 0 ? `  •  Line Total: ₹${lineTotal}` : ''}
+                                {qty > 0 ? `  •  Total: ₹${lineTotal}` : ''}
                               </Text>
                             </View>
 
@@ -573,6 +599,11 @@ export const LaundryDetailScreen = () => {
               return (
                 <Card key={baseServiceId} variant="elevated" style={styles.serviceCard}>
                   <View style={styles.serviceRow}>
+                    <Image
+                      source={getServiceImage(service.category)}
+                      style={styles.serviceThumbnail}
+                      resizeMode="cover"
+                    />
                     <View style={styles.serviceInfo}>
                       <View style={styles.serviceHeader}>
                         <Text variant="bodyLarge" weight="bold" colorVariant="primary">
@@ -835,6 +866,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1,
+  },
+  clothingThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+  },
+  serviceThumbnail: {
+    width: 52,
+    height: 52,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    marginRight: 10,
   },
   cartBarInfo: {
     flex: 1,

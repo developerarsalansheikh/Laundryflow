@@ -30,29 +30,193 @@ const sendSMS = async (phone, message) => {
 };
 
 // ─────────────────────────────────────────────
-// 1. @desc    Get orders that are ready and unassigned (same laundry)
+// SAFE DELIVERY AGENT ACCESS & AREA ISOLATION HELPERS
+// ─────────────────────────────────────────────
+const isLegacyDeliveryAgent = (user) => {
+  if (!user) return false;
+  // Legacy agent: existing agent without createdSource or explicitly marked 'legacy'
+  return !user.createdSource || user.createdSource === "legacy";
+};
+
+const toRad = (deg) => (deg * Math.PI) / 180;
+
+const calculateDistanceKm = (lat1, lng1, lat2, lng2) => {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return null;
+  const nLat1 = parseFloat(lat1);
+  const nLng1 = parseFloat(lng1);
+  const nLat2 = parseFloat(lat2);
+  const nLng2 = parseFloat(lng2);
+  if (isNaN(nLat1) || isNaN(nLng1) || isNaN(nLat2) || isNaN(nLng2)) return null;
+
+  const R = 6371; // Earth radius km
+  const dLat = toRad(nLat2 - nLat1);
+  const dLng = toRad(nLng2 - nLng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(nLat1)) *
+      Math.cos(toRad(nLat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const checkAgentOrderEligibility = (user, order) => {
+  // CRITICAL: Original legacy agent preserved with 100% cross-laundry open visibility
+  if (isLegacyDeliveryAgent(user)) {
+    return { eligible: true };
+  }
+
+  // 1. Approval Gate for new managed agents
+  if (user.approvalStatus !== "approved") {
+    return {
+      eligible: false,
+      status: 403,
+      reason:
+        user.approvalStatus === "rejected"
+          ? `Delivery account is rejected: ${user.rejectionReason || "Contact platform administration."}`
+          : "Delivery agent account is pending Super Admin approval. Order access is restricted until approved.",
+    };
+  }
+
+  // 2. Laundry Tenant Isolation Gate
+  const orderLaundryId = order.laundryId?._id?.toString() || order.laundryId?.toString();
+  if (user.accessMode === "single_laundry") {
+    const agentLaundryId = user.laundryId?._id?.toString() || user.laundryId?.toString();
+    if (!agentLaundryId || orderLaundryId !== agentLaundryId) {
+      return {
+        eligible: false,
+        status: 403,
+        reason: "Access denied. Order belongs to another laundry. You are authorized for your assigned laundry only.",
+      };
+    }
+  } else if (user.accessMode === "multi_laundry") {
+    const authorized = (user.authorizedLaundries || []).map((id) => (id._id || id).toString());
+    if (user.laundryId) authorized.push((user.laundryId._id || user.laundryId).toString());
+    if (!authorized.includes(orderLaundryId)) {
+      return {
+        eligible: false,
+        status: 403,
+        reason: "Access denied. Order does not belong to any of your authorized laundries.",
+      };
+    }
+  }
+
+  // 3. Area-wise Access Gate (Fixed / Live GPS / Combined Mode)
+  const policy = user.areaPolicy;
+  if (policy && policy.mode && policy.mode !== "none") {
+    const radius = Number(policy.serviceRadiusKm) || 10;
+    const orderLat = order.pickupAddressSnapshot?.coordinates?.lat || order.laundryId?.location?.coordinates?.[1];
+    const orderLng = order.pickupAddressSnapshot?.coordinates?.lng || order.laundryId?.location?.coordinates?.[0];
+
+    if (orderLat == null || orderLng == null) {
+      return {
+        eligible: false,
+        status: 400,
+        reason: "Order location coordinates are missing for area restriction check.",
+      };
+    }
+
+    if (policy.mode === "fixed" || policy.mode === "both") {
+      const baseLat = policy.fixedBaseLocation?.lat;
+      const baseLng = policy.fixedBaseLocation?.lng;
+      if (baseLat == null || baseLng == null) {
+        return {
+          eligible: false,
+          status: 400,
+          reason: "Agent fixed base coordinates are unconfigured.",
+        };
+      }
+      const dist = calculateDistanceKm(baseLat, baseLng, orderLat, orderLng);
+      if (dist === null || dist > radius) {
+        return {
+          eligible: false,
+          status: 403,
+          reason: `Order is outside your configured fixed service radius (${radius} km).`,
+        };
+      }
+    }
+
+    if (policy.mode === "live" || policy.mode === "both") {
+      const liveLat = user.currentLocation?.lat;
+      const liveLng = user.currentLocation?.lng;
+      const lastSeen = user.lastSeen ? new Date(user.lastSeen).getTime() : 0;
+      const isFresh = Date.now() - lastSeen <= 60 * 60 * 1000; // 60 mins freshness threshold
+
+      if (liveLat == null || liveLng == null || !isFresh) {
+        return {
+          eligible: false,
+          status: 403,
+          reason: "Live GPS coordinates are unavailable or stale. Please sync device location.",
+        };
+      }
+      const liveDist = calculateDistanceKm(liveLat, liveLng, orderLat, orderLng);
+      if (liveDist === null || liveDist > radius) {
+        return {
+          eligible: false,
+          status: 403,
+          reason: `Order is outside your current GPS service radius (${radius} km).`,
+        };
+      }
+    }
+  }
+
+  return { eligible: true };
+};
+
+// ─────────────────────────────────────────────
+// 1. @desc    Get orders that are ready and unassigned (filtered by access rules)
 //    @route   GET /api/delivery/available-orders
 //    @access  Private/Delivery
 // ─────────────────────────────────────────────
 const getAvailableOrders = async (req, res) => {
   try {
+    const user = req.user;
+    const isLegacy = isLegacyDeliveryAgent(user);
+
+    // Approval gate for managed agents
+    if (!isLegacy && user.approvalStatus !== "approved") {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.approvalStatus === "rejected"
+            ? `Delivery account is rejected: ${user.rejectionReason || "Contact platform administration."}`
+            : "Delivery agent account is pending Super Admin approval. Available orders cannot be accessed yet.",
+        data: [],
+      });
+    }
+
     const filter = {
       status: "ready",
       deliveryPartner: null,
     };
 
-    if (req.query?.laundryId) {
-      filter.laundryId = req.query.laundryId;
-    } else if (req.user?.laundryId) {
-      filter.laundryId = req.user.laundryId;
+    if (!isLegacy) {
+      if (user.accessMode === "single_laundry") {
+        filter.laundryId = user.laundryId;
+      } else if (user.accessMode === "multi_laundry") {
+        const authorized = (user.authorizedLaundries || []).map((id) => (id._id || id).toString());
+        if (user.laundryId) authorized.push((user.laundryId._id || user.laundryId).toString());
+        filter.laundryId = { $in: authorized };
+      }
+    } else {
+      if (req.query?.laundryId) {
+        filter.laundryId = req.query.laundryId;
+      } else if (req.user?.laundryId) {
+        filter.laundryId = req.user.laundryId;
+      }
     }
 
     // Status is 'ready' and no delivery partner is assigned yet
-    const orders = await Order.find(filter)
+    let orders = await Order.find(filter)
       .populate("user", "name phone address")
       .populate("services.service", "name price")
-      .populate("laundryId", "name address phone")
+      .populate("laundryId", "name address phone location")
       .sort({ createdAt: -1 });
+
+    // Area policy radius filter for managed agents
+    if (!isLegacy && user.areaPolicy && user.areaPolicy.mode !== "none") {
+      orders = orders.filter((order) => checkAgentOrderEligibility(user, order).eligible);
+    }
 
     return res.status(200).json({
       success: true,
@@ -93,6 +257,16 @@ const acceptOrder = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "This order is no longer available for acceptance",
+        data: {},
+      });
+    }
+
+    // Backend Authorization & Eligibility check
+    const eligibility = checkAgentOrderEligibility(req.user, order);
+    if (!eligibility.eligible) {
+      return res.status(eligibility.status || 403).json({
+        success: false,
+        message: eligibility.reason || "You are not authorized to accept this order.",
         data: {},
       });
     }
@@ -238,12 +412,25 @@ const getMyActiveOrders = async (req, res) => {
   try {
     const { type, status } = req.query || {};
 
+    const isLegacy = isLegacyDeliveryAgent(req.user);
+    if (!isLegacy && req.user.approvalStatus !== "approved") {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        data: [],
+        message:
+          req.user.approvalStatus === "rejected"
+            ? `Delivery account is rejected: ${req.user.rejectionReason || "Contact platform administration."}`
+            : "Delivery agent account is pending Super Admin approval. No active tasks.",
+      });
+    }
+
     // Check if delivery partner is active and available
     const isOnline = req.user.availabilityStatus === "available" && req.user.isAvailable !== false;
 
-    // Check if single active delivery agent across the platform
+    // Check if single active delivery agent across the platform (Legacy Agent feature preservation)
     let isSingleActiveAgent = false;
-    if (isOnline) {
+    if (isOnline && isLegacy) {
       const activeDrivers = await User.find({
         role: "delivery",
         isActive: true,
@@ -258,8 +445,8 @@ const getMyActiveOrders = async (req, res) => {
     if (type === "pickup") {
       // PICKUP: Genuine ready-for-pickup orders
       const pickupStatuses = ["pending", "pending_pickup", "placed"];
-      if (isSingleActiveAgent) {
-        // Single active agent automatically sees eligible pickup orders from different laundries
+      if (isSingleActiveAgent && isLegacy) {
+        // Single active legacy agent automatically sees eligible pickup orders from different laundries
         query = {
           status: { $in: pickupStatuses },
           $or: [{ deliveryPartner: req.user._id }, { deliveryPartner: null }],
@@ -310,7 +497,7 @@ const getMyActiveOrders = async (req, res) => {
         "returned_to_laundry",
       ];
 
-      if (isSingleActiveAgent) {
+      if (isSingleActiveAgent && isLegacy) {
         query = {
           $or: [
             { deliveryPartner: req.user._id, status: { $in: allActiveStatuses } },
@@ -444,6 +631,16 @@ const updateDeliveryStatus = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Access denied — This order is not assigned to you",
+        data: {},
+      });
+    }
+
+    // Safety and authorization check for managed delivery agents
+    const eligibility = checkAgentOrderEligibility(req.user, order);
+    if (!eligibility.eligible) {
+      return res.status(eligibility.status || 403).json({
+        success: false,
+        message: eligibility.reason || "You are not authorized for this order.",
         data: {},
       });
     }
@@ -1311,67 +1508,86 @@ const createDeliveryPickupOrder = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NEW: @desc  Get ALL unassigned pending orders within 10 km of agent's location
+// NEW: @desc  Get unassigned pending orders (Area & laundry restricted for new agents, open for legacy)
 //      @route GET /api/delivery/nearby-orders?lat=xx&lng=xx&radiusKm=10
 //      @access Private/Delivery
 // ─────────────────────────────────────────────────────────────────────────────
 const getNearbyAvailableOrders = async (req, res) => {
   try {
-    const agentLat = parseFloat(req.query.lat);
-    const agentLng = parseFloat(req.query.lng);
-    const radiusKm = parseFloat(req.query.radiusKm) || 10;
+    const user = req.user;
+    const isLegacy = isLegacyDeliveryAgent(user);
 
-    // Fetch all unassigned pending orders (any laundry, not just agent's laundry)
-    const candidateOrders = await Order.find({
+    // Approval gate for managed agents
+    if (!isLegacy && user.approvalStatus !== "approved") {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.approvalStatus === "rejected"
+            ? `Delivery account is rejected: ${user.rejectionReason || "Contact platform administration."}`
+            : "Delivery agent account is pending Super Admin approval.",
+        data: [],
+      });
+    }
+
+    const orderFilter = {
       status: { $in: ["pending", "pending_pickup", "placed"] },
       deliveryPartner: null,
       isCancelled: { $ne: true },
-    })
+    };
+
+    if (!isLegacy) {
+      if (user.accessMode === "single_laundry") {
+        orderFilter.laundryId = user.laundryId;
+      } else if (user.accessMode === "multi_laundry") {
+        const authorized = (user.authorizedLaundries || []).map((id) => (id._id || id).toString());
+        if (user.laundryId) authorized.push((user.laundryId._id || user.laundryId).toString());
+        orderFilter.laundryId = { $in: authorized };
+      }
+    }
+
+    const candidateOrders = await Order.find(orderFilter)
       .populate("user", "name phone")
       .populate("services.service", "name price")
       .populate("laundryId", "name address phone location")
       .sort({ createdAt: -1 })
       .limit(100);
 
-    // If agent coordinates provided, filter by Haversine distance
     let filtered = candidateOrders;
-    if (!isNaN(agentLat) && !isNaN(agentLng)) {
-      const toRad = (deg) => (deg * Math.PI) / 180;
-      const haversineKm = (lat1, lng1, lat2, lng2) => {
-        const R = 6371; // Earth radius km
-        const dLat = toRad(lat2 - lat1);
-        const dLng = toRad(lng2 - lng1);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRad(lat1)) *
-            Math.cos(toRad(lat2)) *
-            Math.sin(dLng / 2) *
-            Math.sin(dLng / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      };
 
+    if (!isLegacy && user.areaPolicy && user.areaPolicy.mode !== "none") {
+      // Area-restricted managed agent: apply strict eligibility check
       filtered = candidateOrders.filter((order) => {
-        // Try pickup address snapshot coords first, fallback to laundry location
-        const pickupLat =
-          order.pickupAddressSnapshot?.coordinates?.lat ||
-          order.laundryId?.location?.coordinates?.[1];
-        const pickupLng =
-          order.pickupAddressSnapshot?.coordinates?.lng ||
-          order.laundryId?.location?.coordinates?.[0];
-
-        if (!pickupLat || !pickupLng) return true; // include if no coords (can't filter)
-        const dist = haversineKm(agentLat, agentLng, pickupLat, pickupLng);
-        order._distanceKm = Math.round(dist * 10) / 10;
-        return dist <= radiusKm;
+        const check = checkAgentOrderEligibility(user, order);
+        return check.eligible;
       });
+    } else {
+      // Legacy agent: filter by query coordinates if provided
+      const agentLat = parseFloat(req.query.lat);
+      const agentLng = parseFloat(req.query.lng);
+      const radiusKm = parseFloat(req.query.radiusKm) || 10;
 
-      // Sort nearest first
-      filtered.sort((a, b) => (a._distanceKm || 0) - (b._distanceKm || 0));
+      if (!isNaN(agentLat) && !isNaN(agentLng)) {
+        filtered = candidateOrders.filter((order) => {
+          const pickupLat =
+            order.pickupAddressSnapshot?.coordinates?.lat ||
+            order.laundryId?.location?.coordinates?.[1];
+          const pickupLng =
+            order.pickupAddressSnapshot?.coordinates?.lng ||
+            order.laundryId?.location?.coordinates?.[0];
+
+          if (!pickupLat || !pickupLng) return true;
+          const dist = calculateDistanceKm(agentLat, agentLng, pickupLat, pickupLng);
+          order._distanceKm = Math.round(dist * 10) / 10;
+          return dist <= radiusKm;
+        });
+
+        filtered.sort((a, b) => (a._distanceKm || 0) - (b._distanceKm || 0));
+      }
     }
 
     // Attach distance to response
     const result = filtered.map((o) => {
-      const plain = o.toObject();
+      const plain = typeof o.toObject === "function" ? o.toObject() : o;
       plain.distanceKm = o._distanceKm ?? null;
       return plain;
     });
@@ -1379,7 +1595,6 @@ const getNearbyAvailableOrders = async (req, res) => {
     return res.status(200).json({
       success: true,
       count: result.length,
-      radiusKm,
       data: result,
     });
   } catch (error) {
@@ -1420,6 +1635,15 @@ const selfAssignOrder = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "This order has already been assigned to a delivery partner.",
+      });
+    }
+
+    // Backend Authorization & Eligibility check
+    const eligibility = checkAgentOrderEligibility(req.user, order);
+    if (!eligibility.eligible) {
+      return res.status(eligibility.status || 403).json({
+        success: false,
+        message: eligibility.reason || "You are not authorized to self-assign this order.",
       });
     }
 
@@ -1503,5 +1727,8 @@ module.exports = {
   createDeliveryPickupOrder,
   getNearbyAvailableOrders,
   selfAssignOrder,
+  isLegacyDeliveryAgent,
+  checkAgentOrderEligibility,
+  calculateDistanceKm,
 };
 

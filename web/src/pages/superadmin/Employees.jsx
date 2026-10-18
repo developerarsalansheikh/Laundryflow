@@ -9,6 +9,8 @@ import {
   useToggleEmployeeStatus,
   useCreateDeliveryPartner,
   useUpdateDeliveryPartner,
+  useApproveDeliveryPartner,
+  useRejectDeliveryPartner,
 } from '../../hooks/useEmployees';
 import { EmployeeHeader } from '../../components/superadmin/employees/EmployeeHeader';
 import { EmployeeSummary } from '../../components/superadmin/employees/EmployeeSummary';
@@ -80,6 +82,28 @@ export const Employees = () => {
   const toggleStatusMutation = useToggleEmployeeStatus();
   const createDeliveryPartnerMutation = useCreateDeliveryPartner();
   const updateDeliveryPartnerMutation = useUpdateDeliveryPartner();
+  const approveDeliveryPartnerMutation = useApproveDeliveryPartner();
+  const rejectDeliveryPartnerMutation = useRejectDeliveryPartner();
+
+  const handleApproveAgent = async (employee) => {
+    try {
+      await approveDeliveryPartnerMutation.mutateAsync(employee._id);
+      toast.success(`Delivery Agent ${employee.name} approved successfully.`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to approve delivery agent.');
+    }
+  };
+
+  const handleRejectAgent = async (employee) => {
+    const reason = window.prompt(`Enter rejection reason for ${employee.name}:`, 'Documents unverified');
+    if (!reason) return;
+    try {
+      await rejectDeliveryPartnerMutation.mutateAsync({ id: employee._id, rejectionReason: reason });
+      toast.success(`Delivery Agent request for ${employee.name} rejected.`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to reject delivery agent.');
+    }
+  };
 
   const allUsers = usersData?.data || [];
   // Filter for employee roles (delivery partner or laundry admin) when no specific role filter is set
@@ -304,6 +328,8 @@ export const Employees = () => {
                 onView={handleViewEmployee}
                 onEdit={handleOpenEditModal}
                 onToggleStatus={handleOpenToggleModal}
+                onApprove={handleApproveAgent}
+                onReject={handleRejectAgent}
               />
             </div>
 
@@ -316,6 +342,8 @@ export const Employees = () => {
                   onView={handleViewEmployee}
                   onEdit={handleOpenEditModal}
                   onToggleStatus={handleOpenToggleModal}
+                  onApprove={handleApproveAgent}
+                  onReject={handleRejectAgent}
                   index={i}
                 />
               ))}
@@ -338,6 +366,8 @@ export const Employees = () => {
         employee={selectedEmployee}
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
+        onApprove={handleApproveAgent}
+        onReject={handleRejectAgent}
       />
 
       {/* Status Confirm Modal */}

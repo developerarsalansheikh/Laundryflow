@@ -33,13 +33,13 @@ const AvatarCell = ({ name }) => (
 /**
  * EmployeeTable — Desktop table layout.
  */
-export const EmployeeTable = ({ employees, onView, onEdit, onToggleStatus }) => {
+export const EmployeeTable = ({ employees, onView, onEdit, onToggleStatus, onApprove, onReject }) => {
   return (
     <div className="overflow-x-auto rounded-xl">
       <table className="w-full min-w-[900px] border-collapse">
         <thead>
           <tr className="border-b border-white/8">
-            {['Employee', 'Email', 'Phone', 'Role', 'Assigned Store', 'Vehicle', 'Status', 'Joined', ''].map((h) => (
+            {['Employee', 'Email', 'Phone', 'Role', 'Assigned Store', 'Vehicle', 'Status & Scope', 'Joined', ''].map((h) => (
               <th
                 key={h}
                 className="px-4 py-3 text-left text-[10px] font-semibold text-textMuted uppercase tracking-wider whitespace-nowrap"
@@ -101,9 +101,30 @@ export const EmployeeTable = ({ employees, onView, onEdit, onToggleStatus }) => 
                   </span>
                 </td>
 
-                {/* Status */}
+                {/* Status & Scope */}
                 <td className="px-4 py-3.5">
-                  <UserStatusBadge isActive={emp.isActive} />
+                  <div className="flex flex-col gap-1 items-start">
+                    <UserStatusBadge isActive={emp.isActive} />
+                    {emp.role === 'delivery' && (
+                      emp.createdSource === 'legacy' || !emp.createdSource ? (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          Legacy Open
+                        </span>
+                      ) : emp.approvalStatus === 'pending' ? (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20 animate-pulse">
+                          Pending Approval
+                        </span>
+                      ) : emp.approvalStatus === 'rejected' ? (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                          Rejected
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          {emp.accessMode === 'all_laundries' ? 'Global Scope' : emp.accessMode === 'multi_laundry' ? 'Multi Store' : 'Store Assigned'}
+                        </span>
+                      )
+                    )}
+                  </div>
                 </td>
 
                 {/* Joined */}
@@ -118,6 +139,8 @@ export const EmployeeTable = ({ employees, onView, onEdit, onToggleStatus }) => 
                     onView={onView}
                     onEdit={onEdit}
                     onToggleStatus={onToggleStatus}
+                    onApprove={onApprove}
+                    onReject={onReject}
                   />
                 </td>
               </motion.tr>

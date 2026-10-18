@@ -64,17 +64,17 @@ export const EmployeeFilters = ({ filters, onChange, onClear, hasActiveFilters }
 
         {/* Role Filter */}
         <div className="flex items-center gap-2">
-          <label htmlFor="employee-role-filter" className="text-xs text-textMuted whitespace-nowrap hidden sm:block">
+          <label htmlFor="employee-role-filter" className="text-xs font-medium text-slate-600 whitespace-nowrap hidden sm:block">
             Role
           </label>
           <select
             id="employee-role-filter"
             value={filters.role || ''}
             onChange={handleRole}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all min-w-[160px]"
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all min-w-[160px] cursor-pointer"
           >
             {ROLE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-[#0f172a]">
+              <option key={opt.value} value={opt.value} className="bg-white text-slate-800 py-1">
                 {opt.label}
               </option>
             ))}
@@ -83,17 +83,17 @@ export const EmployeeFilters = ({ filters, onChange, onClear, hasActiveFilters }
 
         {/* Status Filter */}
         <div className="flex items-center gap-2">
-          <label htmlFor="employee-status-filter" className="text-xs text-textMuted whitespace-nowrap hidden sm:block">
+          <label htmlFor="employee-status-filter" className="text-xs font-medium text-slate-600 whitespace-nowrap hidden sm:block">
             Status
           </label>
           <select
             id="employee-status-filter"
             value={filters.status || ''}
             onChange={handleStatus}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all min-w-[130px]"
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all min-w-[130px] cursor-pointer"
           >
             {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-[#0f172a]">
+              <option key={opt.value} value={opt.value} className="bg-white text-slate-800 py-1">
                 {opt.label}
               </option>
             ))}

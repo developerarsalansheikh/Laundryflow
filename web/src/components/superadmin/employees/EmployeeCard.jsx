@@ -25,7 +25,7 @@ const getInitials = (name = '') =>
 /**
  * EmployeeCard — Mobile card layout for employee records.
  */
-export const EmployeeCard = ({ employee, onView, onEdit, onToggleStatus, index = 0 }) => {
+export const EmployeeCard = ({ employee, onView, onEdit, onToggleStatus, onApprove, onReject, index = 0 }) => {
   const laundryName = employee.laundryId?.name || null;
   const joinedDate = formatDate(employee.createdAt);
   const vehicleInfo = employee.vehicleType
@@ -46,9 +46,24 @@ export const EmployeeCard = ({ employee, onView, onEdit, onToggleStatus, index =
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-textPrimary truncate">{employee.name || '—'}</h3>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <UserRoleBadge role={employee.role} />
               <UserStatusBadge isActive={employee.isActive} />
+              {employee.role === 'delivery' && (
+                employee.createdSource === 'legacy' || !employee.createdSource ? (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                    Legacy Open
+                  </span>
+                ) : employee.approvalStatus === 'pending' ? (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20 animate-pulse">
+                    Pending
+                  </span>
+                ) : employee.approvalStatus === 'rejected' ? (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                    Rejected
+                  </span>
+                ) : null
+              )}
             </div>
           </div>
         </div>
@@ -89,6 +104,8 @@ export const EmployeeCard = ({ employee, onView, onEdit, onToggleStatus, index =
           onView={onView}
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
+          onApprove={onApprove}
+          onReject={onReject}
         />
       </div>
     </motion.div>

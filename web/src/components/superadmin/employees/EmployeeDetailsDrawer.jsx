@@ -161,8 +161,39 @@ export const EmployeeDetailsDrawer = ({ employeeId, employee: initialEmployee, i
 
                   {role === 'delivery' && (
                     <>
-                      <SectionTitle icon={Shield} label="Delivery & Vehicle Info" iconClass="bg-indigo-500/15 text-indigo-400" />
+                      <SectionTitle icon={Shield} label="Delivery & Access Policy" iconClass="bg-indigo-500/15 text-indigo-400" />
                       <div className="glass-card rounded-xl border border-white/8 px-4 py-1 divide-y divide-white/4">
+                        <Row
+                          label="Agent Type"
+                          value={
+                            employee?.createdSource === 'legacy' || !employee?.createdSource
+                              ? 'Legacy Agent (Open Access)'
+                              : employee?.createdSource === 'laundry_admin'
+                              ? 'Laundry Store Request'
+                              : 'Super Admin Created'
+                          }
+                        />
+                        <Row
+                          label="Approval Status"
+                          value={
+                            employee?.createdSource === 'legacy' || !employee?.createdSource
+                              ? 'Approved (Legacy)'
+                              : (employee?.approvalStatus || 'approved').toUpperCase()
+                          }
+                        />
+                        <Row
+                          label="Access Scope"
+                          value={
+                            employee?.accessMode === 'all_laundries'
+                              ? 'All Laundries (Global)'
+                              : employee?.accessMode === 'multi_laundry'
+                              ? `Multi-Store (${employee?.authorizedLaundries?.length || 0} Stores)`
+                              : 'Single Assigned Store'
+                          }
+                        />
+                        {employee?.areaPolicy?.serviceRadiusKm && (
+                          <Row label="Dispatch Radius" value={`${employee.areaPolicy.serviceRadiusKm} KM Max`} />
+                        )}
                         <Row
                           label="Vehicle Type"
                           value={employee?.vehicleType ? employee.vehicleType.toUpperCase() : 'Standard'}
@@ -200,10 +231,32 @@ export const EmployeeDetailsDrawer = ({ employeeId, employee: initialEmployee, i
               )}
             </div>
 
-            <div className="px-5 py-4 border-t border-white/8 flex-shrink-0">
+            <div className="px-5 py-4 border-t border-white/8 flex-shrink-0 space-y-2">
+              {role === 'delivery' && employee?.approvalStatus === 'pending' && (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      onApprove?.(employee);
+                      onClose();
+                    }}
+                    className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 cursor-pointer"
+                  >
+                    <CheckCircle className="w-4 h-4" /> Approve Agent
+                  </button>
+                  <button
+                    onClick={() => {
+                      onReject?.(employee);
+                      onClose();
+                    }}
+                    className="py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-400 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" /> Reject Request
+                  </button>
+                </div>
+              )}
               <button
                 onClick={onClose}
-                className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-textSecondary hover:text-textPrimary transition-all"
+                className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-textSecondary hover:text-textPrimary transition-all cursor-pointer"
               >
                 Close
               </button>

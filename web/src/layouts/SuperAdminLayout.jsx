@@ -37,8 +37,7 @@ export const SuperAdminLayout = () => {
       <motion.main
         animate={{ paddingLeft: contentLeft }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col min-h-screen pt-16 lg:pl-0"
-        style={{ paddingLeft: 0 }}
+        className="relative z-10 flex flex-col min-h-screen pt-16"
       >
         <div className="hidden lg:block" />
         <PageContainer>

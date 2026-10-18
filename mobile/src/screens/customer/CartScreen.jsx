@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   TouchableOpacity,
+  Image,
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +15,19 @@ import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { useLocationStore } from '../../store/locationStore';
 import { customerService } from '../../services/customerService';
+import { ASSETS } from '../../assets';
+
+const getClothingImage = (clothingType = '') => {
+  const t = (clothingType || '').toLowerCase();
+  if (t.includes('shirt') && !t.includes('t-shirt') && !t.includes('tshirt')) return ASSETS.clothes?.shirt;
+  if (t.includes('t-shirt') || t.includes('tshirt')) return ASSETS.clothes?.tshirt;
+  if (t.includes('suit') || t.includes('blazer') || t.includes('coat') || t.includes('sherwani')) return ASSETS.clothes?.suit;
+  if (t.includes('saree') || t.includes('dress') || t.includes('kurta')) return ASSETS.clothes?.saree;
+  if (t.includes('jean') || t.includes('trouser') || t.includes('pant')) return ASSETS.clothes?.jeans;
+  if (t.includes('bedsheet') || t.includes('blanket') || t.includes('quilt') || t.includes('linen') || t.includes('duvet')) return ASSETS.clothes?.bedsheet;
+  if (t.includes('shoe') || t.includes('sneaker')) return ASSETS.clothes?.shoes;
+  return ASSETS.clothes?.shirt;
+};
 
 // RN-2 Design System Components
 import ScreenContainer from '../../components/ui/ScreenContainer';
@@ -178,6 +192,11 @@ export const CartScreen = () => {
             return (
               <Card key={item.id} variant="elevated" style={styles.itemCard}>
                 <View style={styles.itemRow}>
+                  <Image
+                    source={getClothingImage(item.clothingType || item.name)}
+                    style={styles.itemThumbnail}
+                    resizeMode="cover"
+                  />
                   <View style={styles.itemMeta}>
                     <Text variant="bodyLarge" weight="bold" colorVariant="primary">
                       {item.name}
@@ -432,6 +451,13 @@ const styles = StyleSheet.create({
   checkoutBtn: {
     flex: 1,
     marginLeft: 20,
+  },
+  itemThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    marginRight: 10,
   },
   freeDeliveryBanner: {
     paddingVertical: 8,

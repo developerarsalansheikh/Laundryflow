@@ -153,6 +153,59 @@ const userSchema = new mongoose.Schema(
         date: { type: Date, default: Date.now },
       },
     ],
+
+    // ── Safe Delivery Agent Management & Area-wise Access ───────
+    createdSource: {
+      type: String,
+      enum: ["legacy", "laundry_admin", "super_admin"],
+      default: "legacy",
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "approved", // Safe default for legacy agents
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    approvedAt: {
+      type: Date,
+      default: null,
+    },
+    accessMode: {
+      type: String,
+      enum: ["all_laundries", "single_laundry", "multi_laundry"],
+      default: "all_laundries", // Legacy agents retain open visibility across all laundries
+    },
+    authorizedLaundries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Laundry",
+      },
+    ],
+    areaPolicy: {
+      mode: {
+        type: String,
+        enum: ["none", "fixed", "live", "both"],
+        default: "none",
+      },
+      fixedBaseLocation: {
+        address: { type: String, default: "" },
+        lat: { type: Number, default: null },
+        lng: { type: Number, default: null },
+      },
+      serviceRadiusKm: {
+        type: Number,
+        default: 10,
+      },
+    },
     fcmToken: {
       type: String,
       default: null,

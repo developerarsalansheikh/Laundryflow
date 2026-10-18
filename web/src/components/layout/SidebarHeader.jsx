@@ -1,12 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
+import { useAuthStore } from '../../store/authStore';
 
 /**
  * SidebarHeader — LaundryFlow branding and collapse toggle.
  */
 export const SidebarHeader = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'superadmin';
+  const brandName = isSuperAdmin ? 'LaundryFlow' : (user?.laundryName || user?.storeName || 'Dhoyoo Laundry');
+  const roleLabel = isSuperAdmin ? 'SUPER ADMIN OPS' : 'STORE OPERATIONS';
 
   return (
     <div className="flex items-center justify-between px-4 py-4 border-b border-white/[0.08]">
@@ -15,11 +20,11 @@ export const SidebarHeader = () => {
         <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shadow-xs overflow-hidden">
           <img
             src="/logo.png"
-            alt="Dhoyoo Laundry"
+            alt={brandName}
             className="w-7 h-7 object-contain"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement.innerText = 'DL';
+              e.currentTarget.parentElement.innerText = isSuperAdmin ? 'LF' : 'DL';
             }}
           />
         </div>
@@ -35,12 +40,12 @@ export const SidebarHeader = () => {
               className="overflow-hidden"
             >
               <p className="text-sm font-bold text-white leading-tight whitespace-nowrap tracking-tight">
-                Dhoyoo Laundry
+                {brandName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px] font-semibold text-slate-400 tracking-wide uppercase whitespace-nowrap">
-                  Store Operations
+                  {roleLabel}
                 </span>
               </div>
             </motion.div>

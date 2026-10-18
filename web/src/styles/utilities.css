@@ -164,6 +164,12 @@
     @apply input-glass cursor-pointer appearance-none pr-10;
   }
 
+  select option {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    padding: 8px 12px;
+  }
+
   .toggle-glass {
     width: 2.75rem;
     height: 1.5rem;

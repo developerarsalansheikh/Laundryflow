@@ -42,6 +42,9 @@ export default defineConfig({
       'react-native-gesture-handler': path.resolve(__dirname, 'gestureHandlerStub.js'),
       '@react-native-firebase/messaging': path.resolve(__dirname, 'firebaseStub.js'),
       '@react-native-firebase/app': path.resolve(__dirname, 'firebaseStub.js'),
+      'react-native-image-picker': path.resolve(__dirname, 'imagePickerStub.js'),
+      '@react-native/assets-registry/registry': path.resolve(__dirname, 'assetsRegistryStub.js'),
+      '@react-native/assets-registry': path.resolve(__dirname, 'assetsRegistryStub.js'),
       '@': path.resolve(__dirname, '../src'),
     },
     extensions: [
@@ -58,6 +61,7 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
   },
   optimizeDeps: {
+    exclude: ['@react-native/assets-registry'],
     esbuildOptions: {
       resolveExtensions: [
         '.web.jsx',
