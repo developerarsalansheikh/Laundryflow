@@ -10,8 +10,13 @@ export const SidebarFooter = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
 
-  const adminName = user?.name || 'Super Admin';
-  const adminEmail = user?.email || 'admin@laundryflow.com';
+  const isSuperAdmin = user?.role === 'superadmin' || user?.role === 'super_admin';
+  const adminName =
+    user?.name ||
+    user?.fullName ||
+    (user?.email ? user.email.split('@')[0] : '') ||
+    (isSuperAdmin ? 'Super Admin' : 'Admin');
+  const adminEmail = user?.email || (isSuperAdmin ? 'superadmin@laundryflow.com' : 'admin@laundryflow.com');
 
   return (
     <div className="flex-shrink-0 border-t border-white/[0.08] p-3 space-y-2.5">
@@ -37,7 +42,7 @@ export const SidebarFooter = () => {
                         {adminName}
                       </h4>
                       <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                        {user?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                        {isSuperAdmin ? 'Super Admin' : 'Admin'}
                       </span>
                     </div>
                     <p className="text-[10px] text-slate-400 truncate mt-0.5">{adminEmail}</p>

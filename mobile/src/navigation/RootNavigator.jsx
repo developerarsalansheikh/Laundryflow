@@ -38,12 +38,13 @@ export const RootNavigator = () => {
     );
   }
 
-  // If NOT authenticated -> Open Customer Marketplace directly as Guest (Never force login on launch)
-  if (!isAuthenticated) {
+  // If NOT authenticated OR Customer role -> Customer Marketplace (Guest or Customer)
+  // Preserving the CustomerNavigator tree keeps the user's stack and basket uninterrupted upon login
+  if (!isAuthenticated || role === USER_ROLES.USER || !role) {
     return <CustomerNavigator />;
   }
 
-  // Authenticated user -> Role-based navigation
+  // Authenticated staff/admin role-based navigation
   switch (role) {
     case USER_ROLES.SUPERADMIN:
       // Block mobile access for superadmin, direct to Web portal
@@ -55,7 +56,6 @@ export const RootNavigator = () => {
     case USER_ROLES.DELIVERY:
       return <DeliveryNavigator />;
 
-    case USER_ROLES.USER:
     default:
       return <CustomerNavigator />;
   }

@@ -268,25 +268,25 @@ export const DeliveryOrdersScreen = () => {
       <Card variant="elevated" style={[styles.orderCard, { borderLeftWidth: 4, borderLeftColor: colors.primary }]}>
         {/* Header */}
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={styles.cardHeaderTopRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
               <Text variant="bodySmall" weight="bold" colorVariant="primary">
                 #{String(item._id || '').slice(-6).toUpperCase()}
               </Text>
               <Badge label="UNASSIGNED" variant="warning" size="xs" />
               <Badge label={distLabel} variant="info" size="xs" />
             </View>
-            <Text variant="caption" style={{ color: colors.primary, marginTop: 2 }}>
-              Store: {laundryName}
-            </Text>
+            <View style={{ flexShrink: 0, marginLeft: 8 }}>
+              <Badge
+                label={formatStatusLabel(item.status)}
+                variant={getStatusBadgeVariant(item.status)}
+                size="xs"
+              />
+            </View>
           </View>
-          <View style={{ maxWidth: '48%', flexShrink: 0 }}>
-            <Badge
-              label={formatStatusLabel(item.status)}
-              variant={getStatusBadgeVariant(item.status)}
-              size="sm"
-            />
-          </View>
+          <Text variant="caption" style={{ color: colors.primary, marginTop: 4 }}>
+            Store: {laundryName}
+          </Text>
         </View>
 
         {/* Customer & Address */}
@@ -367,24 +367,24 @@ export const DeliveryOrdersScreen = () => {
         onPress={() => navigation.navigate('DeliveryOrderDetail', { orderId: item._id })}
       >
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={styles.cardHeaderTopRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
               <Text variant="bodySmall" weight="bold" colorVariant="primary">
                 #{String(item._id || '').slice(-6).toUpperCase()}
               </Text>
               <Badge label={isPickup ? 'PICKUP' : isDelivered ? 'COMPLETED' : 'DELIVERY'} variant="neutral" size="xs" />
             </View>
-            <Text variant="caption" style={{ color: colors.primary, marginTop: 2 }}>
-              Store: {laundryName} {laundryAddress ? `• ${laundryAddress}` : ''}
-            </Text>
+            <View style={{ flexShrink: 0, marginLeft: 8 }}>
+              <Badge
+                label={formatStatusLabel(item.status)}
+                variant={getStatusBadgeVariant(item.status)}
+                size="xs"
+              />
+            </View>
           </View>
-          <View style={{ maxWidth: '48%', flexShrink: 0 }}>
-            <Badge
-              label={formatStatusLabel(item.status)}
-              variant={getStatusBadgeVariant(item.status)}
-              size="sm"
-            />
-          </View>
+          <Text variant="caption" style={{ color: colors.primary, marginTop: 4 }}>
+            Store: {laundryName} {laundryAddress ? `• ${laundryAddress}` : ''}
+          </Text>
         </View>
 
         <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 12 }}>
@@ -626,10 +626,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardHeader: {
+    marginBottom: 10,
+  },
+  cardHeaderTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
+    alignItems: 'center',
+    width: '100%',
   },
   orderPhotoThumbnail: {
     width: 60,

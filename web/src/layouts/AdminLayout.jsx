@@ -23,6 +23,7 @@ import { logoutApi } from '../api/auth';
 import { ROUTES } from '../routes/routeConstants';
 import { AppBackground } from '../components/common/AppBackground';
 import { useAdminSocket } from '../hooks/useAdminSocket';
+import { UserMenu } from '../components/common/UserMenu';
 
 const NAV_ITEMS = [
   { path: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -157,7 +158,10 @@ export const AdminLayout = () => {
                 {laundry?.city || 'Facility'}
               </span>
             </div>
-            <p className="text-xs font-medium truncate text-textSecondary">
+            <p className="text-xs font-bold truncate text-textPrimary">
+              {user?.name || user?.fullName || laundry?.owner?.name || 'Laundry Admin'}
+            </p>
+            <p className="text-[10px] font-medium truncate text-textSecondary mt-0.5">
               {user?.email || 'admin@laundryflow.com'}
             </p>
           </div>
@@ -262,30 +266,30 @@ export const AdminLayout = () => {
           }}
         >
           {/* Left: Mobile hamburger + Store Identity */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors flex-shrink-0"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
-              <span className="font-bold text-slate-900 tracking-tight">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-500 min-w-0">
+              <span className="font-bold text-slate-900 tracking-tight truncate max-w-[130px] sm:max-w-[200px] md:max-w-xs">
                 {storeName}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-500 font-medium">Laundry Operations Portal</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:inline flex-shrink-0" />
+              <span className="text-slate-500 font-medium hidden sm:inline flex-shrink-0">Laundry Operations Portal</span>
             </div>
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
             {/* Notifications Shortcut */}
             <button
               onClick={() => navigate(ROUTES.ADMIN.NOTIFICATIONS)}
-              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors"
+              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors flex-shrink-0"
               title="View Notifications"
             >
               <Bell className="w-4 h-4" />
@@ -294,27 +298,10 @@ export const AdminLayout = () => {
               )}
             </button>
 
-            <div className="h-5 w-px bg-slate-200 hidden sm:block mx-1" />
+            <div className="h-6 w-px bg-slate-200 hidden sm:block mx-0.5 flex-shrink-0" />
 
-            {/* User Identity */}
-            <div className="hidden sm:flex flex-col items-end text-right">
-              <span className="text-xs font-bold text-slate-900">
-                {user?.name || 'Laundry Admin'}
-              </span>
-              <span className="text-[10px] text-slate-500">
-                {user?.email || 'admin@laundryflow.com'}
-              </span>
-            </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 rounded-xl transition-all border border-rose-200/80"
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
+            {/* User Identity & Dropdown Menu */}
+            <UserMenu />
           </div>
         </header>
 

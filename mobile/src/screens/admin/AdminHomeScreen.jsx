@@ -127,30 +127,30 @@ export const AdminHomeScreen = () => {
         {/* ── Top Hero Header (Dark Navy curved container matching Screenshot 1) ── */}
         <View style={styles.heroContainer}>
           <View style={styles.heroTopRow}>
-            <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.storeNameText} numberOfLines={1}>
-                {user?.laundryName || user?.name || 'Ali Laundry Admin'}
-              </Text>
-              <View style={styles.emailLiveRow}>
-                <Text style={styles.liveRadioIcon}>((•))</Text>
-                <Text style={styles.storeEmailText} numberOfLines={1}>
-                  {user?.email || 'ali@laundry.com'}
+            <View style={styles.heroLeftProfile}>
+              <View style={styles.heroAvatarCircle}>
+                <Text style={{ fontSize: 20, color: '#FFFFFF' }}>🏪</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.storeNameText} numberOfLines={1}>
+                  {user?.laundryName || user?.name || 'Ali Laundry Admin'}
                 </Text>
+                <View style={styles.emailLiveRow}>
+                  <Text style={styles.liveRadioIcon}>((•))</Text>
+                  <Text style={styles.storeEmailText} numberOfLines={1}>
+                    {user?.email || 'ali@laundry.com'}
+                  </Text>
+                </View>
               </View>
             </View>
 
-            <View style={styles.heroRightActions}>
-              <TouchableOpacity
-                style={styles.heroSignOutBtn}
-                onPress={() => setSignOutModalVisible(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.heroSignOutText}>Sign Out</Text>
-              </TouchableOpacity>
-              <View style={styles.heroAvatarCircle}>
-                <Text style={{ fontSize: 24, color: '#FFFFFF' }}>👤</Text>
-              </View>
-            </View>
+            <TouchableOpacity
+              style={styles.heroSignOutBtn}
+              onPress={() => setSignOutModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.heroSignOutText}>Sign Out</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Amber Attention Banner */}
@@ -191,14 +191,10 @@ export const AdminHomeScreen = () => {
               }
             >
               <Text style={styles.stepperIcon}>🧺</Text>
-              <View style={{ marginLeft: 6 }}>
-                <Text style={styles.stepperLabelPickup}>
-                  PICKUP ({todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)})
-                </Text>
-              </View>
+              <Text style={styles.stepperLabelPickup} numberOfLines={1}>
+                PICKUP ({todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)})
+              </Text>
             </TouchableOpacity>
-
-            <Text style={styles.stepperChevron}>›</Text>
 
             {/* 2. WASH */}
             <TouchableOpacity
@@ -212,14 +208,10 @@ export const AdminHomeScreen = () => {
               }
             >
               <Text style={styles.stepperIcon}>⚙️</Text>
-              <View style={{ marginLeft: 6 }}>
-                <Text style={styles.stepperLabelWash}>
-                  WASH ({stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0})
-                </Text>
-              </View>
+              <Text style={styles.stepperLabelWash} numberOfLines={1}>
+                WASH ({stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0})
+              </Text>
             </TouchableOpacity>
-
-            <Text style={styles.stepperChevron}>›</Text>
 
             {/* 3. DELIVERY */}
             <TouchableOpacity
@@ -234,11 +226,9 @@ export const AdminHomeScreen = () => {
               }
             >
               <Text style={styles.stepperIcon}>🚚</Text>
-              <View style={{ marginLeft: 6 }}>
-                <Text style={styles.stepperLabelDelivery}>
-                  DELIVERY ({todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)})
-                </Text>
-              </View>
+              <Text style={styles.stepperLabelDelivery} numberOfLines={1}>
+                DELIVERY ({todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)})
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -831,8 +821,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#94A3B8',
   },
-  heroRightActions: {
-    alignItems: 'flex-end',
+  heroLeftProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
   },
   heroSignOutBtn: {
     backgroundColor: 'rgba(255, 255, 255, 0.14)',
@@ -840,8 +833,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.22)',
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 5,
-    marginBottom: 8,
+    paddingVertical: 6,
   },
   heroSignOutText: {
     color: '#FFFFFF',
@@ -852,9 +844,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   // ── Attention Banner ──
   attentionBanner: {
@@ -897,20 +891,21 @@ const styles = StyleSheet.create({
   // ── Body ──
   body: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 24,
   },
   sectionCategoryHeader: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#475569',
     letterSpacing: 0.8,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   // ── Stepper Row ──
   operationalStepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
     marginBottom: 14,
   },
   stepperPillPickup: {
@@ -922,8 +917,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#38BDF8',
     borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 4,
   },
   stepperLabelPickup: {
     fontSize: 11,
@@ -939,8 +935,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#A78BFA',
     borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 4,
   },
   stepperLabelWash: {
     fontSize: 11,
@@ -956,8 +953,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#4ADE80',
     borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 4,
   },
   stepperLabelDelivery: {
     fontSize: 11,
@@ -966,12 +964,6 @@ const styles = StyleSheet.create({
   },
   stepperIcon: {
     fontSize: 14,
-  },
-  stepperChevron: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#94A3B8',
-    paddingHorizontal: 4,
   },
   // ── Revenue Card ──
   revenueCard: {

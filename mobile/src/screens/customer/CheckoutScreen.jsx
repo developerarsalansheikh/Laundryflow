@@ -210,6 +210,12 @@ export const CheckoutScreen = () => {
     }, [cart.laundryId, refetchTimeSlots])
   );
 
+  const availableSlots = useMemo(() => {
+    if (Array.isArray(slotsData?.data)) return slotsData.data;
+    if (Array.isArray(slotsData)) return slotsData;
+    return [];
+  }, [slotsData]);
+
   // On Today: strictly filter out slots that have passed or are currently running
   const displayedSlots = useMemo(() => {
     return isToday

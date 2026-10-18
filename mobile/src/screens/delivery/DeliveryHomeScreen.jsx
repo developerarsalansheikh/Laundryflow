@@ -254,7 +254,7 @@ export const DeliveryHomeScreen = () => {
           {/* Partner Info */}
           <View style={styles.partnerInfo}>
             <Text style={styles.partnerName} numberOfLines={1}>
-              {user?.name || 'Ramesh Kumar'}
+              {(user?.name || 'Ramesh Kumar').replace(/\s*\(Delivery\s*Agent\)/i, '').replace(/\s*\(Delivery\)/i, '')}
             </Text>
             <Text style={styles.partnerRole}>(Delivery Agent)</Text>
             <Text style={styles.partnerContact} numberOfLines={1}>
@@ -830,18 +830,24 @@ const styles = StyleSheet.create({
   },
   perfNumberDeliveries: {
     fontSize: 24,
+    lineHeight: 30,
     fontWeight: '800',
     color: '#0F172A',
+    includeFontPadding: false,
   },
   perfNumberEarnings: {
     fontSize: 24,
+    lineHeight: 30,
     fontWeight: '800',
     color: '#059669',
+    includeFontPadding: false,
   },
   perfNumberRating: {
     fontSize: 24,
+    lineHeight: 30,
     fontWeight: '800',
     color: '#D97706',
+    includeFontPadding: false,
   },
   perfLabel: {
     fontSize: 12,
@@ -921,10 +927,13 @@ const styles = StyleSheet.create({
   },
   tileBigCountCollect: {
     fontSize: 28,
+    lineHeight: 34,
+    minHeight: 34,
     fontWeight: '800',
     color: '#B45309',
     marginTop: 6,
     marginBottom: 2,
+    includeFontPadding: false,
   },
   tileTitleCollect: {
     fontSize: 13,
@@ -938,10 +947,13 @@ const styles = StyleSheet.create({
   },
   tileBigCountDeliver: {
     fontSize: 28,
+    lineHeight: 34,
+    minHeight: 34,
     fontWeight: '800',
     color: '#0284C7',
     marginTop: 6,
     marginBottom: 2,
+    includeFontPadding: false,
   },
   tileTitleDeliver: {
     fontSize: 13,

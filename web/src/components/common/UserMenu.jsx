@@ -17,14 +17,23 @@ export const UserMenu = () => {
   const navigate = useNavigate();
   const { user, clearAuth } = useAuthStore();
 
-  const displayName = user?.name || 'Super Admin';
-  const displayEmail = user?.email || '';
-  const initials = displayName
+  const isStoreAdmin = user?.role === 'admin';
+  const roleLabel = isStoreAdmin ? 'Store Admin' : 'Super Admin';
+
+  const displayName =
+    user?.name ||
+    user?.fullName ||
+    (user?.email ? user.email.split('@')[0] : '') ||
+    (isStoreAdmin ? 'Laundry Admin' : 'Super Admin');
+
+  const displayEmail = user?.email || (isStoreAdmin ? 'admin@laundryflow.com' : 'superadmin@laundryflow.com');
+  const initials = (displayName || 'AD')
     .split(' ')
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2);
+    .slice(0, 2) || 'AD';
 
   // Close on outside click
   useEffect(() => {
@@ -84,7 +93,7 @@ export const UserMenu = () => {
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative flex-shrink-0">
       <button
         type="button"
         id="navbar-user-profile-btn"
@@ -92,26 +101,32 @@ export const UserMenu = () => {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="User profile and settings"
-        className={`flex items-center gap-2.5 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl transition-all duration-200 outline-none cursor-pointer ${
+        className={`flex items-center gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl transition-all duration-200 outline-none cursor-pointer flex-shrink-0 ${
           open
             ? 'bg-slate-100 ring-2 ring-blue-500/20 text-slate-900 border border-slate-200'
             : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent hover:border-slate-200'
         }`}
       >
         {/* Avatar */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-xs flex-shrink-0">
             {initials}
           </div>
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
         </div>
-        <div className="flex flex-col items-start leading-tight">
-          <span className="text-xs font-bold text-slate-900">{displayName}</span>
+        <div className="flex flex-col items-start leading-tight text-left min-w-0">
+          <span className="text-xs font-bold text-slate-900 truncate max-w-[110px] sm:max-w-[150px]">
+            {displayName}
+          </span>
           <span className="text-[10px] text-slate-500 font-medium">
-            {user?.role === 'admin' ? 'Store Admin' : 'Super Admin'}
+            {roleLabel}
           </span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 block transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-400 flex-shrink-0 block transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       <AnimatePresence>

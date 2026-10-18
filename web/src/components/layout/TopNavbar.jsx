@@ -90,13 +90,13 @@ export const TopNavbar = () => {
       <IconButton
         onClick={() => setMobileSidebarOpen(true)}
         aria-label="Open navigation menu"
-        className="lg:hidden"
+        className="lg:hidden flex-shrink-0"
       >
         <Menu className="w-5 h-5" />
       </IconButton>
 
       {/* Search bar */}
-      <div className="flex-1 max-w-xs sm:max-w-sm">
+      <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-sm min-w-0">
         <SearchBar />
       </div>
 
@@ -104,14 +104,14 @@ export const TopNavbar = () => {
       <IconButton
         onClick={toggleFullscreen}
         aria-label="Toggle Fullscreen"
-        className="hidden md:inline-flex"
+        className="hidden md:inline-flex flex-shrink-0"
         title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
       >
         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
       </IconButton>
 
       {/* Quick Status Filter Pills (Interactive, navigating to real filtered orders) */}
-      <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 mx-auto select-none">
+      <div className="hidden 2xl:flex items-center gap-1.5 xl:gap-2 mx-auto select-none flex-shrink-0">
         <button
           type="button"
           onClick={() => handlePillClick('')}
@@ -191,7 +191,7 @@ export const TopNavbar = () => {
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
         {/* Messages & Helpdesk Inquiries */}
         <MessagesMenu />
 
@@ -199,7 +199,7 @@ export const TopNavbar = () => {
         <NotificationMenu />
 
         {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block" />
+        <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block flex-shrink-0" />
 
         {/* User menu */}
         <UserMenu />

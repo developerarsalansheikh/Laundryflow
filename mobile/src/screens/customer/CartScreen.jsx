@@ -80,7 +80,7 @@ export const CartScreen = () => {
         coordinates: defaultAddress?.coordinates || (userLat && userLng ? { lat: userLat, lng: userLng } : undefined),
         orderSubtotal: rawSubtotal,
       }),
-    enabled: Boolean(cart.laundryId && rawSubtotal > 0),
+    enabled: Boolean(isAuthenticated && cart.laundryId && defaultAddress?._id && rawSubtotal > 0),
   });
 
   const zoneData = zoneCheckResponse?.data || zoneCheckResponse || null;

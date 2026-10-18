@@ -313,7 +313,9 @@ export const CustomerHomeScreen = () => {
   };
 
   const handleBookPickupBanner = () => {
-    if (rawLaundries.length > 0) {
+    if (favoriteLaundryStore) {
+      handleOpenLaundry(favoriteLaundryStore);
+    } else if (rawLaundries.length > 0) {
       handleOpenLaundry(rawLaundries[0]);
     } else {
       navigation.navigate('SelectLocation', { isMandatory: false });
@@ -538,152 +540,6 @@ export const CustomerHomeScreen = () => {
               })}
             </View>
 
-            {/* ── SELECT BY GARMENT SECTION (REAL CLOTHING CATALOG) ── */}
-            <View style={styles.garmentSection}>
-              <View style={styles.sectionHeader}>
-                <View>
-                  <Text variant="title" weight="bold" colorVariant="primary">
-                    Select by Garment
-                  </Text>
-                  <Text variant="caption" colorVariant="muted">
-                    {favoriteLaundryStore ? `From ${favoriteLaundryStore.name}` : 'Quick doorstep booking'}
-                  </Text>
-                </View>
-                {favoriteLaundryStore && (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => handleOpenLaundry(favoriteLaundryStore)}
-                  >
-                    <Text variant="caption" weight="bold" style={{ color: colors.primary }}>
-                      View Store ›
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {favoriteIds.length === 0 ? (
-                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
-                  <Icon name="heart" size={28} color="#94A3B8" />
-                  <Text variant="bodyMedium" weight="bold" colorVariant="primary" style={{ marginTop: 8 }}>
-                    No Favorite Laundry Selected
-                  </Text>
-                  <Text variant="caption" colorVariant="muted" style={{ textAlign: 'center', marginTop: 4, paddingHorizontal: 16 }}>
-                    Tap the heart icon on your favorite laundry store below to quickly order individual garments right here.
-                  </Text>
-                </View>
-              ) : isFavoriteLaundryLoading ? (
-                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
-                  <Loader size="small" />
-                  <Text variant="caption" colorVariant="muted" style={{ marginTop: 8 }}>
-                    Loading store garments...
-                  </Text>
-                </View>
-              ) : favoriteGarments.length === 0 ? (
-                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
-                  <Icon name="shirt" size={28} color="#94A3B8" />
-                  <Text variant="bodyMedium" weight="bold" colorVariant="primary" style={{ marginTop: 8 }}>
-                    No Garments Available
-                  </Text>
-                  <Text variant="caption" colorVariant="muted" style={{ textAlign: 'center', marginTop: 4 }}>
-                    {favoriteLaundryStore?.name || 'Your favorite laundry'} hasn't added individual garments yet.
-                  </Text>
-                  {favoriteLaundryStore && (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[styles.garmentAddBtn, { backgroundColor: colors.primary, marginTop: 10, paddingHorizontal: 16 }]}
-                      onPress={() => handleOpenLaundry(favoriteLaundryStore)}
-                    >
-                      <Text style={styles.garmentAddBtnText}>View Laundry Menu</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ) : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.garmentScroll}
-                >
-                  {favoriteGarments.map((garment) => {
-                    const targetLaundry = favoriteLaundryStore || (rawLaundries.length > 0 ? rawLaundries[0] : null);
-                    const targetLaundryId = targetLaundry ? (targetLaundry._id || targetLaundry.id) : null;
-                    const itemId = garment.clothingItemObj
-                      ? `${garment.serviceId}_${(garment.clothingItemObj.name || garment.clothingItemObj.clothingType).toLowerCase().replace(/\s+/g, '_')}`
-                      : garment.serviceId;
-                    const qtyInCart = (itemId && cart.laundryId === targetLaundryId) ? cart.getItemQuantity(itemId) : 0;
-
-                    return (
-                      <View
-                        key={garment.id}
-                        style={[
-                          styles.garmentCard,
-                          { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
-                        ]}
-                      >
-                        <TouchableOpacity
-                          activeOpacity={0.85}
-                          onPress={() => {
-                            if (targetLaundry) {
-                              handleOpenLaundry(targetLaundry);
-                            } else {
-                              navigation.navigate('SelectLocation', { isMandatory: false });
-                            }
-                          }}
-                        >
-                          <Image
-                            source={garment.image || ASSETS.clothes?.shirt}
-                            style={styles.garmentPhoto}
-                            resizeMode="cover"
-                          />
-                          <View style={styles.garmentInfo}>
-                            <Text variant="bodySmall" weight="bold" colorVariant="primary" numberOfLines={1}>
-                              {garment.name}
-                            </Text>
-                            <View style={styles.garmentPriceRow}>
-                              <Text variant="bodyMedium" weight="bold" style={{ color: colors.primary }}>
-                                ₹{garment.price}
-                              </Text>
-                              <Badge
-                                label={garment.category === 'dry_clean' ? 'Dry Clean' : (garment.category === 'iron' ? 'Iron' : 'Wash')}
-                                variant="neutral"
-                                size="sm"
-                              />
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-
-                        <View style={styles.garmentActionArea}>
-                          {qtyInCart > 0 ? (
-                            <View style={[styles.miniStepper, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
-                              <TouchableOpacity
-                                style={styles.miniStepperBtn}
-                                onPress={() => cart.decrementItem(itemId)}
-                              >
-                                <Text style={{ color: colors.primary, fontWeight: 'bold' }}>−</Text>
-                              </TouchableOpacity>
-                              <Text style={{ color: colors.primary, fontWeight: 'bold', paddingHorizontal: 6 }}>{qtyInCart}</Text>
-                              <TouchableOpacity
-                                style={styles.miniStepperBtn}
-                                onPress={() => handleQuickAddGarment(garment)}
-                              >
-                                <Text style={{ color: colors.primary, fontWeight: 'bold' }}>+</Text>
-                              </TouchableOpacity>
-                            </View>
-                          ) : (
-                            <TouchableOpacity
-                              activeOpacity={0.8}
-                              style={[styles.garmentAddBtn, { backgroundColor: colors.primary }]}
-                              onPress={() => handleQuickAddGarment(garment)}
-                            >
-                              <Text style={styles.garmentAddBtnText}>+ Add</Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      </View>
-                    );
-                  })}
-                </ScrollView>
-              )}
-            </View>
 
             {/* ── ACTIVE ORDERS CARD ── */}
             {activeOrder ? (
