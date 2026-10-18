@@ -1,12 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ShieldCheck, Activity } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
+import { useAuthStore } from '../../store/authStore';
 
 /**
  * SidebarFooter — LaundryFlow Platform Status & Info card + collapse toggle.
  */
 export const SidebarFooter = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { user } = useAuthStore();
+
+  const adminName = user?.name || 'Super Admin';
+  const adminEmail = user?.email || 'admin@laundryflow.com';
 
   return (
     <div className="flex-shrink-0 border-t border-white/[0.08] p-3 space-y-2.5">
@@ -29,13 +34,13 @@ export const SidebarFooter = () => {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <h4 className="text-xs font-bold text-white truncate leading-tight">
-                        Poonaclub
+                        {adminName}
                       </h4>
                       <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                        Parent
+                        {user?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 truncate mt-0.5">PerClean Laundry</p>
+                    <p className="text-[10px] text-slate-400 truncate mt-0.5">{adminEmail}</p>
                   </div>
                 </div>
 

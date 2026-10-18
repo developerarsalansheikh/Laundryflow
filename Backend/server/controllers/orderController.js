@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Order = require("../models/orderModels");
 const Service = require("../models/serviceModels");
 const Laundry = require("../models/laundryModels");
@@ -153,7 +154,7 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // ── FIX 4: Validate time slot ─────────────────
+    // ── FIX 4: Validate time slot strictly against current time ─────────────────
     const allTimeSlots = await TimeSlot.find({ laundryId });
     let matchedSlot = null;
     let matchedDayDoc = null;
@@ -188,36 +189,132 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // ── Calculate subtotal from DB prices (Authoritative) ────
+    // Dynamic Time-Slot Cutoff Validation for Today in Asia/Kolkata
+    const istNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const pickupDateStr = pickupDateObj.toISOString().split("T")[0];
+    const todayStr = `${istNow.getFullYear()}-${String(istNow.getMonth() + 1).padStart(2, "0")}-${String(istNow.getDate()).padStart(2, "0")}`;
+
+    if (pickupDateStr === todayStr) {
+      const parseSlotMinutes = (timeStr) => {
+        if (!timeStr || typeof timeStr !== "string") return null;
+        const match = timeStr.trim().toUpperCase().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/);
+        if (!match) return null;
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const period = match[3];
+        if (period === "PM" && hours < 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+      };
+
+      const slotStartMinutes = parseSlotMinutes(matchedSlot.startTime);
+      const currentMinutes = istNow.getHours() * 60 + istNow.getMinutes();
+
+      if (slotStartMinutes !== null && currentMinutes >= slotStartMinutes) {
+        return res.status(400).json({
+          success: false,
+          message: "The selected pickup time slot has already started or passed. Please select an upcoming slot.",
+        });
+      }
+    }
+
+    // ── Calculate subtotal from DB prices (Authoritative, Never Trust Client Total) ────
     let subtotal = 0;
     const serviceDetails = [];
     const estimatedHoursList = [];
 
     for (const item of services) {
       const serviceId = item.service || item.serviceId || item.id;
-      const service = await Service.findOne({
-        _id: serviceId,
-        laundryId: laundryId,
-        isActive: true,
-      });
+      const cleanServiceId = typeof serviceId === "object" && serviceId?._id ? serviceId._id : serviceId;
+
+      let service = null;
+      if (mongoose.Types.ObjectId.isValid(cleanServiceId)) {
+        service = await Service.findOne({
+          _id: cleanServiceId,
+          laundryId: laundryId,
+          isActive: true,
+        });
+      }
+
+      // Fallback matching if serviceId was category string or item category supplied
+      if (!service && item.category) {
+        service = await Service.findOne({
+          laundryId: laundryId,
+          category: item.category,
+          isActive: true,
+        });
+      }
 
       if (!service) {
         return res.status(400).json({
           success: false,
-          message: "One or more selected services are currently unavailable",
+          message: "One or more selected services are currently unavailable or invalid for this laundry.",
         });
       }
 
-      const lineTotal = service.price * item.quantity;
+      const qty = Number(item.quantity);
+      if (isNaN(qty) || qty <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Item quantity must be a positive number.",
+        });
+      }
+
+      // Authoritative Unit Price Determination
+      // Check service.items first if item specifies clothingType or itemName
+      let unitPrice = null;
+      let matchedClothing = null;
+      const targetClothingType = (item.clothingType || "").trim().toLowerCase();
+      const targetItemName = (item.itemName || item.name || "").trim().toLowerCase();
+
+      if (Array.isArray(service.items) && service.items.length > 0) {
+        matchedClothing = service.items.find((sub) => {
+          const subType = (sub.clothingType || "").trim().toLowerCase();
+          const subName = (sub.name || "").trim().toLowerCase();
+          return (
+            (targetClothingType && (subType === targetClothingType || subName === targetClothingType)) ||
+            (targetItemName && (subName === targetItemName || targetItemName.includes(subName) || subName.includes(targetItemName)))
+          );
+        });
+        if (matchedClothing && typeof matchedClothing.price === "number") {
+          unitPrice = matchedClothing.price;
+        }
+      }
+
+      // If not in service.items, use service.price
+      if (unitPrice === null || unitPrice === undefined) {
+        if (typeof service.price === "number" && service.price > 0) {
+          unitPrice = service.price;
+        } else if (typeof item.price === "number" && item.price > 0) {
+          unitPrice = item.price;
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid price configuration for service ${service.name}.`,
+          });
+        }
+      }
+
+      const lineTotal = unitPrice * qty;
       subtotal += lineTotal;
-      estimatedHoursList.push(service.estimatedHours || 24);
+      const hours = (matchedClothing && matchedClothing.estimatedHours) || service.estimatedHours || 24;
+      estimatedHoursList.push(hours);
 
       serviceDetails.push({
         service: service._id,
-        quantity: item.quantity,
-        price: service.price,
+        itemName: item.itemName || (matchedClothing ? matchedClothing.name : service.name),
+        clothingType: item.clothingType || (matchedClothing ? matchedClothing.clothingType : service.clothingType || ""),
+        quantity: qty,
+        price: unitPrice,
         lineTotal,
-        estimatedHours: service.estimatedHours || 24,
+        estimatedHours: hours,
+      });
+    }
+
+    if (subtotal <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Order subtotal cannot be zero. Please select valid service items.",
       });
     }
 
@@ -1612,11 +1709,322 @@ const uploadPickupPhoto = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────
+// @desc    Customer edits order items/quantities before collection
+// @route   PUT /api/orders/:id/items
+// @access  Private/User
+// ─────────────────────────────────────────────
+const modifyOrderItems = async (req, res) => {
+  try {
+    const { services } = req.body;
+    const orderId = req.params.id;
+
+    if (!Array.isArray(services) || services.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide at least one item.",
+      });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found.",
+      });
+    }
+
+    // Authorization: User can only modify their own order
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied — you do not own this order.",
+      });
+    }
+
+    // Collection boundary check: Only editable before collection
+    const editableStatuses = ["pending", "pending_pickup", "placed"];
+    if (!editableStatuses.includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be edited after pickup/collection has started. Current status: ${order.status}`,
+      });
+    }
+
+    // Recalculate subtotal from DB prices (Authoritative)
+    let subtotal = 0;
+    const serviceDetails = [];
+    const estimatedHoursList = [];
+
+    for (const item of services) {
+      const serviceId = item.service || item.serviceId || item.id;
+      const cleanServiceId = typeof serviceId === "object" && serviceId?._id ? serviceId._id : serviceId;
+
+      let service = null;
+      if (mongoose.Types.ObjectId.isValid(cleanServiceId)) {
+        service = await Service.findOne({
+          _id: cleanServiceId,
+          laundryId: order.laundryId,
+          isActive: true,
+        });
+      }
+
+      if (!service && item.category) {
+        service = await Service.findOne({
+          laundryId: order.laundryId,
+          category: item.category,
+          isActive: true,
+        });
+      }
+
+      if (!service) {
+        return res.status(400).json({
+          success: false,
+          message: "One or more selected services are currently unavailable.",
+        });
+      }
+
+      const qty = Number(item.quantity);
+      if (isNaN(qty) || qty <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Item quantity must be a positive number.",
+        });
+      }
+
+      let unitPrice = null;
+      let matchedClothing = null;
+      const targetClothingType = (item.clothingType || "").trim().toLowerCase();
+      const targetItemName = (item.itemName || item.name || "").trim().toLowerCase();
+
+      if (Array.isArray(service.items) && service.items.length > 0) {
+        matchedClothing = service.items.find((sub) => {
+          const subType = (sub.clothingType || "").trim().toLowerCase();
+          const subName = (sub.name || "").trim().toLowerCase();
+          return (
+            (targetClothingType && (subType === targetClothingType || subName === targetClothingType)) ||
+            (targetItemName && (subName === targetItemName || targetItemName.includes(subName) || subName.includes(targetItemName)))
+          );
+        });
+        if (matchedClothing && typeof matchedClothing.price === "number") {
+          unitPrice = matchedClothing.price;
+        }
+      }
+
+      if (unitPrice === null || unitPrice === undefined) {
+        if (typeof service.price === "number" && service.price > 0) {
+          unitPrice = service.price;
+        } else if (typeof item.price === "number" && item.price > 0) {
+          unitPrice = item.price;
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid price configuration for service ${service.name}.`,
+          });
+        }
+      }
+
+      const lineTotal = unitPrice * qty;
+      subtotal += lineTotal;
+      const hours = (matchedClothing && matchedClothing.estimatedHours) || service.estimatedHours || 24;
+      estimatedHoursList.push(hours);
+
+      serviceDetails.push({
+        service: service._id,
+        itemName: item.itemName || (matchedClothing ? matchedClothing.name : service.name),
+        clothingType: item.clothingType || (matchedClothing ? matchedClothing.clothingType : service.clothingType || ""),
+        quantity: qty,
+        price: unitPrice,
+        lineTotal,
+        estimatedHours: hours,
+      });
+    }
+
+    // Authoritative Delivery Fee & Zone Eligibility
+    const { evaluateDeliveryEligibility } = require("./deliveryZoneController");
+    const eligibility = await evaluateDeliveryEligibility({
+      laundryId: order.laundryId,
+      address: order.pickupAddressSnapshot || order.pickupAddress,
+      orderSubtotal: subtotal,
+    });
+
+    const deliveryFee = eligibility.available ? (eligibility.deliveryFee || 0) : order.deliveryFee;
+    const gst = Math.round(subtotal * 0.05);
+    const discount = order.discount || 0;
+    const newTotalAmount = subtotal + deliveryFee + gst - discount;
+
+    // Payment validation: if already paid, do not silently alter amount
+    if (order.isPaid && newTotalAmount !== order.totalAmount) {
+      return res.status(400).json({
+        success: false,
+        message: `This order is already paid (₹${order.totalAmount}). Altering items changes the total to ₹${newTotalAmount}. Please contact store support to arrange adjustment or refund.`,
+      });
+    }
+
+    const laundry = await Laundry.findById(order.laundryId);
+    const commissionPercent = laundry?.commissionPercent || 10;
+    const commissionAmount = (newTotalAmount * commissionPercent) / 100;
+    const laundryEarning = newTotalAmount - commissionAmount;
+
+    order.services = serviceDetails;
+    order.subtotal = subtotal;
+    order.deliveryFee = deliveryFee;
+    order.gst = gst;
+    order.totalAmount = newTotalAmount;
+    order.commissionAmount = commissionAmount;
+    order.laundryEarning = laundryEarning;
+
+    order.trackingUpdates.push({
+      status: order.status,
+      message: "Order items modified by customer before collection.",
+      timestamp: new Date(),
+    });
+
+    await order.save();
+
+    const populatedOrder = await Order.findById(order._id)
+      .populate("services.service", "name price category estimatedHours")
+      .populate("laundryId", "name address phone")
+      .populate("pickupAddress")
+      .populate("deliveryAddress");
+
+    try {
+      emitOrderUpdated(populatedOrder);
+    } catch (_) {}
+
+    return res.status(200).json({
+      success: true,
+      message: "Order items updated successfully.",
+      data: populatedOrder,
+    });
+  } catch (error) {
+    console.error("modifyOrderItems error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update order items.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Delivery Agent confirms collected count during pickup
+// @route   PUT /api/orders/:id/confirm-collection
+// @access  Private/Delivery/Admin
+// ─────────────────────────────────────────────
+const confirmCollectionCount = async (req, res) => {
+  try {
+    const { collectedCounts = [], discrepancyNotes = "" } = req.body;
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found.",
+      });
+    }
+
+    // Role check: Delivery partner assigned or Admin
+    if (req.user.role === "delivery") {
+      if (order.deliveryPartner && order.deliveryPartner.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied — you are not the assigned delivery partner.",
+        });
+      }
+    }
+
+    // Prevent duplicate confirmation if already confirmed
+    if (order.collectedAt) {
+      return res.status(400).json({
+        success: false,
+        message: "Collection count has already been confirmed for this order.",
+      });
+    }
+
+    let hasDiscrepancy = false;
+    const discrepancyDetails = [];
+
+    // Map collected counts: collectedCounts can be array of { serviceIndex, count } or { serviceId, clothingType, count }
+    order.services.forEach((item, index) => {
+      let matchedCount = null;
+      if (Array.isArray(collectedCounts)) {
+        const found = collectedCounts.find((c) => {
+          if (c.serviceIndex !== undefined && Number(c.serviceIndex) === index) return true;
+          const sId = item.service?._id ? item.service._id.toString() : item.service?.toString();
+          const targetId = c.serviceId || c.service;
+          const matchesService = targetId && sId === targetId.toString();
+          const matchesType = !c.clothingType || (item.clothingType || "").toLowerCase() === String(c.clothingType).toLowerCase();
+          return matchesService && matchesType;
+        });
+        if (found) {
+          matchedCount = Number(found.count !== undefined ? found.count : found.quantity);
+        }
+      }
+
+      const finalCount = matchedCount !== null && !isNaN(matchedCount) && matchedCount >= 0 ? matchedCount : item.quantity;
+      item.collectedQuantity = finalCount;
+
+      if (finalCount !== item.quantity) {
+        hasDiscrepancy = true;
+        discrepancyDetails.push(`${item.itemName || item.clothingType || 'Item'}: requested ${item.quantity}, collected ${finalCount}`);
+      }
+    });
+
+    order.hasCountDiscrepancy = hasDiscrepancy;
+    order.collectionDiscrepancyNotes = hasDiscrepancy
+      ? `Discrepancy: ${discrepancyDetails.join("; ")}. ${discrepancyNotes}`.trim()
+      : (discrepancyNotes || "Counts verified and match requested items.");
+    order.collectedAt = new Date();
+    order.collectedBy = req.user._id;
+
+    order.trackingUpdates.push({
+      status: order.status,
+      message: hasDiscrepancy
+        ? `Driver collection confirmed with count discrepancy: ${discrepancyDetails.join(", ")}`
+        : "Driver collection confirmed: all item counts match requested order.",
+      timestamp: new Date(),
+    });
+
+    await order.save();
+
+    const populatedOrder = await Order.findById(order._id)
+      .populate("services.service", "name price category")
+      .populate("user", "name phone")
+      .populate("deliveryPartner", "name phone")
+      .populate("laundryId", "name address phone")
+      .populate("pickupAddress")
+      .populate("deliveryAddress");
+
+    try {
+      emitOrderUpdated(populatedOrder);
+    } catch (_) {}
+
+    return res.status(200).json({
+      success: true,
+      message: hasDiscrepancy
+        ? "Collection count confirmed with discrepancy recorded."
+        : "Collection count confirmed successfully.",
+      data: populatedOrder,
+    });
+  } catch (error) {
+    console.error("confirmCollectionCount error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to confirm collection counts.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   placeOrder,
   getOrderById,
   cancelOrder,
   changeOrderAddress,
+  modifyOrderItems,
+  confirmCollectionCount,
   updateOrderStatus,
   confirmCustomerDelivery,
   reportCustomerUnavailable,

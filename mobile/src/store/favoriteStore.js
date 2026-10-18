@@ -34,9 +34,9 @@ export const useFavoriteStore = create(
 
       /**
        * Toggle favorite status of a laundry
-       * Optimistically updates local state; calls backend if user is authenticated.
+       * Optimistically and synchronously updates local state; calls backend in background with rollback on failure.
        */
-      toggleFavorite: async (laundry) => {
+      toggleFavorite: (laundry) => {
         if (!laundry) return;
         const laundryId = String(laundry._id || laundry.id || laundry);
         const { favoriteIds, favoritesMap } = get();
@@ -45,22 +45,27 @@ export const useFavoriteStore = create(
         const isAuthenticated = useAuthStore.getState().isAuthenticated;
 
         if (isFav) {
-          // Remove from favorites
+          // Immediately update local state
           const newIds = favoriteIds.filter((id) => id !== laundryId);
           const newMap = { ...favoritesMap };
+          const removedLaundry = newMap[laundryId];
           delete newMap[laundryId];
 
           set({ favoriteIds: newIds, favoritesMap: newMap });
 
           if (isAuthenticated) {
-            try {
-              await customerService.removeFavorite(laundryId);
-            } catch (err) {
-              console.warn('Failed to remove favorite from server:', err?.message);
-            }
+            customerService.removeFavorite(laundryId).catch((err) => {
+              // Rollback on server failure
+              const current = get();
+              set({
+                favoriteIds: [...current.favoriteIds, laundryId],
+                favoritesMap: removedLaundry ? { ...current.favoritesMap, [laundryId]: removedLaundry } : current.favoritesMap,
+              });
+              console.warn('Failed to remove favorite from server, rolling back:', err?.message);
+            });
           }
         } else {
-          // Add to favorites
+          // Immediately update local state
           const newIds = [...favoriteIds, laundryId];
           const newMap = { ...favoritesMap };
           if (typeof laundry === 'object' && (laundry.name || laundry.title)) {
@@ -70,11 +75,15 @@ export const useFavoriteStore = create(
           set({ favoriteIds: newIds, favoritesMap: newMap });
 
           if (isAuthenticated) {
-            try {
-              await customerService.addFavorite(laundryId);
-            } catch (err) {
-              console.warn('Failed to add favorite to server:', err?.message);
-            }
+            customerService.addFavorite(laundryId).catch((err) => {
+              // Rollback on server failure
+              const current = get();
+              const revertedIds = current.favoriteIds.filter((id) => id !== laundryId);
+              const revertedMap = { ...current.favoritesMap };
+              delete revertedMap[laundryId];
+              set({ favoriteIds: revertedIds, favoritesMap: revertedMap });
+              console.warn('Failed to add favorite to server, rolling back:', err?.message);
+            });
           }
         }
       },

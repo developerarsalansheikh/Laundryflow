@@ -1557,16 +1557,19 @@ const getTimeSlots = async (req, res) => {
       return hours * 60 + minutes;
     };
 
-    const formattedSlots = (timeSlotDoc && Array.isArray(timeSlotDoc.slots) ? timeSlotDoc.slots.filter(s => s.isActive) : []).map(slot => {
-      const slotObj = slot.toObject ? slot.toObject() : { ...slot };
-      if (isToday && slotObj.startTime) {
-        const slotStartMinutes = parseSlotMinutes(slotObj.startTime);
-        slotObj.isPassed = slotStartMinutes !== null ? currentMinutes >= slotStartMinutes : false;
-      } else {
-        slotObj.isPassed = false;
-      }
-      return slotObj;
-    });
+    const activeSlots = timeSlotDoc && Array.isArray(timeSlotDoc.slots) ? timeSlotDoc.slots.filter(s => s.isActive) : [];
+    const formattedSlots = activeSlots
+      .map(slot => {
+        const slotObj = slot.toObject ? slot.toObject() : { ...slot };
+        if (isToday && slotObj.startTime) {
+          const slotStartMinutes = parseSlotMinutes(slotObj.startTime);
+          slotObj.isPassed = slotStartMinutes !== null ? currentMinutes >= slotStartMinutes : false;
+        } else {
+          slotObj.isPassed = false;
+        }
+        return slotObj;
+      })
+      .filter(slot => !slot.isPassed); // For today, hide any slot whose start time has already passed or started
 
     return res.status(200).json({
       success: true,

@@ -109,7 +109,7 @@ export const AdminHomeScreen = () => {
   const attentionOrdersCount = (stats.pendingOrders || 0) + (stats.inProgressOrders || 0);
 
   return (
-    <ScreenContainer scrollable contentContainerStyle={styles.container}>
+    <ScreenContainer scrollable={false} padding="none" style={{ backgroundColor: '#F8FAFC' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -792,6 +792,7 @@ const styles = StyleSheet.create({
   },
   // ── Dark Hero Header ──
   heroContainer: {
+    width: '100%',
     backgroundColor: '#1E293B',
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,

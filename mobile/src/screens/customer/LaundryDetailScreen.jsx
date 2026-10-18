@@ -182,10 +182,10 @@ export const LaundryDetailScreen = () => {
   const targetLaundryId = laundry._id || laundry.id || laundryId;
   const isCartFromThisLaundry = cart.laundryId === targetLaundryId;
 
-  // Favorites
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  // Favorites (Reactive subscription to favoriteIds)
+  const favoriteIds = useFavoriteStore((state) => state.favoriteIds);
   const toggleFavorite = useFavoriteStore((state) => state.toggleFavorite);
-  const isFav = isFavorite(targetLaundryId);
+  const isFav = favoriteIds.includes(String(targetLaundryId));
 
   // Distance & Serviceability Checks
   const distKm = typeof laundry.distanceKm === 'number'

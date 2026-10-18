@@ -21,6 +21,28 @@ const CATEGORY_OPTIONS = [
   'Bedding & Blankets',
 ];
 
+const CATEGORY_MAP = {
+  'Wash & Fold': 'wash',
+  'Dry Cleaning': 'dry_clean',
+  'Ironing': 'iron',
+  'Shoe Cleaning': 'wash',
+  'Premium Care': 'premium',
+  'Curtains & Drapes': 'dry_clean',
+  'Bedding & Blankets': 'wash',
+  wash: 'wash',
+  dry_clean: 'dry_clean',
+  iron: 'iron',
+  premium: 'premium',
+};
+
+const REVERSE_CATEGORY_MAP = {
+  wash: 'Wash & Fold',
+  dry_clean: 'Dry Cleaning',
+  iron: 'Ironing',
+  wash_iron: 'Wash & Fold',
+  premium: 'Premium Care',
+};
+
 const UNIT_OPTIONS = [
   { value: 'piece', label: 'Per Piece' },
   { value: 'kg', label: 'Per Kilogram (Kg)' },
@@ -28,6 +50,21 @@ const UNIT_OPTIONS = [
   { value: 'meter', label: 'Per Meter' },
   { value: 'set', label: 'Per Set' },
 ];
+
+const UNIT_MAP = {
+  piece: 'per_piece',
+  per_piece: 'per_piece',
+  kg: 'per_kg',
+  per_kg: 'per_kg',
+  pair: 'per_piece',
+  meter: 'per_piece',
+  set: 'per_piece',
+};
+
+const REVERSE_UNIT_MAP = {
+  per_piece: 'piece',
+  per_kg: 'kg',
+};
 
 export const AdminAddEditService = () => {
   const { id } = useParams();
@@ -66,10 +103,10 @@ export const AdminAddEditService = () => {
     if (existingService) {
       setFormData({
         name: existingService.name || '',
-        category: existingService.category || 'Wash & Fold',
+        category: REVERSE_CATEGORY_MAP[existingService.category] || existingService.category || 'Wash & Fold',
         price: existingService.price !== undefined ? String(existingService.price) : '',
-        unit: existingService.unit || 'piece',
-        turnaroundHours: existingService.turnaroundHours || 24,
+        unit: REVERSE_UNIT_MAP[existingService.unit] || existingService.unit || 'piece',
+        turnaroundHours: existingService.estimatedHours || existingService.turnaroundHours || 24,
         description: existingService.description || '',
         isActive: existingService.isActive !== false,
       });
@@ -143,15 +180,20 @@ export const AdminAddEditService = () => {
       : Number(formData.price);
 
     const payload = {
-      ...formData,
+      name: formData.name.trim(),
+      category: CATEGORY_MAP[formData.category] || 'wash',
       price: basePrice,
-      turnaroundHours: Number(formData.turnaroundHours),
+      unit: UNIT_MAP[formData.unit] || 'per_piece',
+      estimatedHours: Number(formData.turnaroundHours) || 24,
+      turnaroundHours: Number(formData.turnaroundHours) || 24,
+      description: formData.description?.trim() || '',
+      isActive: formData.isActive !== false,
     };
 
     if (items.length > 0) {
       payload.items = items.map((it) => ({
         name: it.name.trim(),
-        clothingType: it.clothingType?.trim() || 'General',
+        clothingType: it.clothingType?.trim() || it.name.trim(),
         price: Number(it.price),
         description: it.description?.trim() || '',
         isActive: it.isActive !== false,

@@ -105,13 +105,13 @@ export const UserMenu = () => {
           </div>
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
         </div>
-        <div className="hidden md:flex flex-col items-start leading-tight">
+        <div className="flex flex-col items-start leading-tight">
           <span className="text-xs font-bold text-slate-900">{displayName}</span>
           <span className="text-[10px] text-slate-500 font-medium">
             {user?.role === 'admin' ? 'Store Admin' : 'Super Admin'}
           </span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 hidden md:block transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 block transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>

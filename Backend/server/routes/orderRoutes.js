@@ -5,6 +5,8 @@ const {
   getOrderById,
   cancelOrder,
   changeOrderAddress,
+  modifyOrderItems,
+  confirmCollectionCount,
   getAllOrders,
   updateOrderStatus,
   confirmCustomerDelivery,
@@ -24,6 +26,8 @@ router.use(protect); // all routes protected
 router.post("/", placeOrder);                                 // POST  /api/orders — new order
 router.get("/:id", getOrderById);                             // GET   /api/orders/:id — single order details
 router.put("/:id/address", changeOrderAddress);               // PUT   /api/orders/:id/address — change order address (before pickup)
+router.put("/:id/items", modifyOrderItems);                   // PUT   /api/orders/:id/items — customer modifies items before collection
+router.put("/:id/confirm-collection", restrictTo("delivery", "admin", "superadmin"), confirmCollectionCount); // PUT /api/orders/:id/confirm-collection — driver confirms collection counts
 router.put("/:id/cancel", cancelOrder);                       // PUT   /api/orders/:id/cancel — cancel order (before pickup only)
 router.put("/:id/confirm-delivery", confirmCustomerDelivery); // PUT   /api/orders/:id/confirm-delivery — customer confirms delivery
 router.put("/:id/unavailable", reportCustomerUnavailable);    // PUT   /api/orders/:id/unavailable — customer/driver unavailable

@@ -160,6 +160,18 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 
+  .input-glass.pl-9, input.input-glass.pl-9, select.input-glass.pl-9 {
+    padding-left: 2.25rem !important;
+  }
+
+  .input-glass.pl-10, input.input-glass.pl-10, select.input-glass.pl-10 {
+    padding-left: 2.5rem !important;
+  }
+
+  .input-glass.pr-10, input.input-glass.pr-10, select.input-glass.pr-10 {
+    padding-right: 2.5rem !important;
+  }
+
   .select-glass {
     @apply input-glass cursor-pointer appearance-none pr-10;
   }

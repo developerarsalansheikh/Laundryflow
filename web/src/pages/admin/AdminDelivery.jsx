@@ -20,6 +20,17 @@ export const AdminDelivery = () => {
   const [assignOrder, setAssignOrder] = useState(null);
   const [driverToAssign, setDriverToAssign] = useState(null);
 
+  // Delivery Partner Creation Modal State
+  const [addPartnerModalOpen, setAddPartnerModalOpen] = useState(false);
+  const [partnerForm, setPartnerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    vehicleType: 'bike',
+    vehicleNumber: '',
+  });
+
   // Zone State
   const [zoneModalOpen, setZoneModalOpen] = useState(false);
   const [editingZone, setEditingZone] = useState(null);
@@ -126,6 +137,27 @@ export const AdminDelivery = () => {
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to update assignment mode');
+    },
+  });
+
+  // Mutation: Register New Delivery Partner
+  const addPartnerMutation = useMutation({
+    mutationFn: (data) => adminApi.addDeliveryPartner(data),
+    onSuccess: () => {
+      toast.success('Delivery partner registered! Sent to Super Admin for approval.');
+      queryClient.invalidateQueries({ queryKey: ['admin-delivery-partners'] });
+      setAddPartnerModalOpen(false);
+      setPartnerForm({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        vehicleType: 'bike',
+        vehicleNumber: '',
+      });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to add delivery partner');
     },
   });
 
@@ -260,9 +292,18 @@ export const AdminDelivery = () => {
 
         <div className="flex items-center gap-2">
           {activeTab === 'roster' && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{onlineDriversCount} Drivers Online</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>{onlineDriversCount} Drivers Online</span>
+              </div>
+              <button
+                onClick={() => setAddPartnerModalOpen(true)}
+                className="btn-primary px-3.5 py-1.5 text-xs font-semibold gap-1.5 flex items-center"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Delivery Partner</span>
+              </button>
             </div>
           )}
 
@@ -343,14 +384,31 @@ export const AdminDelivery = () => {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-textMuted">
-                          <Truck className="w-3.5 h-3.5 text-purpleLight" />
-                          <span>{driver.vehicleNumber || 'Standard Delivery'}</span>
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-textMuted">
+                            <Truck className="w-3.5 h-3.5 text-purpleLight" />
+                            <span>{driver.vehicleNumber || 'Standard Delivery'}</span>
+                          </span>
+                          {(driver.approval === 'pending' || driver.approvalStatus === 'pending') && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                              Pending Super Admin Approval
+                            </span>
+                          )}
+                          {(driver.approval === 'approved' || driver.approvalStatus === 'approved') && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                              Approved
+                            </span>
+                          )}
+                          {(driver.approval === 'rejected' || driver.approvalStatus === 'rejected') && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                              Rejected
+                            </span>
+                          )}
+                        </div>
 
                         <button
                           onClick={() => toggleDriverMutation.mutate(driver._id)}
-                          disabled={toggleDriverMutation.isPending}
+                          disabled={toggleDriverMutation.isPending || driver.approval === 'pending' || driver.approvalStatus === 'pending'}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
                             isActive
                               ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
@@ -956,6 +1014,135 @@ export const AdminDelivery = () => {
         </div>
       )}
 
+      {/* Add Delivery Partner Modal */}
+      {addPartnerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md p-6 rounded-2xl glass-card space-y-4 border border-white/15 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <div>
+                <h3 className="text-base font-bold text-textPrimary">Add Delivery Partner</h3>
+                <p className="text-xs text-textMuted mt-0.5">
+                  New drivers require Super Admin approval before dispatching orders.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddPartnerModalOpen(false)}
+                className="text-textMuted hover:text-textPrimary"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!partnerForm.name.trim() || !partnerForm.email.trim() || !partnerForm.phone.trim() || !partnerForm.password.trim()) {
+                  toast.error('All fields are required');
+                  return;
+                }
+                addPartnerMutation.mutate(partnerForm);
+              }}
+              className="space-y-3 pt-2"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-textSecondary mb-1">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ramesh Kumar"
+                  value={partnerForm.name}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
+                  className="input-glass"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-textSecondary mb-1">Mobile Number</label>
+                  <input
+                    type="tel"
+                    placeholder="10-digit number"
+                    maxLength={10}
+                    value={partnerForm.phone}
+                    onChange={(e) => setPartnerForm({ ...partnerForm, phone: e.target.value })}
+                    className="input-glass"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-textSecondary mb-1">Email</label>
+                  <input
+                    type="email"
+                    placeholder="driver@example.com"
+                    value={partnerForm.email}
+                    onChange={(e) => setPartnerForm({ ...partnerForm, email: e.target.value })}
+                    className="input-glass"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-textSecondary mb-1">Password</label>
+                <input
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={partnerForm.password}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, password: e.target.value })}
+                  className="input-glass"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-textSecondary mb-1">Vehicle Type</label>
+                  <select
+                    value={partnerForm.vehicleType}
+                    onChange={(e) => setPartnerForm({ ...partnerForm, vehicleType: e.target.value })}
+                    className="select-glass"
+                  >
+                    <option value="bike">Motorcycle / Bike</option>
+                    <option value="scooter">Scooter</option>
+                    <option value="electric_scooter">Electric Scooter</option>
+                    <option value="cycle">Bicycle</option>
+                    <option value="van">Delivery Van</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-textSecondary mb-1">Vehicle Number</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. MP-09-AB-1234"
+                    value={partnerForm.vehicleNumber}
+                    onChange={(e) => setPartnerForm({ ...partnerForm, vehicleNumber: e.target.value })}
+                    className="input-glass"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setAddPartnerModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-white/[0.04] text-textSecondary hover:text-textPrimary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addPartnerMutation.isPending}
+                  className="btn-primary px-5 py-2 text-xs font-semibold"
+                >
+                  {addPartnerMutation.isPending ? 'Registering...' : 'Register Driver'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

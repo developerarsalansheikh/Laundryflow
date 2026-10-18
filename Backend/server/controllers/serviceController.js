@@ -1,4 +1,5 @@
 const Service = require("../models/serviceModels");
+const Laundry = require("../models/laundryModels");
 const cloudinary = require("../config/cloudinary");
 
 // ─────────────────────────────────────────────
@@ -90,18 +91,42 @@ const getServiceById = async (req, res) => {
 // @route   POST /api/services
 // @access  Private/Admin
 // ─────────────────────────────────────────────
+// Helper to normalize category strings
+const normalizeCategory = (cat) => {
+  const c = String(cat || "").toLowerCase().trim();
+  if (c.includes("wash") && c.includes("iron")) return "wash_iron";
+  if (c.includes("wash") || c.includes("fold") || c.includes("bedding")) return "wash";
+  if (c.includes("dry") || c.includes("curtain")) return "dry_clean";
+  if (c.includes("iron")) return "iron";
+  if (c.includes("premium")) return "premium";
+  return ["wash", "dry_clean", "iron", "wash_iron", "premium"].includes(c) ? c : "wash";
+};
+
+// Helper to normalize unit strings
+const normalizeUnit = (u) => {
+  const unitStr = String(u || "").toLowerCase().trim();
+  if (unitStr === "kg" || unitStr === "per_kg") return "per_kg";
+  return "per_piece";
+};
+
+// ─────────────────────────────────────────────
+// @desc    Nai service create karo
+// @route   POST /api/services
+// @access  Private/Admin
+// ─────────────────────────────────────────────
 const createService = async (req, res) => {
   try {
-    const { name, description, price, unit, category, estimatedHours } = req.body;
+    const { name, description, price, unit, category, estimatedHours, turnaroundHours, items, clothingType } = req.body;
 
-    if (!name || !price || !category || estimatedHours === undefined) {
+    const rawHours = estimatedHours !== undefined ? estimatedHours : turnaroundHours;
+    if (!name || price === undefined || !category || rawHours === undefined) {
       return res.status(400).json({
         success: false,
-        message: "Name, price, category, and estimatedHours are required",
+        message: "Name, price, category, and estimated hours are required",
       });
     }
 
-    const hours = Number(estimatedHours);
+    const hours = Number(rawHours);
     if (isNaN(hours) || hours < 1) {
       return res.status(400).json({
         success: false,
@@ -109,34 +134,62 @@ const createService = async (req, res) => {
       });
     }
 
+    // Resolve target laundryId
+    let targetLaundryId = req.user.laundryId;
+    if (!targetLaundryId && req.user._id) {
+      const store = await Laundry.findOne({ ownerId: req.user._id });
+      if (store) targetLaundryId = store._id;
+    }
+
+    if (!targetLaundryId) {
+      return res.status(400).json({
+        success: false,
+        message: "No associated laundry store found for this admin account.",
+      });
+    }
+
     // Admin ki apni laundry mein duplicate check
     const existing = await Service.findOne({
       name: name.trim(),
-      laundryId: req.user.laundryId,
+      laundryId: targetLaundryId,
     });
 
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: "A service with this name already exists",
+        message: "A service with this name already exists in your store.",
       });
     }
 
+    const normalizedCat = normalizeCategory(category);
+    const normalizedU = normalizeUnit(unit);
+
     const service = await Service.create({
-      name,
+      name: name.trim(),
       description: description || "",
-      price,
-      unit: unit || "per_piece",
-      category,
+      price: Number(price),
+      unit: normalizedU,
+      category: normalizedCat,
       estimatedHours: hours,
-      laundryId: req.user.laundryId, // admin ki laundry automatically
-      image: req.file ? req.file.path : "",
+      clothingType: clothingType || (Array.isArray(items) && items.length > 0 ? items[0].clothingType : null),
+      items: Array.isArray(items)
+        ? items.map((it) => ({
+            name: it.name?.trim(),
+            clothingType: it.clothingType?.trim() || it.name?.trim(),
+            price: Number(it.price),
+            description: it.description?.trim() || "",
+            isActive: it.isActive !== false,
+            estimatedHours: Number(it.estimatedHours) || hours,
+          }))
+        : [],
+      laundryId: targetLaundryId,
+      image: req.file ? req.file.path : (req.body.image || ""),
       imagePublicId: req.file ? req.file.filename : null,
     });
 
     return res.status(201).json({
       success: true,
-      message: "Service successfully create ho gayi",
+      message: "Service successfully created",
       data: service,
     });
   } catch (error) {
@@ -156,16 +209,23 @@ const createService = async (req, res) => {
 // ─────────────────────────────────────────────
 const updateService = async (req, res) => {
   try {
-    // Admin sirf apni laundry ki service update kar sakta hai
-    const service = await Service.findOne({
-      _id: req.params.id,
-      laundryId: req.user.laundryId,
-    });
+    let targetLaundryId = req.user.laundryId;
+    if (!targetLaundryId && req.user._id) {
+      const store = await Laundry.findOne({ ownerId: req.user._id });
+      if (store) targetLaundryId = store._id;
+    }
+
+    const query = { _id: req.params.id };
+    if (req.user.role !== "super_admin" && req.user.role !== "superadmin" && targetLaundryId) {
+      query.laundryId = targetLaundryId;
+    }
+
+    const service = await Service.findOne(query);
 
     if (!service) {
       return res.status(404).json({
         success: false,
-        message: "Service not found",
+        message: "Service not found or unauthorized",
       });
     }
 
@@ -181,6 +241,31 @@ const updateService = async (req, res) => {
       req.body.imagePublicId = req.file.filename;
     }
 
+    if (req.body.category) {
+      req.body.category = normalizeCategory(req.body.category);
+    }
+    if (req.body.unit) {
+      req.body.unit = normalizeUnit(req.body.unit);
+    }
+    if (req.body.turnaroundHours !== undefined || req.body.estimatedHours !== undefined) {
+      const raw = req.body.estimatedHours !== undefined ? req.body.estimatedHours : req.body.turnaroundHours;
+      const h = Number(raw);
+      if (!isNaN(h) && h >= 1) {
+        req.body.estimatedHours = h;
+      }
+    }
+
+    if (Array.isArray(req.body.items)) {
+      req.body.items = req.body.items.map((it) => ({
+        name: it.name?.trim(),
+        clothingType: it.clothingType?.trim() || it.name?.trim(),
+        price: Number(it.price),
+        description: it.description?.trim() || "",
+        isActive: it.isActive !== false,
+        estimatedHours: Number(it.estimatedHours) || service.estimatedHours || 24,
+      }));
+    }
+
     const updatedService = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -189,7 +274,7 @@ const updateService = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Service successfully update ho gayi",
+      message: "Service successfully updated",
       data: updatedService,
     });
   } catch (error) {

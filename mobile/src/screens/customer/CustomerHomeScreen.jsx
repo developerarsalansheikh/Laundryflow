@@ -31,7 +31,21 @@ import EmptyState from '../../components/ui/EmptyState';
 import ErrorState from '../../components/ui/ErrorState';
 import Loader from '../../components/ui/Loader';
 import AuthGateModal from '../../components/AuthGateModal';
+import SingleLaundryConflictModal from '../../components/SingleLaundryConflictModal';
 import Icon from '../../components/ui/Icon';
+
+const getClothingImage = (clothingType = '') => {
+  const t = (clothingType || '').toLowerCase();
+  const c = ASSETS.clothes || {};
+  if (t.includes('shirt') && !t.includes('t-shirt') && !t.includes('tshirt')) return c.shirt;
+  if (t.includes('t-shirt') || t.includes('tshirt')) return c.tshirt;
+  if (t.includes('suit') || t.includes('blazer') || t.includes('coat') || t.includes('sherwani')) return c.suit;
+  if (t.includes('saree') || t.includes('dress') || t.includes('kurta')) return c.saree;
+  if (t.includes('jean') || t.includes('trouser') || t.includes('pant')) return c.jeans;
+  if (t.includes('bedsheet') || t.includes('blanket') || t.includes('quilt') || t.includes('linen') || t.includes('duvet')) return c.bedsheet;
+  if (t.includes('shoe') || t.includes('sneaker')) return c.shoes;
+  return c.shirt;
+};
 
 const BRAND_PRIMARY = '#0284C7';
 const BRAND_ORANGE = '#FF7A00';
@@ -44,38 +58,38 @@ const SERVICE_CATEGORIES = [
     label: 'Wash & Fold',
     sub: 'Everyday wear',
     iconName: 'shirt',
-    image: ASSETS.clothes?.tshirt,
+    image: (ASSETS.clothes && ASSETS.clothes.tshirt) || null,
   },
   {
     id: 'dry_clean',
     label: 'Dry Clean',
     sub: 'Suits & silks',
     iconName: 'suit',
-    image: ASSETS.clothes?.suit,
+    image: (ASSETS.clothes && ASSETS.clothes.suit) || null,
   },
   {
     id: 'iron',
     label: 'Iron Only',
     sub: 'Crisp & pressed',
     iconName: 'iron',
-    image: ASSETS.clothes?.shirt,
+    image: (ASSETS.clothes && ASSETS.clothes.shirt) || null,
   },
   {
     id: 'shoe',
     label: 'Shoe Care',
     sub: 'Clean & polish',
     iconName: 'shoe',
-    image: ASSETS.clothes?.shoes,
+    image: (ASSETS.clothes && ASSETS.clothes.shoes) || null,
   },
 ];
 
 const POPULAR_GARMENTS = [
-  { id: 'shirt', name: "Men's Shirt", price: 80, category: 'dry_clean', clothingType: 'Shirt', image: ASSETS.clothes?.shirt },
-  { id: 'saree', name: 'Silk Saree', price: 180, category: 'dry_clean', clothingType: 'Saree', image: ASSETS.clothes?.saree },
-  { id: 'jeans', name: 'Denim Jeans', price: 110, category: 'wash', clothingType: 'Jeans', image: ASSETS.clothes?.jeans },
-  { id: 'suit', name: '2-Piece Suit', price: 280, category: 'dry_clean', clothingType: 'Suit', image: ASSETS.clothes?.suit },
-  { id: 'tshirt', name: 'Cotton T-Shirt', price: 70, category: 'wash', clothingType: 'T-Shirt', image: ASSETS.clothes?.tshirt },
-  { id: 'bedsheet', name: 'Bedsheet / Quilt', price: 150, category: 'premium', clothingType: 'Bedsheet', image: ASSETS.clothes?.bedsheet },
+  { id: 'shirt', name: "Men's Shirt", price: 80, category: 'dry_clean', clothingType: 'Shirt', image: (ASSETS.clothes && ASSETS.clothes.shirt) || null },
+  { id: 'saree', name: 'Silk Saree', price: 180, category: 'dry_clean', clothingType: 'Saree', image: (ASSETS.clothes && ASSETS.clothes.saree) || null },
+  { id: 'jeans', name: 'Denim Jeans', price: 110, category: 'wash', clothingType: 'Jeans', image: (ASSETS.clothes && ASSETS.clothes.jeans) || null },
+  { id: 'suit', name: '2-Piece Suit', price: 280, category: 'dry_clean', clothingType: 'Suit', image: (ASSETS.clothes && ASSETS.clothes.suit) || null },
+  { id: 'tshirt', name: 'Cotton T-Shirt', price: 70, category: 'wash', clothingType: 'T-Shirt', image: (ASSETS.clothes && ASSETS.clothes.tshirt) || null },
+  { id: 'bedsheet', name: 'Bedsheet / Quilt', price: 150, category: 'premium', clothingType: 'Bedsheet', image: (ASSETS.clothes && ASSETS.clothes.bedsheet) || null },
 ];
 
 const SORT_OPTIONS = [
@@ -128,9 +142,72 @@ export const CustomerHomeScreen = () => {
   const cart = useCartStore();
   const cartSummary = cart.getCartSummary();
 
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  // Reactive favorites subscriptions
+  const favoriteIds = useFavoriteStore((state) => state.favoriteIds);
+  const favoritesMap = useFavoriteStore((state) => state.favoritesMap);
   const toggleFavorite = useFavoriteStore((state) => state.toggleFavorite);
   const refreshFavorites = useFavoriteStore((state) => state.refreshFavorites);
+
+  const activeFavoriteLaundryId = favoriteIds.length > 0 ? favoriteIds[0] : null;
+
+  // Real Favorite Laundry Data Query
+  const { data: favoriteLaundryDetailRes, isLoading: isFavoriteLaundryLoading } = useQuery({
+    queryKey: ['favoriteLaundryDetail', activeFavoriteLaundryId],
+    queryFn: () => customerService.getLaundryById(activeFavoriteLaundryId),
+    enabled: Boolean(activeFavoriteLaundryId),
+    staleTime: 1000 * 60 * 3,
+  });
+
+  const favoriteLaundryStore = favoriteLaundryDetailRes?.data?.laundry || (activeFavoriteLaundryId ? favoritesMap[activeFavoriteLaundryId] : null);
+  const favoriteServices = favoriteLaundryDetailRes?.data?.services || [];
+
+  const favoriteGarments = useMemo(() => {
+    if (!favoriteServices || favoriteServices.length === 0) return [];
+    const list = [];
+    favoriteServices.forEach((service) => {
+      if (Array.isArray(service.items) && service.items.length > 0) {
+        service.items.forEach((item) => {
+          if (item.isActive !== false) {
+            const rawName = item.name || item.clothingType || '';
+            list.push({
+              id: `${service._id}_${item._id || rawName.toLowerCase().replace(/\s+/g, '_')}`,
+              serviceId: service._id,
+              serviceName: service.name,
+              category: service.category,
+              name: rawName,
+              clothingType: item.clothingType || rawName,
+              price: item.price,
+              serviceObj: service,
+              clothingItemObj: item,
+              image: getClothingImage(item.clothingType || rawName),
+            });
+          }
+        });
+      } else {
+        const rawName = service.clothingType || service.name;
+        list.push({
+          id: service._id,
+          serviceId: service._id,
+          serviceName: service.name,
+          category: service.category,
+          name: rawName,
+          clothingType: service.clothingType || service.name,
+          price: service.price,
+          serviceObj: service,
+          clothingItemObj: {
+            name: rawName,
+            clothingType: service.clothingType || service.name,
+            price: service.price,
+          },
+          image: getClothingImage(service.clothingType || service.name) || (service.image ? { uri: service.image } : null),
+        });
+      }
+    });
+    return list;
+  }, [favoriteServices]);
+
+  const [conflictModalVisible, setConflictModalVisible] = useState(false);
+  const [pendingConflictData, setPendingConflictData] = useState(null);
 
   const city = useLocationStore((state) => state.city);
   const latitude = useLocationStore((state) => state.latitude);
@@ -244,38 +321,52 @@ export const CustomerHomeScreen = () => {
   };
 
   const handleQuickAddGarment = (garment) => {
-    if (rawLaundries.length === 0) {
+    const targetLaundry = favoriteLaundryStore || (rawLaundries.length > 0 ? rawLaundries[0] : null);
+    if (!targetLaundry) {
       navigation.navigate('SelectLocation', { isMandatory: false });
       return;
     }
-    const targetLaundry = rawLaundries[0];
     const targetLaundryId = targetLaundry._id || targetLaundry.id;
     const targetName = targetLaundry.name || 'Laundry Store';
     const targetAddress = targetLaundry.address || targetLaundry.city || '';
-
-    const serviceObj = {
-      _id: `srv_${garment.category}`,
-      name: garment.category === 'dry_clean' ? 'Gentle Dry Cleaning' : 'Standard Everyday Wash & Fold',
-      category: garment.category,
-      price: garment.price,
-    };
-    const clothingItemObj = {
-      clothingType: garment.clothingType,
-      name: garment.name,
-      price: garment.price,
-    };
 
     const result = cart.addItem({
       laundryId: targetLaundryId,
       laundryName: targetName,
       laundryAddress: targetAddress,
-      service: serviceObj,
-      clothingItem: clothingItemObj,
+      service: garment.serviceObj,
+      clothingItem: garment.clothingItemObj,
     });
 
     if (result?.conflict) {
-      handleOpenLaundry(targetLaundry);
+      setPendingConflictData({
+        laundryId: targetLaundryId,
+        laundryName: targetName,
+        laundryAddress: targetAddress,
+        service: garment.serviceObj,
+        clothingItem: garment.clothingItemObj,
+        currentLaundryName: result.currentLaundry?.name || 'Another Laundry',
+      });
+      setConflictModalVisible(true);
     }
+  };
+
+  const handleConfirmSwitch = () => {
+    if (!pendingConflictData) return;
+    cart.clearAndAddItem({
+      laundryId: pendingConflictData.laundryId,
+      laundryName: pendingConflictData.laundryName,
+      laundryAddress: pendingConflictData.laundryAddress,
+      service: pendingConflictData.service,
+      clothingItem: pendingConflictData.clothingItem,
+    });
+    setConflictModalVisible(false);
+    setPendingConflictData(null);
+  };
+
+  const handleDismissConflict = () => {
+    setConflictModalVisible(false);
+    setPendingConflictData(null);
   };
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Sarah';
@@ -450,92 +541,148 @@ export const CustomerHomeScreen = () => {
             {/* ── SELECT BY GARMENT SECTION (REAL CLOTHING CATALOG) ── */}
             <View style={styles.garmentSection}>
               <View style={styles.sectionHeader}>
-                <Text variant="title" weight="bold" colorVariant="primary">
-                  Select by Garment
-                </Text>
-                <Text variant="caption" colorVariant="muted">
-                  Quick doorstep booking
-                </Text>
+                <View>
+                  <Text variant="title" weight="bold" colorVariant="primary">
+                    Select by Garment
+                  </Text>
+                  <Text variant="caption" colorVariant="muted">
+                    {favoriteLaundryStore ? `From ${favoriteLaundryStore.name}` : 'Quick doorstep booking'}
+                  </Text>
+                </View>
+                {favoriteLaundryStore && (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => handleOpenLaundry(favoriteLaundryStore)}
+                  >
+                    <Text variant="caption" weight="bold" style={{ color: colors.primary }}>
+                      View Store ›
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.garmentScroll}
-              >
-                {POPULAR_GARMENTS.map((garment) => {
-                  const targetLaundry = rawLaundries[0];
-                  const targetLaundryId = targetLaundry ? (targetLaundry._id || targetLaundry.id) : null;
-                  const itemId = targetLaundryId ? `srv_${garment.category}_${(garment.name || garment.clothingType).toLowerCase().replace(/\s+/g, '_')}` : null;
-                  const qtyInCart = (itemId && cart.laundryId === targetLaundryId) ? cart.getItemQuantity(itemId) : 0;
-
-                  return (
-                    <View
-                      key={garment.id}
-                      style={[
-                        styles.garmentCard,
-                        { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
-                      ]}
+              {favoriteIds.length === 0 ? (
+                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
+                  <Icon name="heart" size={28} color="#94A3B8" />
+                  <Text variant="bodyMedium" weight="bold" colorVariant="primary" style={{ marginTop: 8 }}>
+                    No Favorite Laundry Selected
+                  </Text>
+                  <Text variant="caption" colorVariant="muted" style={{ textAlign: 'center', marginTop: 4, paddingHorizontal: 16 }}>
+                    Tap the heart icon on your favorite laundry store below to quickly order individual garments right here.
+                  </Text>
+                </View>
+              ) : isFavoriteLaundryLoading ? (
+                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
+                  <Loader size="small" />
+                  <Text variant="caption" colorVariant="muted" style={{ marginTop: 8 }}>
+                    Loading store garments...
+                  </Text>
+                </View>
+              ) : favoriteGarments.length === 0 ? (
+                <View style={[styles.favoriteEmptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight }]}>
+                  <Icon name="shirt" size={28} color="#94A3B8" />
+                  <Text variant="bodyMedium" weight="bold" colorVariant="primary" style={{ marginTop: 8 }}>
+                    No Garments Available
+                  </Text>
+                  <Text variant="caption" colorVariant="muted" style={{ textAlign: 'center', marginTop: 4 }}>
+                    {favoriteLaundryStore?.name || 'Your favorite laundry'} hasn't added individual garments yet.
+                  </Text>
+                  {favoriteLaundryStore && (
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={[styles.garmentAddBtn, { backgroundColor: colors.primary, marginTop: 10, paddingHorizontal: 16 }]}
+                      onPress={() => handleOpenLaundry(favoriteLaundryStore)}
                     >
-                      <TouchableOpacity
-                        activeOpacity={0.85}
-                        onPress={() => {
-                          if (rawLaundries.length > 0) {
-                            handleOpenLaundry(rawLaundries[0]);
-                          } else {
-                            navigation.navigate('SelectLocation', { isMandatory: false });
-                          }
-                        }}
-                      >
-                        <Image
-                          source={garment.image}
-                          style={styles.garmentPhoto}
-                          resizeMode="cover"
-                        />
-                        <View style={styles.garmentInfo}>
-                          <Text variant="bodySmall" weight="bold" colorVariant="primary" numberOfLines={1}>
-                            {garment.name}
-                          </Text>
-                          <View style={styles.garmentPriceRow}>
-                            <Text variant="bodyMedium" weight="bold" style={{ color: colors.primary }}>
-                              ₹{garment.price}
-                            </Text>
-                            <Badge label={garment.category === 'dry_clean' ? 'Dry Clean' : 'Wash'} variant="neutral" size="sm" />
-                          </View>
-                        </View>
-                      </TouchableOpacity>
+                      <Text style={styles.garmentAddBtnText}>View Laundry Menu</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.garmentScroll}
+                >
+                  {favoriteGarments.map((garment) => {
+                    const targetLaundry = favoriteLaundryStore || (rawLaundries.length > 0 ? rawLaundries[0] : null);
+                    const targetLaundryId = targetLaundry ? (targetLaundry._id || targetLaundry.id) : null;
+                    const itemId = garment.clothingItemObj
+                      ? `${garment.serviceId}_${(garment.clothingItemObj.name || garment.clothingItemObj.clothingType).toLowerCase().replace(/\s+/g, '_')}`
+                      : garment.serviceId;
+                    const qtyInCart = (itemId && cart.laundryId === targetLaundryId) ? cart.getItemQuantity(itemId) : 0;
 
-                      <View style={styles.garmentActionArea}>
-                        {qtyInCart > 0 ? (
-                          <View style={[styles.miniStepper, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
+                    return (
+                      <View
+                        key={garment.id}
+                        style={[
+                          styles.garmentCard,
+                          { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
+                        ]}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.85}
+                          onPress={() => {
+                            if (targetLaundry) {
+                              handleOpenLaundry(targetLaundry);
+                            } else {
+                              navigation.navigate('SelectLocation', { isMandatory: false });
+                            }
+                          }}
+                        >
+                          <Image
+                            source={garment.image || ASSETS.clothes?.shirt}
+                            style={styles.garmentPhoto}
+                            resizeMode="cover"
+                          />
+                          <View style={styles.garmentInfo}>
+                            <Text variant="bodySmall" weight="bold" colorVariant="primary" numberOfLines={1}>
+                              {garment.name}
+                            </Text>
+                            <View style={styles.garmentPriceRow}>
+                              <Text variant="bodyMedium" weight="bold" style={{ color: colors.primary }}>
+                                ₹{garment.price}
+                              </Text>
+                              <Badge
+                                label={garment.category === 'dry_clean' ? 'Dry Clean' : (garment.category === 'iron' ? 'Iron' : 'Wash')}
+                                variant="neutral"
+                                size="sm"
+                              />
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+
+                        <View style={styles.garmentActionArea}>
+                          {qtyInCart > 0 ? (
+                            <View style={[styles.miniStepper, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
+                              <TouchableOpacity
+                                style={styles.miniStepperBtn}
+                                onPress={() => cart.decrementItem(itemId)}
+                              >
+                                <Text style={{ color: colors.primary, fontWeight: 'bold' }}>−</Text>
+                              </TouchableOpacity>
+                              <Text style={{ color: colors.primary, fontWeight: 'bold', paddingHorizontal: 6 }}>{qtyInCart}</Text>
+                              <TouchableOpacity
+                                style={styles.miniStepperBtn}
+                                onPress={() => handleQuickAddGarment(garment)}
+                              >
+                                <Text style={{ color: colors.primary, fontWeight: 'bold' }}>+</Text>
+                              </TouchableOpacity>
+                            </View>
+                          ) : (
                             <TouchableOpacity
-                              style={styles.miniStepperBtn}
-                              onPress={() => cart.decrementItem(itemId)}
-                            >
-                              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>−</Text>
-                            </TouchableOpacity>
-                            <Text style={{ color: colors.primary, fontWeight: 'bold', paddingHorizontal: 6 }}>{qtyInCart}</Text>
-                            <TouchableOpacity
-                              style={styles.miniStepperBtn}
+                              activeOpacity={0.8}
+                              style={[styles.garmentAddBtn, { backgroundColor: colors.primary }]}
                               onPress={() => handleQuickAddGarment(garment)}
                             >
-                              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>+</Text>
+                              <Text style={styles.garmentAddBtnText}>+ Add</Text>
                             </TouchableOpacity>
-                          </View>
-                        ) : (
-                          <TouchableOpacity
-                            activeOpacity={0.8}
-                            style={[styles.garmentAddBtn, { backgroundColor: colors.primary }]}
-                            onPress={() => handleQuickAddGarment(garment)}
-                          >
-                            <Text style={styles.garmentAddBtnText}>+ Add</Text>
-                          </TouchableOpacity>
-                        )}
+                          )}
+                        </View>
                       </View>
-                    </View>
-                  );
-                })}
-              </ScrollView>
+                    );
+                  })}
+                </ScrollView>
+              )}
             </View>
 
             {/* ── ACTIVE ORDERS CARD ── */}
@@ -712,7 +859,8 @@ export const CustomerHomeScreen = () => {
 
                   const formattedDistance = distKm !== null ? `${distKm.toFixed(1)} km` : 'Near you';
                   const isUnder3Km = distKm !== null && distKm <= 3.0;
-                  const isFav = isFavorite(laundry._id || laundry.id);
+                  const laundryId = String(laundry._id || laundry.id);
+                  const isFav = favoriteIds.includes(laundryId);
                   const storeRating = laundry.rating || 4.8;
                   const ordersCount = laundry.totalOrders || 8;
 
@@ -898,6 +1046,14 @@ export const CustomerHomeScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Single Laundry Conflict Modal */}
+      <SingleLaundryConflictModal
+        visible={conflictModalVisible}
+        currentLaundryName={pendingConflictData?.currentLaundryName || 'Another Laundry'}
+        onClearAndSwitch={handleConfirmSwitch}
+        onCancel={handleDismissConflict}
+      />
 
       {/* Auth Gate Modal for Guest */}
       <AuthGateModal
@@ -1461,6 +1617,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     marginVertical: 20,
+  },
+  favoriteEmptyCard: {
+    padding: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    marginVertical: 4,
   },
 });
 

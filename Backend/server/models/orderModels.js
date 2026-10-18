@@ -54,8 +54,29 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           default: 24,
         },
+        collectedQuantity: {
+          type: Number,
+          default: null,
+        },
       },
     ],
+
+    // ── Delivery Agent Collection Count & Discrepancies ──
+    hasCountDiscrepancy: {
+      type: Boolean,
+      default: false,
+    },
+    collectionDiscrepancyNotes: {
+      type: String,
+      default: "",
+    },
+    collectedAt: {
+      type: Date,
+    },
+    collectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
     // ── Address ──────────────────────────────────
     // FIX 1: Address Reference (ObjectId → Address model)

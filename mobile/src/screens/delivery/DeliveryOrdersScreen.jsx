@@ -235,8 +235,8 @@ export const DeliveryOrdersScreen = () => {
   const formatStatusLabel = (status) => {
     switch (status) {
       case 'pending': case 'pending_pickup': case 'placed': return 'READY FOR PICKUP';
-      case 'picked_up': return 'PICKED UP — DELIVER TO STORE';
-      case 'at_laundry_pending_confirmation': return 'AT LAUNDRY (HANDOFF PENDING)';
+      case 'picked_up': return 'PICKED UP';
+      case 'at_laundry_pending_confirmation': return 'HANDOFF PENDING';
       case 'received_at_laundry': return 'RECEIVED AT STORE';
       case 'in_progress': case 'processing': return 'IN PROCESS';
       case 'ready': case 'ready_for_delivery': return 'READY FOR DELIVERY';
@@ -280,11 +280,13 @@ export const DeliveryOrdersScreen = () => {
               Store: {laundryName}
             </Text>
           </View>
-          <Badge
-            label={formatStatusLabel(item.status)}
-            variant={getStatusBadgeVariant(item.status)}
-            size="sm"
-          />
+          <View style={{ maxWidth: '48%', flexShrink: 0 }}>
+            <Badge
+              label={formatStatusLabel(item.status)}
+              variant={getStatusBadgeVariant(item.status)}
+              size="sm"
+            />
+          </View>
         </View>
 
         {/* Customer & Address */}
@@ -376,11 +378,13 @@ export const DeliveryOrdersScreen = () => {
               Store: {laundryName} {laundryAddress ? `• ${laundryAddress}` : ''}
             </Text>
           </View>
-          <Badge
-            label={formatStatusLabel(item.status)}
-            variant={getStatusBadgeVariant(item.status)}
-            size="sm"
-          />
+          <View style={{ maxWidth: '48%', flexShrink: 0 }}>
+            <Badge
+              label={formatStatusLabel(item.status)}
+              variant={getStatusBadgeVariant(item.status)}
+              size="sm"
+            />
+          </View>
         </View>
 
         <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 12 }}>
@@ -470,7 +474,7 @@ export const DeliveryOrdersScreen = () => {
   );
 
   return (
-    <ScreenContainer contentContainerStyle={styles.container}>
+    <ScreenContainer padding="none" contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={[styles.screenHeader, { backgroundColor: colors.surface, borderBottomColor: colors.borderLight }]}>
         <View>

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
@@ -188,20 +188,27 @@ export const CheckoutScreen = () => {
     return slotStartMinutes > currentMinutes;
   };
 
-  // Query: Time Slots for Selected Laundry & Date
+  const isToday = selectedDateOffset === 0;
+
+  // Query: Time Slots for Selected Laundry & Date (Dynamic refresh for today's slots)
   const {
     data: slotsData,
     isLoading: isSlotsLoading,
+    refetch: refetchTimeSlots,
   } = useQuery({
     queryKey: ['timeSlots', cart.laundryId, activeDateOption.isoDate],
     queryFn: () => customerService.getTimeSlots(cart.laundryId, activeDateOption.isoDate),
     enabled: Boolean(cart.laundryId),
+    refetchInterval: isToday ? 1000 * 30 : false, // Re-evaluate every 30s when today is selected
   });
 
-  const rawSlots = slotsData?.data;
-  const availableSlots = Array.isArray(rawSlots) ? rawSlots : [];
-
-  const isToday = selectedDateOffset === 0;
+  useFocusEffect(
+    React.useCallback(() => {
+      if (cart.laundryId) {
+        refetchTimeSlots();
+      }
+    }, [cart.laundryId, refetchTimeSlots])
+  );
 
   // On Today: strictly filter out slots that have passed or are currently running
   const displayedSlots = useMemo(() => {

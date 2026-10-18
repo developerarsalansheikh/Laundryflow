@@ -46,7 +46,7 @@ const InputField = ({ id, label, type, value, onChange, onBlur, placeholder, ico
         onBlur={onBlur}
         placeholder={placeholder}
         autoComplete={type === 'password' ? 'current-password' : 'email'}
-        className={`input-glass pl-10 pr-${rightElement ? '10' : '3'} ${
+        className={`input-glass pl-10 ${rightElement ? 'pr-10' : 'pr-3'} ${
           error
             ? 'border-statusDanger/60 focus:border-statusDanger focus:shadow-[0_0_0_2px_rgba(239,68,68,0.2)]'
             : ''

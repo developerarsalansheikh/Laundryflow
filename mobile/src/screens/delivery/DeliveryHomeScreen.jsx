@@ -229,6 +229,7 @@ export const DeliveryHomeScreen = () => {
   return (
     <ScreenContainer
       scrollable
+      padding="none"
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing}
@@ -656,6 +657,7 @@ const styles = StyleSheet.create({
   },
   // ── Hero Curved Header ──
   heroContainer: {
+    width: '100%',
     backgroundColor: '#1E293B',
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
