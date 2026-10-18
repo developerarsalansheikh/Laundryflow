@@ -83,6 +83,41 @@ const getCurrentTimelineIndex = (order) => {
   return 0;
 };
 
+const formatEstimatedTime = (dateVal) => {
+  if (!dateVal) return '';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = dayNames[d.getDay()];
+    const monthName = monthNames[d.getMonth()];
+    const dateNum = d.getDate();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${dayName}, ${dateNum} ${monthName} around ${hours}:${minutes} ${ampm}`;
+  } catch {
+    return '';
+  }
+};
+
+const formatTimeOnly = (dateVal) => {
+  if (!dateVal) return '';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
+  } catch {
+    return '';
+  }
+};
+
 export const OrderDetailScreen = () => {
   const { colors, spacing } = useTheme();
   const navigation = useNavigation();
@@ -592,7 +627,7 @@ export const OrderDetailScreen = () => {
                       </Text>
                       {update.timestamp && (
                         <Text variant="caption" colorVariant="muted">
-                          {new Date(update.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {formatTimeOnly(update.timestamp)}
                         </Text>
                       )}
                     </View>
@@ -667,7 +702,7 @@ export const OrderDetailScreen = () => {
                   Estimated Ready / Delivery:
                 </Text>
                 <Text variant="bodySmall" weight="bold" colorVariant="primary">
-                  {new Date(order.estimatedCompletionAt || order.estimatedDelivery).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} Around {new Date(order.estimatedCompletionAt || order.estimatedDelivery).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                  {formatEstimatedTime(order.estimatedCompletionAt || order.estimatedDelivery)}
                 </Text>
               </View>
             ) : null}
@@ -798,7 +833,7 @@ export const OrderDetailScreen = () => {
               <View style={styles.itemRow}>
                 <View style={{ flex: 1 }}>
                   <Text variant="bodyMedium" weight="semibold" colorVariant="secondary">
-                    Total Delivery Charges {order.deliveryDistanceKm ? `(${order.deliveryDistanceKm.toFixed(1)} km)` : ''}
+                    Total Delivery Charges {Number(order.deliveryDistanceKm) > 0 ? `(${Number(order.deliveryDistanceKm).toFixed(1)} km)` : ''}
                   </Text>
                 </View>
                 <Text variant="bodyMedium" weight="semibold" colorVariant="primary">

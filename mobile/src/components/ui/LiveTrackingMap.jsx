@@ -53,10 +53,25 @@ export const LiveTrackingMap = ({
   const driverAccuracy = driverLocation?.accuracy;
   const lastUpdatedTime = driverLocation?.timestamp;
 
+  const hasGpsCoordinates = Boolean(driverLat && driverLng);
+
+  const destLat =
+    destinationCoords?.lat !== undefined
+      ? destinationCoords.lat
+      : Array.isArray(destinationCoords) && destinationCoords.length >= 2
+      ? destinationCoords[1]
+      : null;
+  const destLng =
+    destinationCoords?.lng !== undefined
+      ? destinationCoords.lng
+      : Array.isArray(destinationCoords) && destinationCoords.length >= 2
+      ? destinationCoords[0]
+      : null;
+
   // Calculate distance between driver and customer
   const distanceKm =
-    driverLat && driverLng && destinationCoords?.lat && destinationCoords?.lng
-      ? calculateDistanceKm(driverLat, driverLng, destinationCoords.lat, destinationCoords.lng)
+    driverLat && driverLng && destLat && destLng
+      ? calculateDistanceKm(driverLat, driverLng, destLat, destLng)
       : null;
 
   // Estimate ETA based on average city speed of ~25 km/h
@@ -73,8 +88,8 @@ export const LiveTrackingMap = ({
   }, [lastUpdatedTime]);
 
   const handleOpenExternalMaps = () => {
-    const destinationQuery = destinationCoords?.lat && destinationCoords?.lng
-      ? `${destinationCoords.lat},${destinationCoords.lng}`
+    const destinationQuery = destLat && destLng
+      ? `${destLat},${destLng}`
       : encodeURIComponent(destinationAddress || 'Customer Location');
 
     let url;
@@ -199,8 +214,8 @@ export const LiveTrackingMap = ({
               Delivery Partner
             </Text>
             <Text variant="caption" colorVariant="secondary">
-              {driverLat && driverLng
-                ? `${driverLat.toFixed(4)}, ${driverLng.toFixed(4)}`
+              {driverLat && driverLng && !isNaN(Number(driverLat)) && !isNaN(Number(driverLng))
+                ? `${Number(driverLat).toFixed(4)}, ${Number(driverLng).toFixed(4)}`
                 : 'Connecting GPS...'}
             </Text>
           </View>

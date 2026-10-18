@@ -557,29 +557,44 @@ export const CustomerHomeScreen = () => {
                         Order #{activeOrder.orderNumber || (activeOrder._id || '').slice(-5).toUpperCase() || 'W7834'}
                       </Text>
                       <Badge
-                        label={activeOrder.status?.replace('_', ' ').toUpperCase() || 'IN PROGRESS'}
-                        variant={['delivered', 'ready_for_delivery'].includes(activeOrder.status) ? 'success' : 'info'}
+                        label={activeOrder.status?.replace(/_/g, ' ').toUpperCase() || 'IN PROGRESS'}
+                        variant={['delivered', 'ready_for_delivery', 'ready'].includes(activeOrder.status) ? 'success' : 'info'}
                         size="sm"
                       />
                     </View>
 
                     {/* Stepper Pipeline */}
                     <View style={styles.stepperContainer}>
-                      <View style={[styles.stepPill, styles.stepPillDone]}>
-                        <Text style={styles.stepPillDoneText}>Picked Up</Text>
-                      </View>
-                      <Text style={styles.stepArrow}>➔</Text>
                       <View
                         style={[
                           styles.stepPill,
-                          ['processing', 'in_progress', 'ready_for_delivery', 'out_for_delivery'].includes(activeOrder.status)
+                          ['picked_up', 'at_laundry_pending_confirmation', 'received_at_laundry', 'processing', 'in_progress', 'ready', 'ready_for_delivery', 'out_for_delivery', 'delivered'].includes(activeOrder.status)
                             ? styles.stepPillActive
                             : styles.stepPillDefault,
                         ]}
                       >
                         <Text
                           style={
-                            ['processing', 'in_progress', 'ready_for_delivery', 'out_for_delivery'].includes(activeOrder.status)
+                            ['picked_up', 'at_laundry_pending_confirmation', 'received_at_laundry', 'processing', 'in_progress', 'ready', 'ready_for_delivery', 'out_for_delivery', 'delivered'].includes(activeOrder.status)
+                              ? styles.stepPillActiveText
+                              : styles.stepPillDefaultText
+                          }
+                        >
+                          Pickup
+                        </Text>
+                      </View>
+                      <Text style={styles.stepArrow}>➔</Text>
+                      <View
+                        style={[
+                          styles.stepPill,
+                          ['received_at_laundry', 'processing', 'in_progress', 'ready', 'ready_for_delivery', 'out_for_delivery', 'delivered'].includes(activeOrder.status)
+                            ? styles.stepPillActive
+                            : styles.stepPillDefault,
+                        ]}
+                      >
+                        <Text
+                          style={
+                            ['received_at_laundry', 'processing', 'in_progress', 'ready', 'ready_for_delivery', 'out_for_delivery', 'delivered'].includes(activeOrder.status)
                               ? styles.stepPillActiveText
                               : styles.stepPillDefaultText
                           }
@@ -591,14 +606,14 @@ export const CustomerHomeScreen = () => {
                       <View
                         style={[
                           styles.stepPill,
-                          ['out_for_delivery', 'delivered'].includes(activeOrder.status)
+                          ['ready', 'ready_for_delivery', 'ready_for_redelivery', 'out_for_delivery', 'delivery_pending_customer_confirmation', 'delivered'].includes(activeOrder.status)
                             ? styles.stepPillActive
                             : styles.stepPillDefault,
                         ]}
                       >
                         <Text
                           style={
-                            ['out_for_delivery', 'delivered'].includes(activeOrder.status)
+                            ['ready', 'ready_for_delivery', 'ready_for_redelivery', 'out_for_delivery', 'delivery_pending_customer_confirmation', 'delivered'].includes(activeOrder.status)
                               ? styles.stepPillActiveText
                               : styles.stepPillDefaultText
                           }

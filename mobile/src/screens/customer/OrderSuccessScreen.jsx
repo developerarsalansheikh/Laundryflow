@@ -120,7 +120,7 @@ export const OrderSuccessScreen = () => {
               <Divider style={{ marginVertical: spacing.sm }} />
               <View style={styles.row}>
                 <Text variant="caption" colorVariant="muted">
-                  DELIVERY FEE {order?.deliveryDistanceKm ? `(${order.deliveryDistanceKm.toFixed(1)} KM)` : ''}
+                  DELIVERY FEE {Number(order?.deliveryDistanceKm) > 0 ? `(${Number(order.deliveryDistanceKm).toFixed(1)} KM)` : ''}
                 </Text>
                 <Text variant="bodySmall" weight="bold" colorVariant="primary">
                   {order.deliveryFee === 0 ? 'FREE' : `₹${order.deliveryFee}`}

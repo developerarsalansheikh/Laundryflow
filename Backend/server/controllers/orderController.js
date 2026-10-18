@@ -475,9 +475,11 @@ const getOrderById = async (req, res) => {
     }
 
     // User sirf apna order dekh sakta hai
+    const orderUserId = (order.user?._id || order.user)?.toString();
     if (
       req.user.role === "user" &&
-      order.user._id.toString() !== req.user._id.toString()
+      orderUserId &&
+      orderUserId !== req.user._id.toString()
     ) {
       return res.status(403).json({
         success: false,
