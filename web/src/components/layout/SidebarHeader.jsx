@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
@@ -9,24 +10,28 @@ import { useAuthStore } from '../../store/authStore';
 export const SidebarHeader = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
+  const [imgFailed, setImgFailed] = useState(false);
   const isSuperAdmin = user?.role === 'superadmin';
   const brandName = isSuperAdmin ? 'LaundryFlow' : (user?.laundryName || user?.storeName || 'Dhoyoo Laundry');
   const roleLabel = isSuperAdmin ? 'SUPER ADMIN OPS' : 'STORE OPERATIONS';
 
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-b border-white/[0.08]">
+    <div className="flex items-center justify-between px-4 h-16 border-b border-white/[0.08] flex-shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         {/* Logo Icon */}
         <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shadow-xs overflow-hidden">
-          <img
-            src="/logo.png"
-            alt={brandName}
-            className="w-7 h-7 object-contain"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement.innerText = isSuperAdmin ? 'LF' : 'DL';
-            }}
-          />
+          {!imgFailed ? (
+            <img
+              src="/logo.png"
+              alt={brandName}
+              className="w-7 h-7 object-contain"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <span className="text-xs font-bold text-blue-400">
+              {isSuperAdmin ? 'LF' : 'DL'}
+            </span>
+          )}
         </div>
 
         {/* Brand Text */}
@@ -37,13 +42,13 @@ export const SidebarHeader = () => {
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden"
+              className="overflow-hidden min-w-0"
             >
-              <p className="text-sm font-bold text-white leading-tight whitespace-nowrap tracking-tight">
+              <p className="text-sm font-bold text-white leading-tight truncate tracking-tight">
                 {brandName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
                 <span className="text-[10px] font-semibold text-slate-400 tracking-wide uppercase whitespace-nowrap">
                   {roleLabel}
                 </span>

@@ -75,13 +75,13 @@ export const AdminLayout = () => {
     }
   };
 
-  const storeName = laundry?.name || user?.name || 'Laundry Operations';
+  const storeName = laundry?.name || user?.storeName || user?.laundryName || user?.name || 'Dhoyoo Laundry';
 
   return (
     <AppBackground>
       {/* ── Desktop Fixed Glass Sidebar ────────────────────────────── */}
       <aside
-        className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 z-30 overflow-hidden"
+        className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 z-40 overflow-hidden"
         style={{
           backgroundColor: '#080C1D',
           borderRight: '1px solid rgba(255,255,255,0.07)',
@@ -90,19 +90,24 @@ export const AdminLayout = () => {
         aria-label="Admin navigation"
       >
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-6 h-16 border-b border-white/[0.07]">
-          <img
-            src="/logo.png"
-            alt="LaundryWave"
-            className="w-10 h-10 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
-          />
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.07] flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+            <img
+              src="/logo.png"
+              alt="LaundryFlow"
+              className="w-7 h-7 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold truncate text-textPrimary leading-tight tracking-tight">
+            <h1 className="text-sm font-bold truncate text-white leading-tight tracking-tight">
               {storeName}
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-              <span className="text-[11px] font-semibold text-textMuted">
+              <span className="text-[11px] font-semibold text-slate-400">
                 Store Operations
               </span>
             </div>
@@ -157,14 +162,14 @@ export const AdminLayout = () => {
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Store Admin</span>
               </div>
-              <span className="text-[10px] font-medium text-textMuted">
+              <span className="text-[10px] font-medium text-slate-400">
                 {laundry?.city || 'Facility'}
               </span>
             </div>
-            <p className="text-xs font-bold truncate text-textPrimary">
+            <p className="text-xs font-bold truncate text-white">
               {user?.name || user?.fullName || laundry?.owner?.name || 'Laundry Admin'}
             </p>
-            <p className="text-[10px] font-medium truncate text-textSecondary mt-0.5">
+            <p className="text-[10px] font-medium truncate text-slate-400 mt-0.5">
               {user?.email || 'admin@laundryflow.com'}
             </p>
           </div>
@@ -197,12 +202,14 @@ export const AdminLayout = () => {
             >
               <div className="flex items-center justify-between px-5 h-16 border-b border-white/[0.07]">
                 <div className="flex items-center gap-2.5">
-                  <img
-                    src="/logo.png"
-                    alt="LaundryWave"
-                    className="w-8 h-8 rounded-lg object-cover border border-white/10"
-                  />
-                  <span className="text-sm font-bold truncate text-textPrimary">{storeName}</span>
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden">
+                    <img
+                      src="/logo.png"
+                      alt="LaundryFlow"
+                      className="w-6 h-6 object-contain"
+                    />
+                  </div>
+                  <span className="text-sm font-bold truncate text-white">{storeName}</span>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

@@ -74,7 +74,7 @@ export const TopNavbar = () => {
       className="fixed top-0 right-0 h-16 flex items-center px-4 sm:px-6 gap-3 transition-all duration-250"
       style={{
         left: 0,
-        zIndex: 50,
+        zIndex: 40,
         backgroundColor: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
         boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.06)',
@@ -96,7 +96,7 @@ export const TopNavbar = () => {
       </IconButton>
 
       {/* Search bar */}
-      <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-sm min-w-0">
+      <div className="flex-1 max-w-[200px] sm:max-w-xs md:max-w-sm min-w-0">
         <SearchBar />
       </div>
 
