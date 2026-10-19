@@ -28,6 +28,9 @@ import Loader from '../../components/ui/Loader';
 import ErrorState from '../../components/ui/ErrorState';
 import LiveTrackingMap from '../../components/ui/LiveTrackingMap';
 import RazorpayModal from '../../components/ui/RazorpayModal';
+import EditOrderModal from '../../components/EditOrderModal';
+import CancelOrderModal from '../../components/CancelOrderModal';
+import ContactSupportModal from '../../components/ContactSupportModal';
 
 const STATUS_CONFIG = {
   pending: { label: 'Order Placed', desc: 'Order received and scheduled for pickup.', variant: 'warning', step: 1 },
@@ -126,6 +129,22 @@ export const OrderDetailScreen = () => {
 
   const { orderId } = route.params || {};
 
+  // Fetch Order Details
+  const {
+    data: orderRes,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['orderDetail', orderId],
+    queryFn: () => customerService.getOrderById(orderId),
+    enabled: Boolean(orderId),
+  });
+
+  const order = orderRes?.data || orderRes;
+
   // Payment states
   const [razorpayModalVisible, setRazorpayModalVisible] = React.useState(false);
   const [activeRazorpayOrder, setActiveRazorpayOrder] = React.useState(null);
@@ -134,6 +153,11 @@ export const OrderDetailScreen = () => {
   // Change address state
   const [changeAddressModalVisible, setChangeAddressModalVisible] = React.useState(false);
   const [selectedNewAddress, setSelectedNewAddress] = React.useState(null);
+
+  // Feature A, B, C States
+  const [editModalVisible, setEditModalVisible] = React.useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = React.useState(false);
+  const [supportModalVisible, setSupportModalVisible] = React.useState(false);
 
   const { data: addressesData } = useQuery({
     queryKey: ['addresses'],
@@ -144,6 +168,17 @@ export const OrderDetailScreen = () => {
     if (Array.isArray(addressesData)) return addressesData;
     return [];
   }, [addressesData]);
+
+  // Feature A: Check edit window eligibility
+  const { data: eligibilityRes } = useQuery({
+    queryKey: ['orderEditEligibility', orderId],
+    queryFn: () => customerService.checkOrderEditEligibility(orderId),
+    enabled: Boolean(orderId),
+    refetchInterval: (q) => (q.state.data?.data?.isEligible ? 10000 : false),
+  });
+  const editEligibility = eligibilityRes?.data || {};
+  const isOrderEditable = Boolean(editEligibility.isEligible);
+  const remainingSeconds = editEligibility.remainingSeconds || 0;
 
   const changeAddressMutation = useMutation({
     mutationFn: (addr) =>
@@ -171,83 +206,49 @@ export const OrderDetailScreen = () => {
     },
   });
 
-  // Fetch Order
-  const {
-    data: orderResponse,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ['orderDetail', orderId],
-    queryFn: () => customerService.getOrderById(orderId),
-    enabled: Boolean(orderId),
-  });
-
-  const order = orderResponse?.data || orderResponse;
-
-  // Confirm Delivery Mutation
-  const confirmDeliveryMutation = useMutation({
-    mutationFn: () => customerService.confirmDelivery(orderId),
-    onSuccess: () => {
+  // Feature A: Edit Order Mutation
+  const editOrderMutation = useMutation({
+    mutationFn: (payload) => customerService.editOrder(orderId, payload),
+    onSuccess: (res) => {
+      setEditModalVisible(false);
       queryClient.invalidateQueries({ queryKey: ['orderDetail', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['orderEditEligibility', orderId] });
       queryClient.invalidateQueries({ queryKey: ['myOrders'] });
-      Alert.alert('Delivery Confirmed', 'Thank you! Your order is marked as delivered and complete.');
+      Alert.alert('Order Updated', res?.message || 'Your order was updated successfully.');
     },
     onError: (err) => {
       Alert.alert(
-        'Confirmation Failed',
-        err?.response?.data?.message || err?.message || 'Unable to confirm delivery.'
+        'Edit Order Failed',
+        err?.response?.data?.message || err?.message || 'Unable to update order.'
       );
     },
   });
 
-  // Report Customer Unavailable Mutation (Reschedule)
-  const reportUnavailableMutation = useMutation({
-    mutationFn: (reason) => customerService.reportUnavailable(orderId, reason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orderDetail', orderId] });
-      queryClient.invalidateQueries({ queryKey: ['myOrders'] });
-      Alert.alert(
-        'Delivery Rescheduled',
-        'We have notified the delivery partner. The package will be returned to the store and redelivered tomorrow.'
-      );
-    },
-    onError: (err) => {
-      Alert.alert(
-        'Action Failed',
-        err?.response?.data?.message || err?.message || 'Unable to update availability.'
-      );
-    },
-  });
-
-  // Cancel Order Mutation (Allowed strictly before pickup)
+  // Feature B: Cancel Order Mutation
   const cancelMutation = useMutation({
     mutationFn: (reason) => customerService.cancelOrder(orderId, reason),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      setCancelModalVisible(false);
       queryClient.invalidateQueries({ queryKey: ['orderDetail', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['orderEditEligibility', orderId] });
       queryClient.invalidateQueries({ queryKey: ['myOrders'] });
-      Alert.alert('Order Cancelled', 'Your order has been successfully cancelled.');
+      Alert.alert('Order Cancelled', res?.message || 'Your order has been cancelled.');
     },
     onError: (err) => {
       Alert.alert('Cancellation Error', err?.response?.data?.message || err?.message || 'Unable to cancel this order.');
     },
   });
 
-  const handleCancelOrder = () => {
-    Alert.alert(
-      'Cancel Order',
-      'Are you sure you want to cancel this booking? This action cannot be undone.',
-      [
-        { text: 'Keep Order', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: () => cancelMutation.mutate('Cancelled by customer'),
-        },
-      ]
-    );
+  // Feature C: Support Ticket Mutation
+  const submitTicketMutation = useMutation({
+    mutationFn: (payload) => customerService.submitSupportTicket(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orderSupportTickets', orderId] });
+    },
+  });
+
+  const handleOpenCancelModal = () => {
+    setCancelModalVisible(true);
   };
 
   const handleReportUnavailable = () => {
@@ -878,6 +879,42 @@ export const OrderDetailScreen = () => {
               />
             </View>
 
+            {/* Extra Due on Delivery Banner (from Order Edit price increase) */}
+            {Boolean(order.extraAmountDue && order.extraAmountDue > 0) && (
+              <View
+                style={{
+                  marginTop: spacing.sm,
+                  padding: spacing.sm,
+                  backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#D97706',
+                }}
+              >
+                <Text variant="caption" weight="bold" style={{ color: '#D97706' }}>
+                  ⚠️ Revised Items: Extra ₹{order.extraAmountDue} due upon delivery (COD)
+                </Text>
+              </View>
+            )}
+
+            {/* Refund Status Banner (from Order Cancellation or Edit refund) */}
+            {(order.refundStatus === 'initiated' || order.refundStatus === 'processed') && (
+              <View
+                style={{
+                  marginTop: spacing.sm,
+                  padding: spacing.sm,
+                  backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#059669',
+                }}
+              >
+                <Text variant="caption" weight="bold" style={{ color: '#059669' }}>
+                  ✓ Refund {order.refundStatus === 'processed' ? 'Processed' : 'Initiated'}: ₹{order.refundAmount || order.totalAmount}
+                </Text>
+              </View>
+            )}
+
             {/* Pay Now Button (if online order is unpaid) */}
             {!order.isPaid && order.status !== 'cancelled' && order.paymentMethod !== 'cod' && (
               <View style={{ marginTop: spacing.md }}>
@@ -893,8 +930,51 @@ export const OrderDetailScreen = () => {
             )}
           </Card>
 
-          {/* Cancellation Option (if pending) */}
-          {isPending && (
+          {/* Feature A: Order Revision History */}
+          {Array.isArray(order.editHistory) && order.editHistory.length > 0 && (
+            <Card style={{ marginTop: spacing.md }}>
+              <Text variant="label" weight="bold" colorVariant="primary">
+                Order Revision History ({order.editHistory.length})
+              </Text>
+              {order.editHistory.map((edit, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    marginTop: spacing.xs,
+                    paddingTop: spacing.xs,
+                    borderTopWidth: idx > 0 ? 1 : 0,
+                    borderTopColor: colors.borderLight,
+                  }}
+                >
+                  <Text variant="caption" colorVariant="secondary">
+                    {new Date(edit.editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Total: ₹{edit.previousTotal} → ₹{edit.newTotal}
+                  </Text>
+                  {Boolean(edit.reason) && (
+                    <Text variant="caption" colorVariant="muted" style={{ fontStyle: 'italic', marginTop: 2 }}>
+                      "{edit.reason}"
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </Card>
+          )}
+
+          {/* Action Buttons: Edit, Cancel, Contact Support */}
+          {/* Feature A: Edit Order (if eligible within window) */}
+          {isOrderEditable && (
+            <View style={{ marginTop: spacing.md }}>
+              <Button
+                title={`✏️ Edit Order (${Math.max(1, Math.ceil(remainingSeconds / 60))}m left)`}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                onPress={() => setEditModalVisible(true)}
+              />
+            </View>
+          )}
+
+          {/* Feature B: Cancel Order (pre-pickup only) */}
+          {['pending', 'placed', 'pending_pickup'].includes(order.status) && !order.collectedAt && order.status !== 'cancelled' && (
             <View style={styles.cancelArea}>
               <Button
                 title="Cancel Order"
@@ -902,10 +982,21 @@ export const OrderDetailScreen = () => {
                 size="lg"
                 fullWidth
                 loading={cancelMutation.isPending}
-                onPress={handleCancelOrder}
+                onPress={handleOpenCancelModal}
               />
             </View>
           )}
+
+          {/* Feature C: Contact Support Button */}
+          <View style={{ marginTop: spacing.sm }}>
+            <Button
+              title="💬 Contact Order Support"
+              variant="outline"
+              size="md"
+              fullWidth
+              onPress={() => setSupportModalVisible(true)}
+            />
+          </View>
 
           {/* Browse Marketplace Action */}
           <View style={{ marginTop: spacing.xs, marginBottom: spacing.sm }}>
@@ -924,6 +1015,35 @@ export const OrderDetailScreen = () => {
           </View>
         </ScrollView>
       )}
+
+      {/* Feature A: Edit Order Modal */}
+      <EditOrderModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        onConfirmEdit={(payload) => editOrderMutation.mutate(payload)}
+        isLoading={editOrderMutation.isPending}
+        order={order}
+        remainingSeconds={remainingSeconds}
+      />
+
+      {/* Feature B: Cancel Order Modal */}
+      <CancelOrderModal
+        visible={cancelModalVisible}
+        onClose={() => setCancelModalVisible(false)}
+        onConfirmCancel={(reason) => cancelMutation.mutate(reason)}
+        isLoading={cancelMutation.isPending}
+        order={order}
+      />
+
+      {/* Feature C: Contact Support Modal */}
+      <ContactSupportModal
+        visible={supportModalVisible}
+        onClose={() => setSupportModalVisible(false)}
+        onSubmitTicket={(ticketData) => submitTicketMutation.mutateAsync(ticketData)}
+        isLoading={submitTicketMutation.isPending}
+        orderId={orderId}
+        laundryName={order?.laundryId?.name}
+      />
 
       <RazorpayModal
         visible={razorpayModalVisible}

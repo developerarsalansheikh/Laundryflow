@@ -35,7 +35,7 @@ export const SidebarNavigation = ({ onNavigate }) => {
   const location = useLocation();
 
   return (
-    <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-1 scrollbar-thin">
+    <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3.5 py-4 space-y-2 scrollbar-thin">
       {SUPER_ADMIN_NAV_ITEMS.map((item) => {
         const Icon = ICON_MAP[item.icon] || LayoutDashboard;
         const isActive = location.pathname === item.path ||
@@ -48,17 +48,17 @@ export const SidebarNavigation = ({ onNavigate }) => {
               onClick={onNavigate}
               aria-label={item.label}
               className={() =>
-                `flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 outline-none ${
+                `flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 outline-none ${
                   isActive
-                    ? 'bg-blue-600 text-white font-semibold shadow-sm shadow-blue-600/30 border border-blue-500/50'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                    ? 'bg-[#2563eb] text-white font-bold shadow-md shadow-blue-600/25'
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
                 }`
               }
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3.5 min-w-0">
                 {/* Icon */}
-                <span className={`flex-shrink-0 transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>
-                  <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
+                <span className={`flex-shrink-0 transition-colors duration-200 ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.3 : 1.9} />
                 </span>
 
                 {/* Label */}
@@ -69,7 +69,7 @@ export const SidebarNavigation = ({ onNavigate }) => {
                       animate={{ opacity: 1, width: 'auto' }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-xs sm:text-sm font-medium overflow-hidden whitespace-nowrap"
+                      className="text-[15px] font-semibold tracking-normal overflow-hidden whitespace-nowrap"
                     >
                       {item.label}
                     </motion.span>
@@ -79,8 +79,8 @@ export const SidebarNavigation = ({ onNavigate }) => {
 
               {/* Badges for Analytics / Reports */}
               {!sidebarCollapsed && (item.id === 'analytics' || item.id === 'reports') && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-blue-500/15 text-blue-400 border border-blue-500/20'
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-blue-500/20 text-blue-400'
                 }`}>
                   NEW
                 </span>

@@ -15,13 +15,12 @@ export const RootNavigator = () => {
   const role = useAuthStore((state) => state.role);
   const isHydrated = useAuthStore((state) => state.isHydrated);
 
-  // Session restoration: Attempt token refresh on startup if authenticated
+  // Server Health & Session Verification on Startup
   useEffect(() => {
-    if (isHydrated && isAuthenticated) {
-      authService.refreshToken().catch(() => {
-        // Handled silently: if refresh fails, authService.refreshToken() clears session
-        // and user smoothly falls back to Guest browsing on CustomerNavigator.
-      });
+    if (isHydrated) {
+      // Proactively probe server health to detect cold-starts or wake up Render instance
+      const { healthService } = require('../services/healthService');
+      healthService.checkServerHealth().catch(() => {});
     }
   }, [isHydrated]);
 

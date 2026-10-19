@@ -98,10 +98,48 @@ export const customerService = {
   },
 
   /**
-   * Cancel an order (allowed when status is 'pending')
+   * Cancel an order (allowed strictly before pickup/collection)
    */
-  cancelOrder: async (id, reason = '') => {
-    const response = await apiClient.put(API_ENDPOINTS.ORDERS.CANCEL(id), { reason });
+  cancelOrder: async (id, cancelReason = 'Customer cancelled') => {
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.CANCEL(id), { cancelReason });
+    return response.data;
+  },
+
+  /**
+   * Check if order is currently eligible for customer editing
+   */
+  checkOrderEditEligibility: async (id) => {
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.EDIT_ELIGIBILITY(id));
+    return response.data;
+  },
+
+  /**
+   * Edit order items, address, time slot, or instructions within allowable window
+   */
+  editOrder: async (id, editPayload) => {
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.EDIT(id), editPayload);
+    return response.data;
+  },
+
+  /**
+   * Submit support ticket for an order or general enquiry
+   */
+  submitSupportTicket: async ({ orderId, subject, description, category, priority = 'medium' }) => {
+    const response = await apiClient.post(API_ENDPOINTS.SUPPORT.CREATE_TICKET, {
+      orderId,
+      subject,
+      description,
+      category,
+      priority,
+    });
+    return response.data;
+  },
+
+  /**
+   * Fetch support tickets associated with an order
+   */
+  getOrderSupportTickets: async (orderId) => {
+    const response = await apiClient.get(API_ENDPOINTS.SUPPORT.BY_ORDER(orderId));
     return response.data;
   },
 

@@ -19,7 +19,8 @@ const fallbackHost = isProduction ? PROD_HOST : DEV_LAN_HOST;
 
 export const API_BASE_URL = Config?.API_BASE_URL || `${fallbackHost}/api`;
 export const SOCKET_URL = Config?.SOCKET_URL || fallbackHost;
-export const API_TIMEOUT_MS = Number(Config?.API_TIMEOUT_MS) || 30000;
+export const API_TIMEOUT_MS = Number(Config?.API_TIMEOUT_MS) || 60000;
+export const HEALTH_CHECK_URL = `${fallbackHost}/api/health`;
 export const APP_ENV = Config?.APP_ENV || (isProduction ? 'production' : 'development');
 
 console.log(

@@ -21,6 +21,11 @@ const supportTicketSchema = new mongoose.Schema(
       ref: "Laundry",
       default: null,
     },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      default: null,
+    },
     subject: {
       type: String,
       required: [true, "Subject is required"],
@@ -33,7 +38,16 @@ const supportTicketSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["billing", "technical", "order_issue", "account", "general"],
+      enum: [
+        "order_issue",
+        "cancellation",
+        "delivery_issue",
+        "damaged_item",
+        "billing",
+        "technical",
+        "account",
+        "general",
+      ],
       default: "general",
     },
     priority: {

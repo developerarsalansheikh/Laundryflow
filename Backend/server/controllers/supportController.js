@@ -255,10 +255,173 @@ const createTicket = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────
+// @desc    Customer/User creates a support request
+// @route   POST /api/support/tickets
+// @access  Private (User/Customer/Admin/Delivery)
+// ─────────────────────────────────────────────
+const createCustomerTicket = async (req, res) => {
+  try {
+    const { orderId, subject, description, category, priority } = req.body;
+
+    if (!subject || !subject.trim() || !description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Subject and description are required",
+      });
+    }
+
+    let laundryId = null;
+    let orderDoc = null;
+
+    if (orderId) {
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({ success: false, message: "Invalid order ID" });
+      }
+      const Order = require("../models/orderModels");
+      orderDoc = await Order.findById(orderId);
+      if (!orderDoc) {
+        return res.status(404).json({ success: false, message: "Referenced order not found" });
+      }
+
+      // Check ownership unless admin/superadmin
+      if (req.user.role === "user" && orderDoc.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: "Access denied to this order" });
+      }
+
+      laundryId = orderDoc.laundryId;
+
+      // Guard against rapid duplicate submissions (same user, same order, same category within 30 seconds)
+      const recentTicket = await SupportTicket.findOne({
+        user: req.user._id,
+        orderId: orderDoc._id,
+        category: category || "order_issue",
+        status: { $in: ["open", "in_progress"] },
+        createdAt: { $gte: new Date(Date.now() - 30 * 1000) },
+      });
+      if (recentTicket) {
+        return res.status(200).json({
+          success: true,
+          message: "A support ticket for this request was just received.",
+          data: recentTicket,
+        });
+      }
+    }
+
+    const ticket = await SupportTicket.create({
+      ticketId: generateTicketId(),
+      user: req.user._id,
+      orderId: orderDoc ? orderDoc._id : null,
+      laundryId: laundryId || null,
+      subject: subject.trim(),
+      description: description.trim(),
+      category: category || "order_issue",
+      priority: priority || "medium",
+      status: "open",
+    });
+
+    if (orderDoc) {
+      orderDoc.trackingUpdates.push({
+        status: orderDoc.status,
+        message: `Support ticket #${ticket.ticketId} opened: ${subject.trim()}`,
+        timestamp: new Date(),
+      });
+      await orderDoc.save();
+    }
+
+    const populated = await SupportTicket.findById(ticket._id)
+      .populate("user", "name email phone role")
+      .populate("laundryId", "name phone")
+      .populate("orderId", "totalAmount status createdAt");
+
+    return res.status(201).json({
+      success: true,
+      message: "Support ticket submitted successfully. Our support team will review and contact you shortly.",
+      data: populated,
+    });
+  } catch (error) {
+    console.error("createCustomerTicket error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to submit support ticket. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Get user's support tickets
+// @route   GET /api/support/my-tickets
+// @access  Private
+// ─────────────────────────────────────────────
+const getMyTickets = async (req, res) => {
+  try {
+    const tickets = await SupportTicket.find({ user: req.user._id })
+      .populate("laundryId", "name phone")
+      .populate("orderId", "totalAmount status createdAt")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: tickets.length,
+      data: tickets,
+    });
+  } catch (error) {
+    console.error("getMyTickets error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch support tickets",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Get tickets for specific order
+// @route   GET /api/support/order/:orderId
+// @access  Private
+// ─────────────────────────────────────────────
+const getOrderTickets = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
+    }
+
+    const filter = { orderId };
+    if (req.user.role === "user") {
+      filter.user = req.user._id;
+    } else if (req.user.role === "admin") {
+      filter.laundryId = req.user.laundryId;
+    }
+
+    const tickets = await SupportTicket.find(filter)
+      .populate("user", "name phone")
+      .populate("responses.sender", "name role")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: tickets.length,
+      data: tickets,
+    });
+  } catch (error) {
+    console.error("getOrderTickets error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch order support tickets",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllTickets,
   getTicketById,
   updateTicketStatus,
   replyTicket,
   createTicket,
+  createCustomerTicket,
+  getMyTickets,
+  getOrderTickets,
 };

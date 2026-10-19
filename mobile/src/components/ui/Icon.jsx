@@ -237,6 +237,32 @@ export const Icon = ({ name, size = 20, color = '#1E293B', strokeWidth = 2, styl
           <Line x1="2" y1="10" x2="22" y2="10" />
         </Svg>
       );
+    case 'grid':
+    case 'dashboard':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Rect x="3" y="3" width="7" height="7" rx="1" />
+          <Rect x="14" y="3" width="7" height="7" rx="1" />
+          <Rect x="14" y="14" width="7" height="7" rx="1" />
+          <Rect x="3" y="14" width="7" height="7" rx="1" />
+        </Svg>
+      );
+    case 'store':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Path d="M3 9l2-5h14l2 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <Path d="M3 9h18" />
+          <Path d="M10 22V13h4v9" />
+        </Svg>
+      );
+    case 'chart':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+          <Line x1="18" y1="20" x2="18" y2="10" />
+          <Line x1="12" y1="20" x2="12" y2="4" />
+          <Line x1="6" y1="20" x2="6" y2="14" />
+        </Svg>
+      );
     default:
       return null;
   }

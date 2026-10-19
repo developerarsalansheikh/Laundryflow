@@ -224,6 +224,44 @@ const orderSchema = new mongoose.Schema(
     refundedAt: {
       type: Date,
     },
+    extraAmountDue: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    // Feature A: Order Edit Audit History
+    editHistory: [
+      {
+        editedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        editedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        changes: {
+          type: mongoose.Schema.Types.Mixed,
+        },
+        previousTotal: {
+          type: Number,
+        },
+        newTotal: {
+          type: Number,
+        },
+        difference: {
+          type: Number,
+        },
+        paymentAdjustment: {
+          type: String, // 'none' | 'partial_refund' | 'cod_extra_due'
+          default: "none",
+        },
+        reason: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
 
     // ── Schedule ─────────────────────────────────
     // FIX 4: scheduledPickup is now an object with time slot

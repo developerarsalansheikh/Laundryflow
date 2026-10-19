@@ -1,8 +1,7 @@
 import React from 'react';
-import { Text as RNText, StyleSheet, Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useTheme } from '../theme';
+import { ModernBottomTabBar } from './ModernBottomTabBar';
 
 // Delivery Tab Screens
 import DeliveryHomeScreen from '../screens/delivery/DeliveryHomeScreen';
@@ -17,27 +16,19 @@ import DeliveryNotificationsScreen from '../screens/delivery/DeliveryNotificatio
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const DeliveryTabs = () => {
-  const { colors } = useTheme();
+const DELIVERY_TAB_ICONS = {
+  Dashboard: { name: 'truck' },
+  Orders: { name: 'orders' },
+  Profile: { name: 'user' },
+};
 
+const DeliveryTabs = () => {
   return (
     <Tab.Navigator
+      tabBar={(props) => <ModernBottomTabBar {...props} tabIcons={DELIVERY_TAB_ICONS} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.borderLight,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
@@ -45,9 +36,6 @@ const DeliveryTabs = () => {
         component={DeliveryHomeScreen}
         options={{
           tabBarLabel: 'Dashboard',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>🛵</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -55,9 +43,6 @@ const DeliveryTabs = () => {
         component={DeliveryOrdersScreen}
         options={{
           tabBarLabel: 'Orders',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>📦</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -65,9 +50,6 @@ const DeliveryTabs = () => {
         component={DeliveryProfileScreen}
         options={{
           tabBarLabel: 'Profile',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>👤</RNText>
-          ),
         }}
       />
     </Tab.Navigator>

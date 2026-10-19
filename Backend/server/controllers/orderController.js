@@ -18,16 +18,32 @@ const {
 } = require("../socket/socketHandler");
 
 // ─────────────────────────────────────────────
-// Internal helper: initiate Razorpay refund
-// Used by cancelOrder when order is paid via Razorpay
+// Internal helper: initiate Razorpay refund (Full or Partial)
+// Used by cancelOrder and editOrder
 // ─────────────────────────────────────────────
-const _initiateRefundInternal = async (orderId) => {
+const _initiateRefundInternal = async (orderId, refundAmountParam = null, reason = "Order cancelled") => {
   try {
     const Payment = require("../models/paymentModels");
     const Razorpay = require("razorpay");
 
-    const payment = await Payment.findOne({ order: orderId, status: "success" });
-    if (!payment || payment.method !== "razorpay" || !payment.razorpayPaymentId) return;
+    const order = await Order.findById(orderId);
+    if (!order || !order.isPaid) return { success: false, reason: "Order not paid" };
+
+    const payment = await Payment.findOne({ order: orderId });
+    if (!payment || payment.method !== "razorpay" || !payment.razorpayPaymentId) {
+      return { success: false, reason: "No valid Razorpay payment found" };
+    }
+
+    // Determine refund amount (paise)
+    const existingRefunded = payment.refundAmount || 0;
+    const maxRefundable = Math.max(0, payment.amount - existingRefunded);
+    const targetRefundRupees = refundAmountParam !== null && refundAmountParam !== undefined
+      ? Math.min(Number(refundAmountParam), maxRefundable)
+      : maxRefundable;
+
+    if (targetRefundRupees <= 0) {
+      return { success: false, reason: "Refund already fully processed" };
+    }
 
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
@@ -35,22 +51,59 @@ const _initiateRefundInternal = async (orderId) => {
     });
 
     const refund = await razorpay.payments.refund(payment.razorpayPaymentId, {
-      amount: payment.amount * 100, // paise mein
+      amount: Math.round(targetRefundRupees * 100), // in paise
+      notes: { orderId: orderId.toString(), reason: reason.substring(0, 50) },
     });
+
+    const isConfirmedProcessed = refund.status === "processed";
+    const refundStatusMapped = isConfirmedProcessed ? "processed" : "initiated";
+    const totalRefundedNow = existingRefunded + targetRefundRupees;
+    const isFullRefund = totalRefundedNow >= payment.amount;
 
     await Payment.findByIdAndUpdate(payment._id, {
       refundId: refund.id,
-      refundAmount: refund.amount / 100,
-      refundStatus: "processed",
+      refundAmount: totalRefundedNow,
+      refundStatus: refundStatusMapped,
       refundedAt: new Date(),
-      status: "refunded",
+      status: isFullRefund ? "refunded" : "success",
     });
 
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[REFUND] Razorpay refund initiated: ${refund.id} for order ${orderId}`);
+    await Order.findByIdAndUpdate(orderId, {
+      refundAmount: (order.refundAmount || 0) + targetRefundRupees,
+      refundStatus: refundStatusMapped,
+      refundedAt: new Date(),
+      $push: {
+        trackingUpdates: {
+          status: order.status,
+          message: `Refund of ₹${targetRefundRupees} ${refundStatusMapped} (${refund.id}): ${reason}`,
+          timestamp: new Date(),
+        },
+      },
+    });
+
+    // Authoritative revenue adjustment for laundry
+    if (order.laundryId) {
+      const revenueDeduction = isFullRefund
+        ? (payment.laundryEarning || (targetRefundRupees * 0.9))
+        : (targetRefundRupees * 0.9);
+      await Laundry.findByIdAndUpdate(order.laundryId, {
+        $inc: { totalRevenue: -Math.max(0, revenueDeduction) },
+      });
     }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[REFUND] Razorpay refund ${refund.id} status=${refundStatusMapped} amount=₹${targetRefundRupees} order=${orderId}`);
+    }
+
+    return {
+      success: true,
+      refundId: refund.id,
+      status: refundStatusMapped,
+      amount: targetRefundRupees,
+    };
   } catch (err) {
     console.error("Internal refund error:", err.message);
+    return { success: false, error: err.message };
   }
 };
 
@@ -553,19 +606,16 @@ const getOrderById = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// 3. @desc    Order cancel karo
+// 3. @desc    Cancel Order (Customer, Laundry Admin, or SuperAdmin)
 //    @route   PUT /api/orders/:id/cancel
-//    @access  Private/User
+//    @access  Private (User, Admin, SuperAdmin)
 // ─────────────────────────────────────────────
 const cancelOrder = async (req, res) => {
   try {
-    const cancelReason = req.body?.cancelReason || "User ne cancel kiya";
+    const cancelReason = req.body?.cancelReason || "Order cancelled";
+    const orderId = req.params.id;
 
-    const order = await Order.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
+    const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -573,45 +623,123 @@ const cancelOrder = async (req, res) => {
       });
     }
 
-    // Sirf pending orders cancel ho sakte hain
-    if (order.status !== "pending") {
-      return res.status(400).json({
+    // Role-based authorization & ownership checks
+    if (req.user.role === "user") {
+      if (order.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied — you do not own this order.",
+        });
+      }
+    } else if (req.user.role === "admin") {
+      const orderLaundryId = order.laundryId?._id ? order.laundryId._id.toString() : order.laundryId?.toString();
+      if (orderLaundryId !== req.user.laundryId?.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied — this order does not belong to your store.",
+        });
+      }
+    } else if (req.user.role === "delivery") {
+      return res.status(403).json({
         success: false,
-        message: `Only pending orders can be cancelled. Current status: ${order.status}`,
+        message: "Delivery partners cannot cancel orders; report customer unavailable or failed delivery instead.",
+      });
+    } else if (req.user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied.",
       });
     }
 
-    await Order.findByIdAndUpdate(req.params.id, {
+    // Prevent duplicate cancellation
+    if (order.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "This order is already cancelled.",
+      });
+    }
+
+    // Cancellation policy: Only pre-pickup orders can be cancelled
+    const allowedStatuses = ["pending", "placed", "pending_pickup"];
+    if (!allowedStatuses.includes(order.status) || order.collectedAt) {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be cancelled after pickup/processing has started. Current status: ${order.status}`,
+      });
+    }
+
+    const oldStatus = order.status;
+    order.status = "cancelled";
+    order.cancelReason = cancelReason;
+
+    // Delivery assignment cleanup
+    if (order.deliveryPartner) {
+      order.assignmentInfo = {
+        ...order.assignmentInfo,
+        status: "unassigned",
+        failureReason: `Order cancelled by ${req.user.role}: ${cancelReason}`,
+      };
+      // Notify assigned driver in real-time
+      const io = req.app.get("io");
+      if (io) {
+        io.to(order.deliveryPartner.toString()).emit("delivery:order_cancelled", {
+          orderId: order._id,
+          message: `Order #${order._id.toString().slice(-6).toUpperCase()} was cancelled.`,
+        });
+      }
+    }
+
+    order.trackingUpdates.push({
       status: "cancelled",
-      cancelReason,
-      $push: {
-        trackingUpdates: {
-          status: "cancelled",
-          message: cancelReason,
-        },
-      },
+      message: `Cancelled by ${req.user.role}: ${cancelReason}`,
+      timestamp: new Date(),
     });
 
-    // FIX 7: Auto-refund agar Razorpay se paid tha
-    if (order.isPaid && order.paymentMethod === "razorpay") {
-      _initiateRefundInternal(order._id);
+    // Auto-refund for online payments (prevent duplicate refund)
+    let refundResult = null;
+    if (
+      order.isPaid &&
+      order.paymentMethod === "razorpay" &&
+      order.refundStatus !== "processed" &&
+      order.refundStatus !== "initiated"
+    ) {
+      refundResult = await _initiateRefundInternal(order._id, null, cancelReason);
+      if (refundResult?.success) {
+        order.refundStatus = refundResult.status;
+        order.refundAmount = refundResult.amount;
+        order.refundedAt = new Date();
+      }
     }
-    // FIX 5: COD — no refund needed
 
-    const cancelledOrder = await Order.findById(req.params.id)
+    await order.save();
+
+    const cancelledOrder = await Order.findById(order._id)
       .populate("pickupAddress")
-      .populate("deliveryAddress");
+      .populate("deliveryAddress")
+      .populate("user", "name phone email")
+      .populate("laundryId", "name phone city")
+      .populate("deliveryPartner", "name phone");
 
-    // Trigger Socket.io event for order cancellation
-    emitOrderCancelled(cancelledOrder, cancelReason);
-    emitOrderStatusChanged(cancelledOrder, order.status, "cancelled", cancelReason);
+    // Real-time Socket.io events
+    try {
+      emitOrderCancelled(cancelledOrder, cancelReason);
+      emitOrderStatusChanged(cancelledOrder, oldStatus, "cancelled", cancelReason);
+    } catch (socketErr) {
+      console.warn("Socket notification warning on order cancellation:", socketErr.message);
+    }
+
+    // Push notification to Laundry Admin / Customer
+    try {
+      const { notifyOrderStatusUpdate } = require("../services/notificationService");
+      notifyOrderStatusUpdate(cancelledOrder).catch(() => {});
+    } catch (_) {}
 
     return res.status(200).json({
       success: true,
       message:
         order.isPaid && order.paymentMethod === "razorpay"
-          ? "Order cancelled. Refund has been initiated."
-          : "Order cancelled successfully",
+          ? `Order cancelled. Refund of ₹${cancelledOrder.refundAmount || order.totalAmount} has been initiated.`
+          : "Order cancelled successfully.",
       data: cancelledOrder,
     });
   } catch (error) {
@@ -619,6 +747,399 @@ const cancelOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to cancel order. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Check customer order edit eligibility & remaining window
+// @route   GET /api/orders/:id/edit-eligibility
+// @access  Private (User)
+// ─────────────────────────────────────────────
+const checkOrderEditEligibility = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
+    }
+
+    // Authorization
+    if (req.user.role === "user" && order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Access denied." });
+    }
+
+    const PlatformSettings = require("../models/settingsModels");
+    const settings = await PlatformSettings.findOne();
+    const editWindowMinutes = settings?.orderEditWindowMinutes || 15;
+
+    const createdAtMs = new Date(order.createdAt).getTime();
+    const elapsedMs = Date.now() - createdAtMs;
+    const windowMs = editWindowMinutes * 60 * 1000;
+    const remainingSeconds = Math.max(0, Math.floor((windowMs - elapsedMs) / 1000));
+
+    const isPrePickup = ["pending", "placed", "pending_pickup"].includes(order.status) && !order.collectedAt;
+    const isWithinWindow = remainingSeconds > 0;
+    const isEligible = isPrePickup && isWithinWindow;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        isEligible,
+        remainingSeconds,
+        editWindowMinutes,
+        status: order.status,
+        isPrePickup,
+        isWithinWindow,
+        isPaid: order.isPaid,
+        paymentMethod: order.paymentMethod,
+        totalAmount: order.totalAmount,
+      },
+    });
+  } catch (error) {
+    console.error("checkOrderEditEligibility error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to check edit eligibility.",
+      error: error.message,
+    });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Customer edits order details within allowable window
+// @route   PUT /api/orders/:id/edit
+// @access  Private/User
+// ─────────────────────────────────────────────
+const editOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const {
+      services,
+      addressId,
+      fullAddress,
+      city,
+      state,
+      pincode,
+      landmark,
+      label,
+      coordinates,
+      scheduledPickup,
+      specialInstructions,
+      editReason = "Customer edited order",
+    } = req.body;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
+    }
+
+    // 1. Ownership validation
+    if (req.user.role === "user" && order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied — you do not own this order.",
+      });
+    }
+
+    // 2. Status validation: strictly pre-pickup
+    const allowedStatuses = ["pending", "placed", "pending_pickup"];
+    if (!allowedStatuses.includes(order.status) || order.collectedAt) {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be edited after pickup or processing has started. Current status: ${order.status}`,
+      });
+    }
+
+    // 3. Configurable edit window validation
+    const PlatformSettings = require("../models/settingsModels");
+    const settings = await PlatformSettings.findOne();
+    const editWindowMinutes = settings?.orderEditWindowMinutes || 15;
+    const createdAtMs = new Date(order.createdAt).getTime();
+    const elapsedMinutes = (Date.now() - createdAtMs) / (60 * 1000);
+
+    if (elapsedMinutes > editWindowMinutes) {
+      return res.status(400).json({
+        success: false,
+        message: `Order editing window of ${editWindowMinutes} minutes has expired. Please contact support.`,
+      });
+    }
+
+    const previousTotal = order.totalAmount;
+    const previousServices = JSON.parse(JSON.stringify(order.services || []));
+    let targetServices = order.services;
+    let subtotal = order.subtotal;
+
+    // 4. Validate and recalculate services if provided
+    if (Array.isArray(services) && services.length > 0) {
+      subtotal = 0;
+      const serviceDetails = [];
+
+      for (const item of services) {
+        const rawServiceId = item.service || item.serviceId || item.id;
+        const cleanServiceId = typeof rawServiceId === "object" && rawServiceId?._id ? rawServiceId._id : rawServiceId;
+
+        let serviceDoc = null;
+        if (mongoose.Types.ObjectId.isValid(cleanServiceId)) {
+          serviceDoc = await Service.findOne({
+            _id: cleanServiceId,
+            laundryId: order.laundryId,
+            isActive: true,
+          });
+        }
+        if (!serviceDoc && item.category) {
+          serviceDoc = await Service.findOne({
+            laundryId: order.laundryId,
+            category: item.category,
+            isActive: true,
+          });
+        }
+
+        if (!serviceDoc) {
+          return res.status(400).json({
+            success: false,
+            message: `Service "${item.itemName || item.name || 'Selected'}" is currently unavailable at this laundry store.`,
+          });
+        }
+
+        const qty = Number(item.quantity);
+        if (isNaN(qty) || qty <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Item quantity must be a positive number.",
+          });
+        }
+
+        let unitPrice = null;
+        let matchedClothing = null;
+        const targetClothingType = (item.clothingType || "").trim().toLowerCase();
+        const targetItemName = (item.itemName || item.name || "").trim().toLowerCase();
+
+        if (Array.isArray(serviceDoc.items) && serviceDoc.items.length > 0) {
+          matchedClothing = serviceDoc.items.find((sub) => {
+            const subType = (sub.clothingType || "").trim().toLowerCase();
+            const subName = (sub.name || "").trim().toLowerCase();
+            return (
+              (targetClothingType && (subType === targetClothingType || subName === targetClothingType)) ||
+              (targetItemName && (subName === targetItemName || targetItemName.includes(subName) || subName.includes(targetItemName)))
+            );
+          });
+          if (matchedClothing && typeof matchedClothing.price === "number") {
+            unitPrice = matchedClothing.price;
+          }
+        }
+
+        if (unitPrice === null || unitPrice === undefined) {
+          if (typeof serviceDoc.price === "number" && serviceDoc.price > 0) {
+            unitPrice = serviceDoc.price;
+          } else {
+            return res.status(400).json({
+              success: false,
+              message: `Invalid price configuration for service ${serviceDoc.name}.`,
+            });
+          }
+        }
+
+        const lineTotal = unitPrice * qty;
+        subtotal += lineTotal;
+        const hours = (matchedClothing && matchedClothing.estimatedHours) || serviceDoc.estimatedHours || 24;
+
+        serviceDetails.push({
+          service: serviceDoc._id,
+          itemName: item.itemName || (matchedClothing ? matchedClothing.name : serviceDoc.name),
+          clothingType: item.clothingType || (matchedClothing ? matchedClothing.clothingType : serviceDoc.clothingType || ""),
+          quantity: qty,
+          price: unitPrice,
+          lineTotal,
+          estimatedHours: hours,
+        });
+      }
+
+      targetServices = serviceDetails;
+    }
+
+    // 5. Address revalidation & zone serviceability if address changed
+    let targetAddressSnapshot = order.pickupAddressSnapshot;
+    let targetAddressId = order.pickupAddress;
+    let addressDoc = null;
+
+    if (addressId) {
+      const Address = require("../models/addressModels");
+      addressDoc = await Address.findById(addressId);
+      if (addressDoc) {
+        targetAddressId = addressDoc._id;
+        targetAddressSnapshot = {
+          fullAddress: addressDoc.fullAddress,
+          city: addressDoc.city,
+          state: addressDoc.state,
+          pincode: addressDoc.pincode,
+          landmark: addressDoc.landmark || "",
+          label: addressDoc.label || "home",
+          coordinates: addressDoc.coordinates || {},
+        };
+      }
+    } else if (fullAddress || city) {
+      targetAddressSnapshot = {
+        fullAddress: fullAddress || targetAddressSnapshot.fullAddress,
+        city: city || targetAddressSnapshot.city,
+        state: state || targetAddressSnapshot.state,
+        pincode: pincode || targetAddressSnapshot.pincode,
+        landmark: landmark || targetAddressSnapshot.landmark,
+        label: label || targetAddressSnapshot.label,
+        coordinates: coordinates || targetAddressSnapshot.coordinates,
+      };
+    }
+
+    // Evaluate serviceability with updated address and subtotal
+    const { evaluateDeliveryEligibility } = require("./deliveryZoneController");
+    const eligibility = await evaluateDeliveryEligibility({
+      laundryId: order.laundryId,
+      address: targetAddressSnapshot,
+      orderSubtotal: subtotal,
+    });
+
+    if (!eligibility.available) {
+      return res.status(400).json({
+        success: false,
+        message: eligibility.reason || "The selected laundry store cannot service the updated destination address.",
+      });
+    }
+
+    // Authoritative pricing calculation (Never trust client total)
+    const deliveryFee = eligibility.deliveryFee || 0;
+    const gst = Math.round(subtotal * 0.05);
+    const discount = order.discount || 0;
+    const newTotalAmount = subtotal + deliveryFee + gst - discount;
+
+    const laundry = await Laundry.findById(order.laundryId);
+    const commissionPercent = laundry?.commissionPercent || 10;
+    const commissionAmount = (newTotalAmount * commissionPercent) / 100;
+    const laundryEarning = newTotalAmount - commissionAmount;
+
+    // 6. Safe Payment Difference & Refund Handling
+    let paymentAdjustment = "none";
+    let refundInfo = null;
+
+    if (order.isPaid && order.paymentMethod === "razorpay") {
+      if (newTotalAmount < previousTotal) {
+        // Customer reduced order items -> partial refund for difference
+        const refundDifference = previousTotal - newTotalAmount;
+        const refundRes = await _initiateRefundInternal(
+          order._id,
+          refundDifference,
+          `Order edit refund difference: items updated from ₹${previousTotal} to ₹${newTotalAmount}`
+        );
+        paymentAdjustment = "partial_refund";
+        refundInfo = refundRes;
+      } else if (newTotalAmount > previousTotal) {
+        // Customer added items -> difference marked as COD payable on delivery
+        const additionalDue = newTotalAmount - previousTotal;
+        order.extraAmountDue = (order.extraAmountDue || 0) + additionalDue;
+        paymentAdjustment = "cod_extra_due";
+      }
+    }
+
+    // 7. Update order model fields
+    order.services = targetServices;
+    order.subtotal = subtotal;
+    order.deliveryFee = deliveryFee;
+    order.deliveryDistanceKm = eligibility.distanceKm || 0;
+    order.minimumOrderCharge = eligibility.minimumOrderCharge || 0;
+    order.pickupDistanceCharge = eligibility.pickupDistanceCharge || 0;
+    order.deliveryDistanceCharge = eligibility.deliveryDistanceCharge || 0;
+    order.gst = gst;
+    order.totalAmount = newTotalAmount;
+    order.commissionAmount = commissionAmount;
+    order.laundryEarning = laundryEarning;
+
+    if (addressDoc) {
+      order.pickupAddress = targetAddressId;
+      order.deliveryAddress = targetAddressId;
+    }
+    order.pickupAddressSnapshot = targetAddressSnapshot;
+    order.deliveryAddressSnapshot = targetAddressSnapshot;
+
+    if (specialInstructions !== undefined) {
+      order.specialInstructions = String(specialInstructions).trim().slice(0, 500);
+    }
+
+    if (scheduledPickup && (scheduledPickup.date || scheduledPickup.timeSlot)) {
+      order.scheduledPickup = {
+        date: scheduledPickup.date ? new Date(scheduledPickup.date) : order.scheduledPickup?.date,
+        timeSlot: scheduledPickup.timeSlot || order.scheduledPickup?.timeSlot,
+      };
+    }
+
+    // 8. Save audit history
+    if (!order.editHistory) order.editHistory = [];
+    order.editHistory.push({
+      editedAt: new Date(),
+      editedBy: req.user._id,
+      changes: {
+        servicesModified: Boolean(services),
+        addressModified: Boolean(addressId || fullAddress),
+        pickupSlotModified: Boolean(scheduledPickup),
+        instructionsModified: specialInstructions !== undefined,
+      },
+      previousTotal,
+      newTotal: newTotalAmount,
+      difference: newTotalAmount - previousTotal,
+      paymentAdjustment,
+      reason: editReason,
+    });
+
+    order.trackingUpdates.push({
+      status: order.status,
+      message: `Order edited by customer within ${editWindowMinutes}m window (New total: ₹${newTotalAmount})`,
+      timestamp: new Date(),
+    });
+
+    await order.save();
+
+    const populatedOrder = await Order.findById(order._id)
+      .populate("services.service", "name price category estimatedHours")
+      .populate("laundryId", "name address phone city")
+      .populate("pickupAddress")
+      .populate("deliveryAddress")
+      .populate("deliveryPartner", "name phone");
+
+    // Real-time Socket & Push Notification to Laundry Admin
+    try {
+      emitOrderUpdated(populatedOrder);
+      const io = req.app.get("io");
+      if (io && order.laundryId) {
+        io.to(`laundry_${order.laundryId._id || order.laundryId}`).emit("order:edited", {
+          orderId: order._id,
+          message: `Customer updated order #${order._id.toString().slice(-6).toUpperCase()}. New Total: ₹${newTotalAmount}`,
+          order: populatedOrder,
+        });
+      }
+    } catch (socketErr) {
+      console.warn("Socket notification warning on order edit:", socketErr.message);
+    }
+
+    try {
+      const { notifyOrderStatusUpdate } = require("../services/notificationService");
+      notifyOrderStatusUpdate(populatedOrder).catch(() => {});
+    } catch (_) {}
+
+    return res.status(200).json({
+      success: true,
+      message:
+        paymentAdjustment === "partial_refund"
+          ? `Order updated successfully. A partial refund of ₹${previousTotal - newTotalAmount} has been initiated.`
+          : paymentAdjustment === "cod_extra_due"
+          ? `Order updated successfully. Additional ₹${newTotalAmount - previousTotal} will be collected upon delivery.`
+          : "Order updated successfully.",
+      data: populatedOrder,
+      refundInfo,
+    });
+  } catch (error) {
+    console.error("editOrder error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update order details. Please try again.",
       error: error.message,
     });
   }
@@ -2024,6 +2545,8 @@ module.exports = {
   placeOrder,
   getOrderById,
   cancelOrder,
+  checkOrderEditEligibility,
+  editOrder,
   changeOrderAddress,
   modifyOrderItems,
   confirmCollectionCount,

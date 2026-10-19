@@ -170,7 +170,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/health", (req, res) => {
+app.get(["/health", "/api/health"], (req, res) => {
   res.json({
     success: true,
     message: "LaundryFlow API healthy",
@@ -195,6 +195,7 @@ app.use("/api/super-admin/settings", require("./routes/settingsRoutes")); // Pla
 app.use("/api/delivery", require("./routes/deliveryRoutes"));
 app.use("/api/delivery-zones", require("./routes/deliveryZoneRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/support", require("./routes/userSupportRoutes"));
 
 // ── 404 Handler ───────────────────────────────
 app.use((req, res) => {

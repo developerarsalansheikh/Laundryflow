@@ -110,7 +110,7 @@ export const AdminLayout = () => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto scrollbar-thin">
+        <nav className="flex-1 px-3.5 py-4 space-y-2 overflow-y-auto scrollbar-thin">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -121,23 +121,26 @@ export const AdminLayout = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 outline-none ${
+                className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[15px] font-semibold transition-all duration-200 outline-none ${
                   isActive
-                    ? 'bg-gradient-to-r from-primaryPurple/25 to-brandIndigo/15 border border-primaryPurple/35 shadow-glowPurple text-textPrimary font-semibold'
-                    : 'text-textSecondary hover:text-textPrimary hover:bg-white/[0.04] border border-transparent'
+                    ? 'bg-[#2563eb] text-white font-bold shadow-md shadow-blue-600/25'
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-3.5 min-w-0">
                   <Icon
-                    className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-                      isActive ? 'text-purpleLight' : 'text-textMuted group-hover:text-textSecondary'
+                    className={`w-5 h-5 flex-shrink-0 transition-colors ${
+                      isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'
                     }`}
+                    strokeWidth={isActive ? 2.3 : 1.9}
                   />
                   <span className="truncate">{item.label}</span>
                 </div>
 
                 {item.badge && unreadCount > 0 && (
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-amber-500/20 text-amber-400'
+                  }`}>
                     {unreadCount}
                   </span>
                 )}
@@ -209,7 +212,7 @@ export const AdminLayout = () => {
                 </button>
               </div>
 
-              <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+              <nav className="flex-1 px-3.5 py-4 space-y-2 overflow-y-auto">
                 {NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -218,18 +221,20 @@ export const AdminLayout = () => {
                     <NavLink
                       key={item.path}
                       to={item.path}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[15px] font-semibold transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-primaryPurple/25 to-brandIndigo/15 border border-primaryPurple/35 shadow-glowPurple text-textPrimary'
-                          : 'text-textSecondary hover:text-textPrimary hover:bg-white/[0.04]'
+                          ? 'bg-[#2563eb] text-white font-bold shadow-md shadow-blue-600/25'
+                          : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-purpleLight' : 'text-textMuted'}`} />
+                      <div className="flex items-center gap-3.5">
+                        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-300'}`} strokeWidth={isActive ? 2.3 : 1.9} />
                         <span>{item.label}</span>
                       </div>
                       {item.badge && unreadCount > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-amber-500/20 text-amber-400'
+                        }`}>
                           {unreadCount}
                         </span>
                       )}

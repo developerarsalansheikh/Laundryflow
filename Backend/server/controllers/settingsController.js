@@ -40,6 +40,7 @@ const updatePlatformSettings = async (req, res) => {
       "maintenanceMode",
       "autoApproveLaundries",
       "minOrderAmount",
+      "orderEditWindowMinutes",
     ];
 
     const updateData = {};

@@ -1,10 +1,14 @@
 import axios from 'axios';
 import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '../constants/api';
 import { useAuthStore } from '../store/authStore';
+import { useNetworkStore } from '../store/networkStore';
+import { mmkvStateStorage } from '../store/mmkvStorage';
+import { STORAGE_KEYS } from '../constants/app';
 import { parseApiError } from '../utils/errorHandler';
 
 /**
  * Centralized Axios instance for LaundryFlow mobile app
+ * Configured with cold-start tolerance, bounded refresh, and connection awareness.
  */
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -17,6 +21,25 @@ export const apiClient = axios.create({
 });
 
 /**
+ * Synchronous token resolver: checks in-memory Zustand store first,
+ * and falls back directly to MMKV storage if state hydration has not yet completed.
+ */
+const getActiveAuthToken = () => {
+  const authState = useAuthStore.getState();
+  let token = authState.accessToken || authState.token;
+  if (!token) {
+    try {
+      const raw = mmkvStateStorage.getItem(STORAGE_KEYS.AUTH);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        token = parsed?.state?.accessToken || parsed?.state?.token || null;
+      }
+    } catch {}
+  }
+  return token;
+};
+
+/**
  * Request Interceptor: Attach Bearer token to all outgoing requests
  */
 apiClient.interceptors.request.use(
@@ -24,9 +47,7 @@ apiClient.interceptors.request.use(
     const fullUrl = `${config.baseURL || ''}${config.url || ''}`;
     console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${fullUrl}`);
 
-
-    const authState = useAuthStore.getState();
-    const token = authState.accessToken || authState.token;
+    const token = getActiveAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
@@ -57,12 +78,17 @@ const processQueue = (error, token = null) => {
 };
 
 /**
- * Response Interceptor: Centralized 401 handling, auto-refresh, and error normalization
+ * Response Interceptor: Centralized 401 handling, auto-refresh, and error normalization.
+ * IMPORTANT: Network glitches, timeouts, or Render 502/503 cold-starts during token refresh
+ * NEVER wipe user credentials or force unwanted logouts.
  */
 apiClient.interceptors.response.use(
   (response) => {
     const fullUrl = `${response.config?.baseURL || ''}${response.config?.url || ''}`;
     console.log(`[HTTP Response] ${response.status} from ${fullUrl}`);
+
+    // Mark network connection and server as healthy
+    useNetworkStore.getState().reportRequestSuccess();
     return response;
   },
   async (error) => {
@@ -114,24 +140,33 @@ apiClient.interceptors.response.use(
               apiClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
               originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
               processQueue(null, newAccessToken);
+              useNetworkStore.getState().reportRequestSuccess();
               return apiClient(originalRequest);
             }
           } catch (refreshErr) {
             processQueue(refreshErr, null);
-            console.warn('[apiClient] Refresh token failed. Logging out session.');
-            logout();
+            const refreshStatus = refreshErr.response?.status;
+
+            // STRICT SAFETY: Only log out if the backend explicitly rejected credentials with 401 or 403.
+            // Network failures, cold starts, and 502/503 Render gateways MUST preserve the session!
+            if (refreshStatus === 401 || refreshStatus === 403) {
+              console.warn('[apiClient] Refresh token explicitly rejected. Logging out session.');
+              logout();
+            } else {
+              console.warn('[apiClient] Refresh token request failed due to network/cold-start. Preserving session.');
+            }
             return Promise.reject(parseApiError(refreshErr));
           } finally {
             isRefreshing = false;
           }
         } else {
-          console.warn('[apiClient] No refresh token available. Logging out session.');
-          logout();
+          console.warn('[apiClient] No refresh token available on 401.');
         }
       }
     }
 
     const appError = parseApiError(error);
+    useNetworkStore.getState().reportRequestError(appError);
     return Promise.reject(appError);
   }
 );

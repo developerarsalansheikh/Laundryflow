@@ -24,10 +24,19 @@ export const API_ENDPOINTS = Object.freeze({
     MY_ORDERS: '/users/my-orders',
     BY_ID: (id) => `/orders/${id}`,
     CREATE: '/orders',
+    EDIT: (id) => `/orders/${id}/edit`,
+    EDIT_ELIGIBILITY: (id) => `/orders/${id}/edit-eligibility`,
     CANCEL: (id) => `/orders/${id}/cancel`,
     CONFIRM_DELIVERY: (id) => `/orders/${id}/confirm-delivery`,
     UNAVAILABLE: (id) => `/orders/${id}/unavailable`,
     TRACK: (id) => `/orders/${id}/track`,
+  },
+
+  // Support Helpdesk
+  SUPPORT: {
+    CREATE_TICKET: '/support/tickets',
+    MY_TICKETS: '/support/my-tickets',
+    BY_ORDER: (orderId) => `/support/order/${orderId}`,
   },
 
   // Services

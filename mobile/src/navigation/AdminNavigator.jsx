@@ -1,8 +1,7 @@
 import React from 'react';
-import { Text as RNText, StyleSheet, Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useTheme } from '../theme';
+import { ModernBottomTabBar } from './ModernBottomTabBar';
 
 // Admin Tab Screens
 import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
@@ -22,27 +21,21 @@ import AdminNotificationsScreen from '../screens/admin/AdminNotificationsScreen'
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const AdminTabs = () => {
-  const { colors } = useTheme();
+const ADMIN_TAB_ICONS = {
+  Dashboard: { name: 'grid' },
+  Orders: { name: 'orders' },
+  Services: { name: 'washing-machine' },
+  Delivery: { name: 'truck' },
+  Profile: { name: 'store' },
+};
 
+const AdminTabs = () => {
   return (
     <Tab.Navigator
+      tabBar={(props) => <ModernBottomTabBar {...props} tabIcons={ADMIN_TAB_ICONS} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.borderLight,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
@@ -50,9 +43,6 @@ const AdminTabs = () => {
         component={AdminHomeScreen}
         options={{
           tabBarLabel: 'Dashboard',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>📊</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -60,9 +50,6 @@ const AdminTabs = () => {
         component={AdminOrdersScreen}
         options={{
           tabBarLabel: 'Orders',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>📦</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -70,9 +57,6 @@ const AdminTabs = () => {
         component={AdminServicesScreen}
         options={{
           tabBarLabel: 'Services',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>🧺</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -80,9 +64,6 @@ const AdminTabs = () => {
         component={AdminDeliveryScreen}
         options={{
           tabBarLabel: 'Delivery',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>🛵</RNText>
-          ),
         }}
       />
       <Tab.Screen
@@ -90,9 +71,6 @@ const AdminTabs = () => {
         component={AdminProfileScreen}
         options={{
           tabBarLabel: 'Store',
-          tabBarIcon: ({ focused }) => (
-            <RNText style={{ fontSize: 20, opacity: focused ? 1 : 0.7 }}>🏪</RNText>
-          ),
         }}
       />
     </Tab.Navigator>

@@ -4,6 +4,8 @@ const {
   placeOrder,
   getOrderById,
   cancelOrder,
+  checkOrderEditEligibility,
+  editOrder,
   changeOrderAddress,
   modifyOrderItems,
   confirmCollectionCount,
@@ -25,6 +27,8 @@ router.use(protect); // all routes protected
 
 router.post("/", placeOrder);                                 // POST  /api/orders — new order
 router.get("/:id", getOrderById);                             // GET   /api/orders/:id — single order details
+router.get("/:id/edit-eligibility", checkOrderEditEligibility); // GET /api/orders/:id/edit-eligibility — check remaining edit window
+router.put("/:id/edit", editOrder);                           // PUT   /api/orders/:id/edit — customer edits order (items, slot, address, instructions)
 router.put("/:id/address", changeOrderAddress);               // PUT   /api/orders/:id/address — change order address (before pickup)
 router.put("/:id/items", modifyOrderItems);                   // PUT   /api/orders/:id/items — customer modifies items before collection
 router.put("/:id/confirm-collection", restrictTo("delivery", "admin", "superadmin"), confirmCollectionCount); // PUT /api/orders/:id/confirm-collection — driver confirms collection counts

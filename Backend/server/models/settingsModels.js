@@ -46,6 +46,12 @@ const platformSettingsSchema = new mongoose.Schema(
       default: 50,
       min: 0,
     },
+    orderEditWindowMinutes: {
+      type: Number,
+      default: 15,
+      min: 5,
+      max: 60,
+    },
   },
   {
     timestamps: true,
