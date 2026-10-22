@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Menu, Maximize2, Minimize2 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Menu, Maximize2, Minimize2, Globe } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
@@ -197,6 +197,17 @@ export const TopNavbar = () => {
 
         {/* Notifications */}
         <NotificationMenu />
+
+        {/* Return to Public Website link */}
+        <Link
+          to="/"
+          className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 shadow-2xs transition-colors"
+          title="Return to Public LaundryWave Website"
+        >
+          <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+          <span className="hidden xl:inline">Visit LaundryWave Website</span>
+          <span className="xl:hidden">Website</span>
+        </Link>
 
         {/* Divider */}
         <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block flex-shrink-0" />

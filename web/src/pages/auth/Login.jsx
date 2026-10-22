@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle, ArrowLeft, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { loginApi } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
@@ -155,49 +155,62 @@ export const Login = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative">
+      {/* ── Fixed Back Button at Left Corner ────────────────────────── */}
+      <div className="fixed top-5 left-5 sm:top-7 sm:left-7 z-30">
+        <Link
+          to={ROUTES.PUBLIC.HOME}
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-medium text-stone-300 hover:text-white bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/10 shadow-xl transition-all group cursor-pointer"
+          title="Return to Public LaundryWave Website"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform text-indigo-400" />
+          <span className="font-medium">Back to Website</span>
+        </Link>
+      </div>
 
-          {/* ── Header ──────────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-8"
-          >
-            {/* Logo */}
-            <img
-              src="/logo.png"
-              alt="LaundryWave"
-              className="inline-block w-16 h-16 rounded-2xl object-cover shadow-glowPurple border border-white/10 mb-5"
-            />
+      <div className="w-full max-w-md">
 
-            <h1 className="text-2xl font-bold text-textPrimary tracking-tight">
-              LaundryWave
-            </h1>
-            <div className="flex items-center justify-center gap-1.5 mt-1.5 mb-3">
-              <Zap className="w-3 h-3 text-indigo-400" />
-              <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
-                Laundry Admin & Operations Portal
-              </span>
-            </div>
-            <p className="text-sm text-textMuted">
-              Sign in to manage your laundry facility and orders
-            </p>
-          </motion.div>
+        {/* ── Header ──────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
+          {/* Logo */}
+          <img
+            src="/logo.svg"
+            onError={(e) => { e.currentTarget.src = '/logo.png'; }}
+            alt="LaundryWave"
+            className="inline-block w-16 h-16 rounded-2xl object-contain shadow-md mb-5"
+          />
 
-          {/* ── Glass Card ──────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="glass-card p-8"
-            style={{ boxShadow: '0 0 60px -12px rgba(99, 102, 241, 0.25), 0 25px 50px -12px rgba(0,0,0,0.5)' }}
-          >
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-textPrimary">Welcome back</h2>
-              <p className="text-xs text-textSecondary mt-0.5">Enter your store admin credentials</p>
-            </div>
+          <h1 className="text-2xl font-bold text-textPrimary tracking-tight">
+            LaundryWave
+          </h1>
+          <div className="flex items-center justify-center gap-1.5 mt-1.5 mb-3">
+            <Zap className="w-3 h-3 text-indigo-400" />
+            <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
+              Laundry Admin & Operations Portal
+            </span>
+          </div>
+          <p className="text-sm text-textMuted">
+            Sign in to manage your laundry facility and orders
+          </p>
+        </motion.div>
+
+        {/* ── Glass Card ──────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="glass-card p-8"
+          style={{ boxShadow: '0 0 60px -12px rgba(99, 102, 241, 0.25), 0 25px 50px -12px rgba(0,0,0,0.5)' }}
+        >
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-textPrimary">Welcome back</h2>
+            <p className="text-xs text-textSecondary mt-0.5">Enter your store admin credentials</p>
+          </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
@@ -209,7 +222,7 @@ export const Login = () => {
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (emailError) validateEmail(e.target.value); }}
                 onBlur={() => validateEmail()}
-                placeholder="admin@laundryflow.com"
+                placeholder="admin@laundrywave.com"
                 icon={Mail}
                 error={emailError}
               />

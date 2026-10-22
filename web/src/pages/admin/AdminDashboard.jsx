@@ -133,9 +133,10 @@ export const AdminDashboard = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="LaundryWave"
-            className="w-11 h-11 rounded-xl object-cover shadow-glowPurple border border-white/10 flex-shrink-0"
+            className="w-11 h-11 rounded-xl object-contain shadow-sm border border-stone-700/30 flex-shrink-0"
+            onError={(e) => { e.currentTarget.src = '/logo.png'; }}
           />
           <div>
             <div className="flex items-center gap-2">

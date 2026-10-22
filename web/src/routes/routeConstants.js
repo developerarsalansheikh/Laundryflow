@@ -3,6 +3,13 @@
  * Prevents route string duplication across components.
  */
 export const ROUTES = Object.freeze({
+  PUBLIC: {
+    HOME: '/',
+    ABOUT: '/about',
+    HOW_IT_WORKS: '/how-it-works',
+    FEATURES: '/features',
+    DOWNLOAD: '/download',
+  },
   AUTH: {
     LOGIN: '/login',
   },

@@ -4,6 +4,7 @@ import { ROUTES } from './routeConstants';
 import { useAuthStore } from '../store/authStore';
 
 // Layouts
+import PublicLayout from '../layouts/PublicLayout';
 import AuthLayout from '../layouts/AuthLayout';
 import SuperAdminLayout from '../layouts/SuperAdminLayout';
 import AdminLayout from '../layouts/AdminLayout';
@@ -11,11 +12,19 @@ import AdminLayout from '../layouts/AdminLayout';
 // Guards
 import ProtectedRoute from './ProtectedRoute';
 import RoleRoute from './RoleRoute';
+import ScrollToTop from '../components/common/ScrollToTop';
 
 // Auth & Fallback Pages
 import Login from '../pages/auth/Login';
 import NotFound from '../pages/NotFound';
 import Unauthorized from '../pages/Unauthorized';
+
+// Lazy-loaded Public Showcase Pages
+const PublicHome = lazy(() => import('../pages/public/Home'));
+const PublicAbout = lazy(() => import('../pages/public/About'));
+const PublicHowItWorks = lazy(() => import('../pages/public/HowItWorks'));
+const PublicFeatures = lazy(() => import('../pages/public/Features'));
+const PublicDownload = lazy(() => import('../pages/public/Download'));
 
 // Lazy-loaded Super Admin Pages
 const SuperDashboard = lazy(() => import('../pages/superadmin/Dashboard'));
@@ -55,24 +64,6 @@ const PageLoadingFallback = () => (
 );
 
 /**
- * RootRedirect — Direct authenticated users to their corresponding dashboard
- */
-const RootRedirect = () => {
-  const { isAuthenticated, role } = useAuthStore();
-  if (!isAuthenticated) {
-    return <Navigate to={ROUTES.AUTH.LOGIN} replace />;
-  }
-  const normalizedRole = String(role || '').trim().toLowerCase();
-  if (normalizedRole === 'admin') {
-    return <Navigate to={ROUTES.ADMIN.DASHBOARD} replace />;
-  }
-  if (normalizedRole === 'superadmin') {
-    return <Navigate to={ROUTES.SUPERADMIN.DASHBOARD} replace />;
-  }
-  return <Navigate to={ROUTES.FALLBACK.UNAUTHORIZED} replace />;
-};
-
-/**
  * LoginRedirectGuard — If authenticated superadmin visits /login, redirect to superadmin dashboard.
  * If authenticated laundry admin visits /login, redirect to laundry admin dashboard.
  * If authenticated non-admin role visits /login, redirect to /unauthorized.
@@ -101,9 +92,52 @@ const LoginRedirectGuard = () => {
  */
 export const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Root redirect */}
-      <Route path="/" element={<RootRedirect />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+      {/* Public Showcase & Documentation Website */}
+      <Route element={<PublicLayout />}>
+        <Route
+          path={ROUTES.PUBLIC.HOME}
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <PublicHome />
+            </Suspense>
+          }
+        />
+        <Route
+          path={ROUTES.PUBLIC.ABOUT}
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <PublicAbout />
+            </Suspense>
+          }
+        />
+        <Route
+          path={ROUTES.PUBLIC.HOW_IT_WORKS}
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <PublicHowItWorks />
+            </Suspense>
+          }
+        />
+        <Route
+          path={ROUTES.PUBLIC.FEATURES}
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <PublicFeatures />
+            </Suspense>
+          }
+        />
+        <Route
+          path={ROUTES.PUBLIC.DOWNLOAD}
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <PublicDownload />
+            </Suspense>
+          }
+        />
+      </Route>
 
       {/* Public Auth Routes */}
       <Route element={<AuthLayout />}>
@@ -325,6 +359,7 @@ export const AppRoutes = () => {
       {/* Catch-all Wildcard Route */}
       <Route path="*" element={<Navigate to={ROUTES.FALLBACK.NOT_FOUND} replace />} />
     </Routes>
+    </>
   );
 };
 

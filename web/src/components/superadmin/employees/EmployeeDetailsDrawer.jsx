@@ -38,7 +38,14 @@ const SectionTitle = ({ icon: Icon, label, iconClass }) => (
 /**
  * EmployeeDetailsDrawer — Drawer displaying employee details safely without exposing credentials.
  */
-export const EmployeeDetailsDrawer = ({ employeeId, employee: initialEmployee, isOpen, onClose }) => {
+export const EmployeeDetailsDrawer = ({
+  employeeId,
+  employee: initialEmployee,
+  isOpen,
+  onClose,
+  onApprove,
+  onReject,
+}) => {
   const drawerRef = useRef(null);
 
   const targetId = employeeId || initialEmployee?._id;

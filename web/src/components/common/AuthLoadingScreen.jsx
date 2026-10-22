@@ -19,8 +19,13 @@ export const AuthLoadingScreen = () => {
           className="flex flex-col items-center gap-4"
         >
           {/* Logo mark */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primaryPurple to-brandIndigo flex items-center justify-center shadow-glowPurple">
-            <Waves className="w-8 h-8 text-white" strokeWidth={2.5} />
+          <div className="w-16 h-16 rounded-2xl bg-[#1C1917] border border-stone-700/50 flex items-center justify-center shadow-lg overflow-hidden">
+            <img
+              src="/logo.svg"
+              alt="LaundryWave"
+              className="w-12 h-12 object-contain"
+              onError={(e) => { e.currentTarget.src = '/logo.png'; }}
+            />
           </div>
 
           {/* Brand name */}

@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Tile Gradient: Warm Atelier Cream / Stone -->
+    <radialGradient id="bgTile" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FCFAF7" />
+      <stop offset="70%" stop-color="#F5F1E8" />
+      <stop offset="100%" stop-color="#EAE3D5" />
+    </radialGradient>
+
+    <!-- Swirling Wave Gradient: Harmonized Mineral Slate Blue to Soft Water Cyan -->
+    <linearGradient id="waveGradient" x1="10%" y1="90%" x2="90%" y2="20%">
+      <stop offset="0%" stop-color="#2D485E" />
+      <stop offset="35%" stop-color="#3C607C" />
+      <stop offset="70%" stop-color="#5581A3" />
+      <stop offset="100%" stop-color="#7EAECF" />
+    </linearGradient>
+
+    <!-- T-Shirt Garment Gradient: Deep Tailored Slate with Soft Highlight -->
+    <linearGradient id="garmentGradient" x1="15%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%" stop-color="#4B7293" />
+      <stop offset="60%" stop-color="#36546D" />
+      <stop offset="100%" stop-color="#223647" />
+    </linearGradient>
+
+    <!-- Washing Drum Water Gradient: Clean Swirling Chamber -->
+    <linearGradient id="drumWaterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#679ABF" stop-opacity="0.9" />
+      <stop offset="55%" stop-color="#3A5E7B" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#263E52" />
+    </linearGradient>
+
+    <!-- Drum Metal Porthole Rim: Warm Stone & Brushed Titanium -->
+    <linearGradient id="portholeRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="25%" stop-color="#EDE7DD" />
+      <stop offset="70%" stop-color="#D7CEBF" />
+      <stop offset="100%" stop-color="#A89E8D" />
+    </linearGradient>
+
+    <!-- Warm Linen Gold Accent for Sparkles & Bubbles -->
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F2DDAB" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#A48020" />
+    </linearGradient>
+
+    <!-- Soft Ambient Cast Shadows -->
+    <filter id="badgeShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#1C1917" flood-opacity="0.18" />
+    </filter>
+
+    <filter id="drumShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4.5" flood-color="#1C1917" flood-opacity="0.22" />
+    </filter>
+  </defs>
+
+  <!-- Clean Rounded Square Canvas Tile (Theme Matches #FAF9F6) -->
+  <rect width="240" height="240" rx="56" fill="url(#bgTile)" stroke="#DDD5C7" stroke-width="3"/>
+
+  <!-- Ambient Floating Laundry Foam Bubbles -->
+  <circle cx="56" cy="52" r="7.5" fill="#5581A3" opacity="0.45" />
+  <circle cx="42" cy="74" r="4.5" fill="#7EAECF" opacity="0.5" />
+  <circle cx="34" cy="156" r="5.5" fill="#3C607C" opacity="0.4" />
+  <circle cx="202" cy="142" r="5" fill="#5581A3" opacity="0.5" />
+  <circle cx="94" cy="42" r="3.5" fill="url(#goldAccent)" opacity="0.75" />
+
+  <!-- ── 1. The Circular Washing Machine Drum (Center) ────────────────── -->
+  <g filter="url(#drumShadow)">
+    <!-- Outer Drum Bezel Porthole -->
+    <circle cx="138" cy="132" r="54" fill="url(#portholeRim)" stroke="#1C1917" stroke-width="5"/>
+    <circle cx="138" cy="132" r="44" fill="#FDFCFB" stroke="#3C607C" stroke-width="3.5"/>
+
+    <!-- Inner Drum Water Chamber & Swirl -->
+    <g>
+      <clipPath id="innerDrumClip">
+        <circle cx="138" cy="132" r="39" />
+      </clipPath>
+      <g clip-path="url(#innerDrumClip)">
+        <rect x="85" y="80" width="110" height="110" fill="#EBF2F7" />
+        
+        <!-- Water Level Curve -->
+        <path d="M85 130 Q110 118 138 132 T192 128 L192 185 L85 185 Z" fill="url(#drumWaterGrad)" />
+        
+        <!-- Inner Water Swirl Wave Lines -->
+        <path d="M96 148 C112 136 132 134 150 142 C164 146 174 142 184 136" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" opacity="0.85" />
+        <path d="M114 160 C128 152 144 152 164 160" stroke="#7EAECF" stroke-width="2.5" stroke-linecap="round" opacity="0.9" />
+
+        <!-- Crisp Garment Washing Sparkle Star Inside Drum -->
+        <path d="M162 110 Q162 115 167 115 Q162 115 162 120 Q162 115 157 115 Q162 115 162 110 Z" fill="url(#goldAccent)" />
+      </g>
+    </g>
+    <!-- Drum Glass Surface Reflection Arc -->
+    <path d="M108 110 A 38 38 0 0 1 168 110" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+  </g>
+
+  <!-- ── 2. The Clean Garment T-Shirt (Top Right, Resting on Drum) ────── -->
+  <g filter="url(#drumShadow)">
+    <!-- T-Shirt Body & Short Sleeves -->
+    <path d="M124 62 
+             L102 74 
+             L116 98 
+             L130 92 
+             L130 116 
+             C130 120 134 124 138 124 
+             L182 124 
+             C186 124 190 120 190 116 
+             L190 92 
+             L204 98 
+             L218 74 
+             L196 62 
+             C192 62 184 69 176 74 
+             C164 81 150 81 138 74 
+             C130 69 126 62 124 62 Z"
+          fill="url(#garmentGradient)"
+          stroke="#1C1917"
+          stroke-width="5"
+          stroke-linejoin="round"
+          stroke-linecap="round" />
+
+    <!-- T-Shirt Clean Crewneck Collar -->
+    <path d="M138 74 C148 83 166 83 176 74" stroke="#1C1917" stroke-width="5" stroke-linecap="round" fill="none" />
+    <path d="M142 76 C150 82 164 82 172 76" stroke="url(#goldAccent)" stroke-width="2.5" stroke-linecap="round" fill="none" />
+
+    <!-- Sleeve Seam & Fold Tailoring Accents -->
+    <path d="M112 89 L121 84" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+    <path d="M208 89 L199 84" stroke="#1C1917" stroke-width="2.5" stroke-linecap="round" opacity="0.6" />
+    <path d="M133 78 L135 102" stroke="#7EAECF" stroke-width="3" stroke-linecap="round" opacity="0.75" />
+    <path d="M146 120 L184 120" stroke="#1C1917" stroke-width="3" stroke-linecap="round" opacity="0.4" />
+  </g>
+
+  <!-- ── 3. The Swirling Water Splash Wave (Sweeping from Bottom-Left) ── -->
+  <g filter="url(#badgeShadow)">
+    <!-- Main Curving Wave Body -->
+    <path d="M46 148 
+             C36 110 52 80 90 70 
+             C112 65 124 74 124 86 
+             C124 102 106 110 92 114 
+             C68 122 56 142 68 168 
+             C80 192 110 204 146 198 
+             C170 192 190 178 202 160 
+             C190 180 166 196 138 202 
+             C94 210 58 194 46 148 Z"
+          fill="url(#waveGradient)"
+          stroke="#1C1917"
+          stroke-width="5"
+          stroke-linejoin="round" />
+
+    <!-- Wave Swirl Inner Crest Foam (White Silk Foam) -->
+    <path d="M55 132 
+             C50 102 66 80 95 78 
+             C112 76 118 83 116 92 
+             C114 102 100 106 88 111 
+             C67 118 57 134 65 156"
+          fill="#FFFFFF"
+          opacity="0.88" />
+
+    <!-- Swirling Water Surface Highlights -->
+    <path d="M70 164 C82 182 106 192 134 188 C154 184 170 174 182 160" 
+          stroke="#FFFFFF" 
+          stroke-width="4.5" 
+          stroke-linecap="round" 
+          opacity="0.9" />
+
+    <path d="M58 150 C62 166 78 178 100 183" 
+          stroke="#2D485E" 
+          stroke-width="3" 
+          stroke-linecap="round" 
+          opacity="0.75" />
+
+    <!-- Crisp Water Droplets on Wave Edge -->
+    <circle cx="86" cy="94" r="5" fill="#FFFFFF" />
+    <circle cx="102" cy="110" r="3.5" fill="#FFFFFF" />
+    <circle cx="74" cy="128" r="4" fill="#FFFFFF" />
+    <circle cx="78" cy="172" r="3.5" fill="#FFFFFF" />
+    <circle cx="178" cy="174" r="3.5" fill="url(#goldAccent)" />
+  </g>
+
+  <!-- Sparkles & Finishing Accents -->
+  <!-- Sparkle 1: Top Right of T-Shirt -->
+  <path d="M198 48 Q198 55 204 55 Q198 55 198 62 Q198 55 192 55 Q198 55 198 48 Z" fill="url(#goldAccent)" />
+  
+  <!-- Sparkle 2: Left Splash Crest -->
+  <path d="M28 116 Q28 123 35 123 Q28 123 28 130 Q28 123 21 123 Q28 123 28 116 Z" fill="#5581A3" />
+
+  <!-- Sparkle 3: Ambient Top-Left -->
+  <path d="M64 42 Q64 47 68 47 Q64 47 64 52 Q64 47 60 47 Q64 47 64 42 Z" fill="#7EAECF" />
+</svg>

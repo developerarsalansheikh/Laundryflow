@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Settings, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Settings, LogOut, ChevronDown, ChevronRight, Globe, ExternalLink } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 import { logoutApi } from '../../api/auth';
@@ -26,7 +26,7 @@ export const UserMenu = () => {
     (user?.email ? user.email.split('@')[0] : '') ||
     (isStoreAdmin ? 'Laundry Admin' : 'Super Admin');
 
-  const displayEmail = user?.email || (isStoreAdmin ? 'admin@laundryflow.com' : 'superadmin@laundryflow.com');
+  const displayEmail = user?.email || (isStoreAdmin ? 'admin@laundrywave.com' : 'superadmin@laundrywave.com');
   const initials = (displayName || 'AD')
     .split(' ')
     .filter(Boolean)
@@ -179,6 +179,19 @@ export const UserMenu = () => {
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </button>
+
+              <Link
+                to={ROUTES.PUBLIC.HOME}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50 transition-colors outline-none cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span>Visit LaundryWave Website</span>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+              </Link>
 
               {/* Divider */}
               <div className="my-1 border-t border-slate-100" />

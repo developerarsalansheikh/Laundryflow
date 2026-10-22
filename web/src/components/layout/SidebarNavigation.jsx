@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Store, ShoppingBag, Users, UserCheck,
   CreditCard, DollarSign, BarChart3, FileText, HelpCircle, Settings,
-  Sparkles, Coins,
+  Sparkles, Coins, Globe,
 } from 'lucide-react';
 import { SUPER_ADMIN_NAV_ITEMS } from '../../constants/navigation';
 import { useUIStore } from '../../store/uiStore';
@@ -98,6 +98,33 @@ export const SidebarNavigation = ({ onNavigate }) => {
           </div>
         );
       })}
+
+      {/* Return to Public LaundryWave Website */}
+      <div className="pt-2 border-t border-white/[0.08] mt-2">
+        <NavLink
+          to="/"
+          onClick={onNavigate}
+          aria-label="Visit LaundryWave Website"
+          className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[15px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
+        >
+          <span className="flex-shrink-0 text-blue-400">
+            <Globe className="w-5 h-5" strokeWidth={1.9} />
+          </span>
+          <AnimatePresence initial={false}>
+            {!sidebarCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden whitespace-nowrap"
+              >
+                Visit Public Website
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </NavLink>
+      </div>
     </nav>
   );
 };

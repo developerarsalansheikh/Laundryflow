@@ -41,8 +41,11 @@ export default {
         textMuted: 'var(--lf-text-muted)',
       },
       fontFamily: {
-        sans: ['Outfit', 'Plus Jakarta Sans', '-apple-system', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
+        sans: ['Erode', 'Plus Jakarta Sans', 'Outfit', '-apple-system', 'sans-serif'],
+        display: ['Oswald', 'Outfit', 'sans-serif'],
+        oswald: ['Oswald', 'sans-serif'],
+        tanker: ['Tanker', 'sans-serif'],
+        erode: ['Erode', 'serif'],
       },
       borderRadius: {
         sm: 'var(--lf-radius-sm)',

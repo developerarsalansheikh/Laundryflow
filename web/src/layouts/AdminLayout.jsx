@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,6 +16,7 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
+  Globe,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { adminApi } from '../api/adminApi';
@@ -91,13 +92,13 @@ export const AdminLayout = () => {
       >
         {/* Brand Header */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.07] flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#1C1917] border border-stone-700/50 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
             <img
-              src="/logo.png"
-              alt="LaundryFlow"
+              src="/logo.svg"
+              alt="LaundryWave"
               className="w-7 h-7 object-contain"
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
+                e.currentTarget.src = '/logo.png';
               }}
             />
           </div>
@@ -152,6 +153,17 @@ export const AdminLayout = () => {
               </NavLink>
             );
           })}
+
+          <div className="pt-2 border-t border-white/[0.07] mt-2">
+            <Link
+              to={ROUTES.PUBLIC.HOME}
+              className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
+              title="Return to Public LaundryWave Website"
+            >
+              <Globe className="w-5 h-5 flex-shrink-0 text-blue-400" />
+              <span>Visit Public Website</span>
+            </Link>
+          </div>
         </nav>
 
         {/* Sidebar Footer User Card */}
@@ -170,7 +182,7 @@ export const AdminLayout = () => {
               {user?.name || user?.fullName || laundry?.owner?.name || 'Laundry Admin'}
             </p>
             <p className="text-[10px] font-medium truncate text-slate-400 mt-0.5">
-              {user?.email || 'admin@laundryflow.com'}
+              {user?.email || 'admin@laundrywave.com'}
             </p>
           </div>
         </div>
@@ -202,11 +214,14 @@ export const AdminLayout = () => {
             >
               <div className="flex items-center justify-between px-5 h-16 border-b border-white/[0.07]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center overflow-hidden">
+                  <div className="w-8 h-8 rounded-lg bg-[#1C1917] border border-stone-700/50 flex items-center justify-center overflow-hidden">
                     <img
-                      src="/logo.png"
-                      alt="LaundryFlow"
+                      src="/logo.svg"
+                      alt="LaundryWave"
                       className="w-6 h-6 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = '/logo.png';
+                      }}
                     />
                   </div>
                   <span className="text-sm font-bold truncate text-white">{storeName}</span>
@@ -250,7 +265,15 @@ export const AdminLayout = () => {
                 })}
               </nav>
 
-              <div className="p-4 border-t border-white/[0.07]">
+              <div className="p-4 border-t border-white/[0.07] space-y-2">
+                <Link
+                  to={ROUTES.PUBLIC.HOME}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-colors border border-blue-500/20"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span>Visit LaundryWave Website</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-statusDanger bg-statusDanger/10 hover:bg-statusDanger/20 rounded-xl transition-colors border border-statusDanger/20"
@@ -298,6 +321,16 @@ export const AdminLayout = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
+            {/* Return to Public Website */}
+            <Link
+              to={ROUTES.PUBLIC.HOME}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs rounded-xl transition-colors"
+              title="Return to Public LaundryWave Website"
+            >
+              <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+              <span>Visit LaundryWave Website</span>
+            </Link>
+
             {/* Notifications Shortcut */}
             <button
               onClick={() => navigate(ROUTES.ADMIN.NOTIFICATIONS)}
