@@ -49,7 +49,7 @@ export const DashboardHeader = () => {
             <span>Super Admin Workspace · System Live</span>
           </motion.div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight break-words">
             <span
               className="text-transparent bg-clip-text"
               style={{
@@ -66,18 +66,18 @@ export const DashboardHeader = () => {
 
           <div className="flex items-center gap-2 mt-2">
             <Calendar className="w-3.5 h-3.5 text-textMuted flex-shrink-0" aria-hidden="true" />
-            <p className="text-sm text-textSecondary">
+            <p className="text-xs sm:text-sm text-textSecondary">
               {today} — here&apos;s what&apos;s happening across your platform.
             </p>
           </div>
         </div>
 
         {/* Right: Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-shrink-0 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <button
             type="button"
             aria-label="Export platform report"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-white/20 text-textSecondary text-xs font-semibold transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-white/20 text-textSecondary text-xs font-semibold transition-all duration-200 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Export Report</span>
@@ -87,7 +87,7 @@ export const DashboardHeader = () => {
             type="button"
             onClick={() => setIsModalOpen(true)}
             aria-label="Add new laundry to platform"
-            className="btn-primary flex items-center gap-2 py-2.5 px-5 rounded-xl text-xs font-bold shadow-glowPurple hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 cursor-pointer"
+            className="btn-primary flex items-center gap-2 py-2 sm:py-2.5 px-4 sm:px-5 rounded-xl text-xs font-bold shadow-glowPurple hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 cursor-pointer"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Add Laundry</span>

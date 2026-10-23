@@ -93,7 +93,7 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
   return (
     <motion.div
       variants={cardVariants}
-      className="glass-card p-5 relative overflow-hidden group hover:border-purple-500/30 transition-colors duration-300"
+      className="glass-card p-4 sm:p-5 relative overflow-hidden group hover:border-purple-500/30 transition-colors duration-300"
     >
       {/* Subtle background glow on hover */}
       <div
@@ -104,10 +104,10 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
       />
 
       {/* Top row: icon + title */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner flex-shrink-0"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-inner flex-shrink-0"
             style={{
               backgroundColor: `${color}1A`,
               border: `1px solid ${color}33`,
@@ -115,12 +115,12 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
             }}
             aria-hidden="true"
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <span className="text-xs font-semibold text-textSecondary block leading-tight">{title}</span>
+          <div className="min-w-0">
+            <span className="text-xs font-semibold text-textSecondary block leading-tight truncate">{title}</span>
             {subTitle && (
-              <span className="text-[10px] font-medium text-textMuted leading-tight block mt-0.5">
+              <span className="text-[10px] font-medium text-textMuted leading-tight block mt-0.5 truncate">
                 {subTitle}
               </span>
             )}
@@ -129,7 +129,7 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
 
         {/* No comparison data from backend — show honest dash */}
         <span
-          className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 border border-white/8 text-textMuted"
+          className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 border border-white/8 text-textMuted flex-shrink-0"
           title="Historical comparison not available"
         >
           —
@@ -137,9 +137,9 @@ export const StatCard = ({ icon: Icon, title, subTitle, value, SparkComponent, c
       </div>
 
       {/* Bottom row: value + sparkline */}
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-2xl sm:text-3xl font-extrabold text-textPrimary tracking-tight tabular-nums">
+      <div className="flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-textPrimary tracking-tight tabular-nums truncate">
             {value}
           </p>
           <p className="text-[10px] text-textMuted mt-1 font-medium">Platform total</p>

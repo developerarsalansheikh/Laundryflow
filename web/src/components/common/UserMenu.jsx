@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Settings, LogOut, ChevronDown, ChevronRight, Globe, ExternalLink } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 import { logoutApi } from '../../api/auth';
-import { ROUTES } from '../../routes/routeConstants';
+import { ROUTES, PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
 
 /**
  * UserMenu — avatar dropdown with real Profile, Settings, and Logout navigation.
@@ -180,8 +180,10 @@ export const UserMenu = () => {
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </button>
 
-              <Link
-                to={ROUTES.PUBLIC.HOME}
+              <a
+                href={PUBLIC_WEBSITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 role="menuitem"
                 onClick={() => setOpen(false)}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50 transition-colors outline-none cursor-pointer"
@@ -191,7 +193,7 @@ export const UserMenu = () => {
                   <span>Visit LaundryWave Website</span>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
-              </Link>
+              </a>
 
               {/* Divider */}
               <div className="my-1 border-t border-slate-100" />

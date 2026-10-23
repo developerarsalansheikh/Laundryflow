@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AppBackground } from '../components/common/AppBackground';
@@ -17,11 +18,27 @@ const SIDEBAR_COLLAPSED_WIDTH = 76;
  */
 export const SuperAdminLayout = () => {
   const { sidebarCollapsed } = useUIStore();
-  const contentLeft = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(min-width: 1024px)');
+    const update = (e) => setIsDesktop(e.matches);
+    setIsDesktop(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  const contentLeft = isDesktop ? (sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH) : 0;
 
   return (
     <AppBackground>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar (hidden on < 1024px) */}
       <Sidebar />
 
       {/* Mobile Sidebar Drawer */}
@@ -37,10 +54,10 @@ export const SuperAdminLayout = () => {
       <motion.main
         animate={{ paddingLeft: contentLeft }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="relative z-10 flex flex-col min-h-screen pt-16"
+        className="relative z-10 flex flex-col min-h-screen pt-16 w-full max-w-full overflow-x-hidden min-w-0"
       >
         <div className="hidden lg:block" />
-        <PageContainer>
+        <PageContainer className="w-full max-w-full overflow-x-hidden">
           <Outlet />
         </PageContainer>
       </motion.main>

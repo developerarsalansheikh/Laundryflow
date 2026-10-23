@@ -6,6 +6,7 @@ import {
   Sparkles, Coins, Globe,
 } from 'lucide-react';
 import { SUPER_ADMIN_NAV_ITEMS } from '../../constants/navigation';
+import { PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
 import { useUIStore } from '../../store/uiStore';
 
 /**
@@ -101,8 +102,10 @@ export const SidebarNavigation = ({ onNavigate }) => {
 
       {/* Return to Public LaundryWave Website */}
       <div className="pt-2 border-t border-white/[0.08] mt-2">
-        <NavLink
-          to="/"
+        <a
+          href={PUBLIC_WEBSITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           onClick={onNavigate}
           aria-label="Visit LaundryWave Website"
           className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[15px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
@@ -123,7 +126,7 @@ export const SidebarNavigation = ({ onNavigate }) => {
               </motion.span>
             )}
           </AnimatePresence>
-        </NavLink>
+        </a>
       </div>
     </nav>
   );

@@ -54,4 +54,7 @@ export const ROUTES = Object.freeze({
 });
 
 
+export const PUBLIC_WEBSITE_URL =
+  import.meta.env.VITE_PUBLIC_WEBSITE_URL || 'https://laundryflow-blush.vercel.app/';
+
 export default ROUTES;

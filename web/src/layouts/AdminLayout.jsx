@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { adminApi } from '../api/adminApi';
 import { logoutApi } from '../api/auth';
-import { ROUTES } from '../routes/routeConstants';
+import { ROUTES, PUBLIC_WEBSITE_URL } from '../routes/routeConstants';
 import { AppBackground } from '../components/common/AppBackground';
 import { useAdminSocket } from '../hooks/useAdminSocket';
 import { UserMenu } from '../components/common/UserMenu';
@@ -155,14 +155,16 @@ export const AdminLayout = () => {
           })}
 
           <div className="pt-2 border-t border-white/[0.07] mt-2">
-            <Link
-              to={ROUTES.PUBLIC.HOME}
+            <a
+              href={PUBLIC_WEBSITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
               title="Visit LaundryWave Website"
             >
               <Globe className="w-5 h-5 flex-shrink-0 text-blue-400" />
               <span>Visit LaundryWave Website</span>
-            </Link>
+            </a>
           </div>
         </nav>
 
@@ -266,14 +268,16 @@ export const AdminLayout = () => {
               </nav>
 
               <div className="p-4 border-t border-white/[0.07] space-y-2">
-                <Link
-                  to={ROUTES.PUBLIC.HOME}
+                <a
+                  href={PUBLIC_WEBSITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-colors border border-blue-500/20"
                 >
                   <Globe className="w-4 h-4" />
                   <span>Visit LaundryWave Website</span>
-                </Link>
+                </a>
                 <button
                   onClick={handleLogout}
                   className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-statusDanger bg-statusDanger/10 hover:bg-statusDanger/20 rounded-xl transition-colors border border-statusDanger/20"
@@ -322,14 +326,16 @@ export const AdminLayout = () => {
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
             {/* Return to Public Website */}
-            <Link
-              to={ROUTES.PUBLIC.HOME}
+            <a
+              href={PUBLIC_WEBSITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs rounded-xl transition-colors"
               title="Return to Public LaundryWave Website"
             >
               <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
               <span>Visit LaundryWave Website</span>
-            </Link>
+            </a>
 
             {/* Notifications Shortcut */}
             <button

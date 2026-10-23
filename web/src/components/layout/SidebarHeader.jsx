@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
-import { ROUTES } from '../../routes/routeConstants';
+import { PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
 
 /**
  * SidebarHeader — LaundryWave branding and collapse toggle.
@@ -17,8 +16,10 @@ export const SidebarHeader = () => {
 
   return (
     <div className="flex items-center justify-between px-4 h-16 border-b border-white/[0.08] flex-shrink-0">
-      <Link
-        to={ROUTES.PUBLIC.HOME}
+      <a
+        href={PUBLIC_WEBSITE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         title="Visit LaundryWave Website"
         className="flex items-center gap-3 min-w-0 group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 rounded-lg"
       >
@@ -54,7 +55,7 @@ export const SidebarHeader = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </Link>
+      </a>
 
       {/* Collapse toggle — only on desktop */}
       {!sidebarCollapsed && (

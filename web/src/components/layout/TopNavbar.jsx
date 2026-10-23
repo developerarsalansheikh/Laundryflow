@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu, Maximize2, Minimize2, Globe } from 'lucide-react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
@@ -71,7 +72,7 @@ export const TopNavbar = () => {
 
   return (
     <header
-      className="fixed top-0 right-0 h-16 flex items-center px-4 sm:px-6 gap-3 transition-all duration-250"
+      className="fixed top-0 right-0 h-16 flex items-center px-3 sm:px-6 gap-2 sm:gap-3 transition-all duration-250 max-w-full"
       style={{
         left: 0,
         zIndex: 40,
@@ -199,15 +200,17 @@ export const TopNavbar = () => {
         <NotificationMenu />
 
         {/* Return to Public Website link */}
-        <Link
-          to="/"
+        <a
+          href={PUBLIC_WEBSITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 shadow-2xs transition-colors"
           title="Return to Public LaundryWave Website"
         >
           <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
           <span className="hidden xl:inline">Visit LaundryWave Website</span>
           <span className="xl:hidden">Website</span>
-        </Link>
+        </a>
 
         {/* Divider */}
         <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block flex-shrink-0" />
