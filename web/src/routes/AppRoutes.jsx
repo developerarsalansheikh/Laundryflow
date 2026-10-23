@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from './routeConstants';
 import { useAuthStore } from '../store/authStore';
 
@@ -13,6 +13,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import ProtectedRoute from './ProtectedRoute';
 import RoleRoute from './RoleRoute';
 import ScrollToTop from '../components/common/ScrollToTop';
+import { AuthLoadingScreen } from '../components/common/AuthLoadingScreen';
 
 // Auth & Fallback Pages
 import Login from '../pages/auth/Login';
@@ -64,22 +65,76 @@ const PageLoadingFallback = () => (
 );
 
 /**
- * LoginRedirectGuard — If authenticated superadmin visits /login, redirect to superadmin dashboard.
- * If authenticated laundry admin visits /login, redirect to laundry admin dashboard.
- * If authenticated non-admin role visits /login, redirect to /unauthorized.
- * If not authenticated, render the login page.
+ * HomeRedirectGuard — Role-aware routing for / (Part 4)
+ * - Visitor without a valid session: renders public homepage (<PublicHome />).
+ * - Authenticated Laundry Admin: redirects to /admin/dashboard.
+ * - Authenticated Super Admin: redirects to /superadmin/dashboard.
+ * - While session initializing: renders fallback without flashing wrong page.
  */
-const LoginRedirectGuard = () => {
-  const { isAuthenticated, role } = useAuthStore();
+const HomeRedirectGuard = () => {
+  const { isAuthenticated, role, isInitializing } = useAuthStore();
+
+  if (isInitializing) {
+    return <PageLoadingFallback />;
+  }
 
   if (isAuthenticated) {
     const normalizedRole = String(role || '').trim().toLowerCase();
-    if (normalizedRole === 'superadmin') {
-      return <Navigate to={ROUTES.SUPERADMIN.DASHBOARD} replace />;
-    }
     if (normalizedRole === 'admin') {
       return <Navigate to={ROUTES.ADMIN.DASHBOARD} replace />;
     }
+    if (normalizedRole === 'superadmin') {
+      return <Navigate to={ROUTES.SUPERADMIN.DASHBOARD} replace />;
+    }
+  }
+
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PublicHome />
+    </Suspense>
+  );
+};
+
+/**
+ * LoginRedirectGuard — Role-aware routing for /login (Part 4)
+ * - While session initializing: renders AuthLoadingScreen to prevent flashing wrong page.
+ * - Visitor without a valid session: renders <Login />.
+ * - Authenticated Laundry Admin: redirects to /admin/dashboard (or role-authorized destination).
+ * - Authenticated Super Admin: redirects to /superadmin/dashboard (or role-authorized destination).
+ */
+const LoginRedirectGuard = () => {
+  const { isAuthenticated, role, isInitializing } = useAuthStore();
+  const location = useLocation();
+
+  if (isInitializing) {
+    return <AuthLoadingScreen />;
+  }
+
+  if (isAuthenticated) {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    const fromPath = typeof location.state?.from === 'string'
+      ? location.state.from
+      : location.state?.from?.pathname;
+    const search = location.state?.from?.search || '';
+
+    if (normalizedRole === 'admin') {
+      const isValidAdminPath = typeof fromPath === 'string' &&
+        fromPath.startsWith('/admin') &&
+        !fromPath.startsWith('//') &&
+        !fromPath.includes('://');
+      const target = isValidAdminPath ? `${fromPath}${search}` : ROUTES.ADMIN.DASHBOARD;
+      return <Navigate to={target} replace />;
+    }
+
+    if (normalizedRole === 'superadmin') {
+      const isValidSuperAdminPath = typeof fromPath === 'string' &&
+        fromPath.startsWith('/superadmin') &&
+        !fromPath.startsWith('//') &&
+        !fromPath.includes('://');
+      const target = isValidSuperAdminPath ? `${fromPath}${search}` : ROUTES.SUPERADMIN.DASHBOARD;
+      return <Navigate to={target} replace />;
+    }
+
     return <Navigate to={ROUTES.FALLBACK.UNAUTHORIZED} replace />;
   }
 
@@ -99,11 +154,7 @@ export const AppRoutes = () => {
       <Route element={<PublicLayout />}>
         <Route
           path={ROUTES.PUBLIC.HOME}
-          element={
-            <Suspense fallback={<PageLoadingFallback />}>
-              <PublicHome />
-            </Suspense>
-          }
+          element={<HomeRedirectGuard />}
         />
         <Route
           path={ROUTES.PUBLIC.ABOUT}

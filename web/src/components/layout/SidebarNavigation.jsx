@@ -119,7 +119,7 @@ export const SidebarNavigation = ({ onNavigate }) => {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                Visit Public Website
+                Visit LaundryWave Website
               </motion.span>
             )}
           </AnimatePresence>

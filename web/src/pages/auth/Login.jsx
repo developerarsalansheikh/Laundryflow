@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle, ArrowLeft, Globe } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Zap, LogIn, AlertCircle, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { loginApi } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
@@ -15,14 +15,20 @@ const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
  * Translate backend error messages to user-friendly English.
  */
 const humanizeError = (message = '') => {
-  if (message.includes('galat'))       return 'Invalid email or password.';
-  if (message.includes('verify') || message.includes('verified'))
+  if (typeof message !== 'string') return 'Something went wrong. Please try again.';
+  const lower = message.toLowerCase();
+  if (lower.includes('galat') || lower.includes('invalid') || lower.includes('wrong') || lower.includes('password'))
+    return 'Invalid email or password.';
+  if (lower.includes('verify') || lower.includes('verified'))
     return 'Your account has not been verified. Contact support.';
-  if (message.includes('deactivate')) return 'Your account has been deactivated. Contact support.';
-  if (message.includes('attempts') || message.includes('zyada'))
+  if (lower.includes('deactivate'))
+    return 'Your account has been deactivated. Contact support.';
+  if (lower.includes('attempts') || lower.includes('zyada') || lower.includes('too many'))
     return 'Too many login attempts. Please try again in 15 minutes.';
-  if (message.includes('network') || message.toLowerCase().includes('err_network'))
-    return 'Cannot reach the server. Check your connection.';
+  if (lower.includes('network') || lower.includes('err_network') || lower.includes('unable to connect') || lower.includes('failed to fetch'))
+    return 'Cannot reach the server. Please check your connection.';
+  if (lower.includes('temporary issue') || lower.includes('502') || lower.includes('503') || lower.includes('504'))
+    return 'Server encountered a temporary issue. Please try again shortly.';
   return message || 'Something went wrong. Please try again.';
 };
 
@@ -132,20 +138,32 @@ export const Login = () => {
 
       toast.success(`Welcome back, ${user.name}!`);
 
-      // Navigate to respective role portal
+      // Navigate to respective role portal (validating destination against authenticated role)
       if (userRole === 'admin') {
-        const target = location.state?.from?.pathname?.startsWith('/admin')
-          ? location.state.from.pathname
-          : ROUTES.ADMIN.DASHBOARD;
+        const fromPath = typeof location.state?.from === 'string'
+          ? location.state.from
+          : location.state?.from?.pathname;
+        const isValid = typeof fromPath === 'string' &&
+          fromPath.startsWith('/admin') &&
+          !fromPath.startsWith('//') &&
+          !fromPath.includes('://');
+        const search = location.state?.from?.search || '';
+        const target = isValid ? `${fromPath}${search}` : ROUTES.ADMIN.DASHBOARD;
         navigate(target, { replace: true });
       } else {
-        const target = location.state?.from?.pathname?.startsWith('/superadmin')
-          ? location.state.from.pathname
-          : ROUTES.SUPERADMIN.DASHBOARD;
+        const fromPath = typeof location.state?.from === 'string'
+          ? location.state.from
+          : location.state?.from?.pathname;
+        const isValid = typeof fromPath === 'string' &&
+          fromPath.startsWith('/superadmin') &&
+          !fromPath.startsWith('//') &&
+          !fromPath.includes('://');
+        const search = location.state?.from?.search || '';
+        const target = isValid ? `${fromPath}${search}` : ROUTES.SUPERADMIN.DASHBOARD;
         navigate(target, { replace: true });
       }
     } catch (err) {
-      const serverMsg = err?.response?.data?.message || err?.message || '';
+      const serverMsg = err?.response?.data?.message || err?.details?.message || err?.message || '';
       setApiError(humanizeError(serverMsg));
     } finally {
       setIsLoading(false);

@@ -13,14 +13,15 @@ import { parseApiError } from '../utils/errorHandler';
  *  - Response: on 401 → attempt token refresh → retry → logout if refresh fails
  */
 const getBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_URL;
   if (
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ) {
-    return ''; // Route through Vite proxy to eliminate browser CORS errors
+    return ''; // Route through Vite proxy to eliminate browser CORS errors in development
   }
-  return envUrl || '';
+  const rawUrl = import.meta.env.VITE_API_URL || 'https://laundryflow-657q.onrender.com';
+  // Strip trailing slashes and /api prefix since all frontend API paths include /api
+  return rawUrl.trim().replace(/\/api\/?$/, '').replace(/\/+$/, '');
 };
 
 const api = axios.create({
@@ -104,9 +105,15 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        // Refresh failed — clear auth and redirect to login
+        // Refresh failed — clear auth and redirect to login only if on protected route
         useAuthStore.getState().clearAuth();
-        window.location.replace('/login');
+        if (
+          typeof window !== 'undefined' &&
+          (window.location.pathname.startsWith('/admin') ||
+            window.location.pathname.startsWith('/superadmin'))
+        ) {
+          window.location.replace('/login');
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Waves } from 'lucide-react';
 import { AppBackground } from './AppBackground';
 
 /**

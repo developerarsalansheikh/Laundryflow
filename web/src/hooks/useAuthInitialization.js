@@ -1,48 +1,84 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { refreshTokenApi } from '../api/auth';
+import { verifySessionApi, refreshTokenApi } from '../api/auth';
 
 /**
- * useAuthInitialization — Session restoration hook.
+ * useAuthInitialization — Secure session restoration hook.
  *
- * Run once on app boot:
- * 1. Read persisted auth state (handled by Zustand persist).
- * 2. If a token exists in localStorage — attempt refresh-token validation.
- * 3. Backend has no /me endpoint — we validate via refresh-token endpoint.
- * 4. If refresh succeeds → update access token → continue.
- * 5. If refresh fails → clear stale auth state → user lands on login.
- * 6. Always set isInitializing = false when done.
+ * Requirements (Part 3 & Part 9):
+ * 1. Read persisted auth state from Zustand.
+ * 2. If token exists, verify validity directly with backend via GET /api/users/profile.
+ *    - Never treat persisted Zustand state or isAuthenticated: true as proof of authentication.
+ *    - Validates JWT signature, expiry, and active status in DB.
+ * 3. If access token expired (401), attempts token refresh via /api/auth/refresh-token.
+ * 4. If session valid: updates user profile in store with server-verified data and completes.
+ * 5. If session invalid / revoked / deactivated: clears auth state so protected routes require login.
+ * 6. Always sets isInitializing = false when done to avoid loading flashes and redirect loops.
  *
- * This hook must be called ONCE in App.jsx only.
+ * This hook is called ONCE in App.jsx only.
  */
 export const useAuthInitialization = () => {
   const { token, setAuth, clearAuth, setInitializing, user } = useAuthStore();
+  const initStarted = useRef(false);
 
   useEffect(() => {
+    if (initStarted.current) return;
+    initStarted.current = true;
+
     const initializeAuth = async () => {
-      // If no persisted token — skip validation, not authenticated
+      // If no persisted token or user — skip verification, visitor is unauthenticated
       if (!token || !user) {
         setInitializing(false);
         return;
       }
 
       try {
-        // Validate session by attempting a refresh (uses HttpOnly cookie)
-        const newAccessToken = await refreshTokenApi();
-        // Session still valid — update token in store
-        setAuth({ user, token: newAccessToken });
-      } catch {
-        // Refresh failed (cookie expired or revoked) — clear stale auth
-        clearAuth();
+        // Step 1: Verify session with the backend using stored access token
+        const verifiedUser = await verifySessionApi();
+
+        if (verifiedUser && (verifiedUser.role === 'admin' || verifiedUser.role === 'superadmin')) {
+          // Session is verified and fresh — update store with server data
+          const currentToken = useAuthStore.getState().token || token;
+          setAuth({ user: verifiedUser, token: currentToken });
+        } else {
+          // Invalid user or unauthorized role
+          clearAuth();
+        }
+      } catch (err) {
+        // If 401 Unauthorized, access token may be expired — attempt refresh via HttpOnly cookie
+        if (err?.status === 401 || err?.response?.status === 401) {
+          try {
+            const newAccessToken = await refreshTokenApi();
+            if (newAccessToken) {
+              // Update token and verify user profile
+              useAuthStore.getState().setAuth({ user, token: newAccessToken });
+              const freshUser = await verifySessionApi();
+              setAuth({ user: freshUser || user, token: newAccessToken });
+            } else {
+              clearAuth();
+            }
+          } catch {
+            // Refresh failed or cookie invalid/revoked — invalidate session
+            clearAuth();
+          }
+        } else if (err?.status === 403 || err?.response?.status === 403) {
+          // Account deactivated or unverified
+          clearAuth();
+        } else if (err?.isNetworkError || !err?.response) {
+          // Genuine network/connectivity issue — server cannot verify session
+          // Do not claim verified access while server is unreachable
+          console.warn('[AuthInit] Network connectivity issue during session verification.');
+        } else {
+          // Server error or unexpected error
+          clearAuth();
+        }
       } finally {
         setInitializing(false);
       }
     };
 
     initializeAuth();
-    // Run only on mount — dependencies intentionally empty
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token, user, setAuth, clearAuth, setInitializing]);
 };
 
 export default useAuthInitialization;

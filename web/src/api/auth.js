@@ -38,5 +38,17 @@ export const refreshTokenApi = async () => {
  * Does not require Authorization header (uses cookie directly).
  */
 export const logoutApi = async () => {
-  await api.post('/api/auth/logout');
+  await api.post('/api/auth/logout', {});
+};
+
+/**
+ * verifySessionApi — GET /api/users/profile
+ * Verifies active session with backend and retrieves fresh user record.
+ * Validates JWT cryptographically and ensures user is verified and active.
+ *
+ * @returns {Promise<object>} verified user object
+ */
+export const verifySessionApi = async () => {
+  const response = await api.get('/api/users/profile');
+  return response.data?.data;
 };

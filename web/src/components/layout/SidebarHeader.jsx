@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,7 +11,6 @@ import { ROUTES } from '../../routes/routeConstants';
 export const SidebarHeader = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
-  const [imgFailed, setImgFailed] = useState(false);
   const isSuperAdmin = user?.role === 'superadmin';
   const brandName = isSuperAdmin ? 'LaundryWave' : (user?.laundryName || user?.storeName || 'Dhoyoo Laundry');
   const roleLabel = isSuperAdmin ? 'SUPER ADMIN OPS' : 'STORE OPERATIONS';

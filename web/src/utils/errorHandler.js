@@ -90,7 +90,11 @@ export const parseApiError = (error) => {
         code = 'BAD_REQUEST';
         break;
       case 401:
-        message = 'Session expired. Please log in again.';
+        if (error.config?.url?.includes('/api/auth/login')) {
+          message = 'Invalid email or password.';
+        } else {
+          message = 'Session expired. Please log in again.';
+        }
         code = 'UNAUTHORIZED';
         break;
       case 403:
@@ -108,6 +112,7 @@ export const parseApiError = (error) => {
       case 500:
       case 502:
       case 503:
+      case 504:
         message = 'Server encountered a temporary issue. Please try again shortly.';
         code = 'SERVER_ERROR';
         break;

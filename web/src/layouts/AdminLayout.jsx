@@ -158,10 +158,10 @@ export const AdminLayout = () => {
             <Link
               to={ROUTES.PUBLIC.HOME}
               className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
-              title="Return to Public LaundryWave Website"
+              title="Visit LaundryWave Website"
             >
               <Globe className="w-5 h-5 flex-shrink-0 text-blue-400" />
-              <span>Visit Public Website</span>
+              <span>Visit LaundryWave Website</span>
             </Link>
           </div>
         </nav>

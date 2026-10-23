@@ -17,6 +17,29 @@ const logDevOtp = (phone, otp, type = "Login") => {
   }
 };
 
+const getRefreshTokenCookieOptions = () => {
+  const isProd = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    partitioned: isProd,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  };
+};
+
+const getClearCookieOptions = () => {
+  const isProd = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    partitioned: isProd,
+    path: "/",
+  };
+};
+
 // ─────────────────────────────────────────────
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -134,12 +157,7 @@ const verifyOTP = async (req, res) => {
       refreshToken,
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -232,12 +250,7 @@ const loginUser = async (req, res) => {
 
       await User.findByIdAndUpdate(user._id, { refreshToken: refreshTokenVal });
 
-      res.cookie("refreshToken", refreshTokenVal, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie("refreshToken", refreshTokenVal, getRefreshTokenCookieOptions());
 
       return res.status(200).json({
         success: true,
@@ -482,12 +495,7 @@ const refreshToken = async (req, res) => {
 
     await User.findByIdAndUpdate(user._id, { refreshToken: newRefreshToken });
 
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -519,9 +527,20 @@ const logoutUser = async (req, res) => {
     if (token) {
       // Invalidate stored refresh token
       await User.findOneAndUpdate({ refreshToken: token }, { refreshToken: undefined });
+    } else {
+      // If Authorization Bearer is provided, invalidate by user ID from token
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        try {
+          const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+          if (decoded?.id) {
+            await User.findByIdAndUpdate(decoded.id, { refreshToken: undefined });
+          }
+        } catch {}
+      }
     }
 
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", getClearCookieOptions());
 
     return res.status(200).json({
       success: true,
