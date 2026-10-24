@@ -12,6 +12,44 @@ import { useTheme } from '../theme';
 import Text from './ui/Text';
 import Button from './ui/Button';
 
+const DEFAULT_DRY_CLEAN_CATALOG = [
+  { clothingType: 'Shirt', name: 'Shirt', price: 80 },
+  { clothingType: 'T-Shirt', name: 'T-Shirt', price: 70 },
+  { clothingType: 'Trouser', name: 'Trouser', price: 100 },
+  { clothingType: 'Jeans', name: 'Jeans', price: 110 },
+  { clothingType: 'Suit', name: 'Suit (2-Piece)', price: 280 },
+  { clothingType: 'Blazer', name: 'Blazer', price: 180 },
+  { clothingType: 'Coat', name: 'Coat / Jacket', price: 220 },
+  { clothingType: 'Jacket', name: 'Jacket', price: 200 },
+  { clothingType: 'Dress', name: 'Dress / Gown', price: 190 },
+  { clothingType: 'Saree', name: 'Saree (Silk / Designer)', price: 180 },
+  { clothingType: 'Kurta', name: 'Kurta / Pyjama', price: 120 },
+  { clothingType: 'Sherwani', name: 'Sherwani', price: 350 },
+  { clothingType: 'Bedsheet', name: 'Bedsheet', price: 150 },
+  { clothingType: 'Blanket', name: 'Blanket / Quilt', price: 250 },
+  { clothingType: 'Other', name: 'Other Delicate Item', price: 120 },
+];
+
+const resolveItemPrice = (s) => {
+  const currentPrice = Number(s.price) || 0;
+  // If price is valid and not the old 20 fallback
+  if (currentPrice > 0 && currentPrice !== 20) {
+    return currentPrice;
+  }
+  const targetType = (s.clothingType || '').trim().toLowerCase();
+  const targetName = (s.itemName || '').trim().toLowerCase();
+  const match = DEFAULT_DRY_CLEAN_CATALOG.find((d) => {
+    const subType = d.clothingType.toLowerCase();
+    const subName = d.name.toLowerCase();
+    return (
+      (targetType && (subType === targetType || subName === targetType)) ||
+      (targetName && (subName === targetName || targetName.includes(subName) || subName.includes(targetName)))
+    );
+  });
+  if (match) return match.price;
+  return currentPrice > 0 ? currentPrice : 80;
+};
+
 export const EditOrderModal = ({
   visible,
   onClose,
@@ -30,14 +68,18 @@ export const EditOrderModal = ({
   useEffect(() => {
     if (order && Array.isArray(order.services)) {
       setItems(
-        order.services.map((s) => ({
-          service: s.service?._id || s.service,
-          itemName: s.itemName || s.clothingType || 'Item',
-          clothingType: s.clothingType || s.itemName || '',
-          quantity: s.quantity || 1,
-          price: s.price || 0,
-          lineTotal: (s.price || 0) * (s.quantity || 1),
-        }))
+        order.services.map((s) => {
+          const unitPrice = resolveItemPrice(s);
+          const qty = s.quantity || 1;
+          return {
+            service: s.service?._id || s.service,
+            itemName: s.itemName || s.clothingType || 'Item',
+            clothingType: s.clothingType || s.itemName || '',
+            quantity: qty,
+            price: unitPrice,
+            lineTotal: unitPrice * qty,
+          };
+        })
       );
       setSpecialInstructions(order.specialInstructions || '');
     }

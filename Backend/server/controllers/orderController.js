@@ -947,9 +947,32 @@ const editOrder = async (req, res) => {
           }
         }
 
+        // 2. If dry cleaning service or clothing item requested without custom item price, use authoritative standard dry clean catalog
+        if (
+          (unitPrice === null || unitPrice === undefined) &&
+          (serviceDoc.category === "dry_clean" ||
+            serviceDoc.category === "dry_cleaning" ||
+            targetClothingType ||
+            serviceDoc.name?.toLowerCase().includes("dry clean"))
+        ) {
+          const { getStandardDryCleanPrice } = require("../constants/catalog");
+          const standardItem = getStandardDryCleanPrice(
+            item.clothingType || item.itemName,
+            item.itemName || item.name
+          );
+          if (standardItem && typeof standardItem.price === "number") {
+            unitPrice = standardItem.price;
+            if (!matchedClothing) {
+              matchedClothing = standardItem;
+            }
+          }
+        }
+
         if (unitPrice === null || unitPrice === undefined) {
           if (typeof serviceDoc.price === "number" && serviceDoc.price > 0) {
             unitPrice = serviceDoc.price;
+          } else if (typeof item.price === "number" && item.price > 0) {
+            unitPrice = item.price;
           } else {
             return res.status(400).json({
               success: false,
@@ -2382,6 +2405,27 @@ const modifyOrderItems = async (req, res) => {
         });
         if (matchedClothing && typeof matchedClothing.price === "number") {
           unitPrice = matchedClothing.price;
+        }
+      }
+
+      // 2. If dry cleaning service or clothing item requested without custom item price, use authoritative standard dry clean catalog
+      if (
+        (unitPrice === null || unitPrice === undefined) &&
+        (service.category === "dry_clean" ||
+          service.category === "dry_cleaning" ||
+          targetClothingType ||
+          service.name?.toLowerCase().includes("dry clean"))
+      ) {
+        const { getStandardDryCleanPrice } = require("../constants/catalog");
+        const standardItem = getStandardDryCleanPrice(
+          item.clothingType || item.itemName,
+          item.itemName || item.name
+        );
+        if (standardItem && typeof standardItem.price === "number") {
+          unitPrice = standardItem.price;
+          if (!matchedClothing) {
+            matchedClothing = standardItem;
+          }
         }
       }
 
