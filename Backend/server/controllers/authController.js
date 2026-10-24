@@ -146,6 +146,29 @@ const verifyOTP = async (req, res) => {
       });
     }
 
+    if (user.role === "delivery") {
+      if (user.approvalStatus === "pending") {
+        return res.status(403).json({
+          success: false,
+          message: "Your Delivery Partner account is pending approval by Super Admin.",
+        });
+      }
+      if (user.approvalStatus === "rejected") {
+        return res.status(403).json({
+          success: false,
+          message: user.rejectionReason
+            ? `Your Delivery Partner account was rejected: ${user.rejectionReason}`
+            : "Your Delivery Partner account was rejected by Super Admin.",
+        });
+      }
+      if (user.approvalStatus !== "approved" || !user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Your Delivery Partner account is inactive or awaiting Super Admin approval.",
+        });
+      }
+    }
+
     const accessToken = generateAccessToken(user._id, user.role);
     const refreshToken = generateRefreshToken(user._id);
 
@@ -235,6 +258,29 @@ const loginUser = async (req, res) => {
       if (!user.isVerified) {
         return res.status(403).json({ success: false, message: "Account is not verified" });
       }
+      if (user.role === "delivery") {
+        if (user.approvalStatus === "pending") {
+          return res.status(403).json({
+            success: false,
+            message: "Your Delivery Partner account is pending approval by Super Admin.",
+          });
+        }
+        if (user.approvalStatus === "rejected") {
+          return res.status(403).json({
+            success: false,
+            message: user.rejectionReason
+              ? `Your Delivery Partner account was rejected: ${user.rejectionReason}`
+              : "Your Delivery Partner account was rejected by Super Admin.",
+          });
+        }
+        if (user.approvalStatus !== "approved" || !user.isActive) {
+          return res.status(403).json({
+            success: false,
+            message: "Your Delivery Partner account is inactive or awaiting Super Admin approval.",
+          });
+        }
+      }
+
       if (!user.isActive) {
         const message = await checkInactiveAdminMessage(user);
         return res.status(403).json({ success: false, message });

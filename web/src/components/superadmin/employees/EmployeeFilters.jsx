@@ -10,6 +10,7 @@ const ROLE_OPTIONS = [
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
+  { value: 'pending', label: 'Pending Approval' },
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
 ];

@@ -1,4 +1,4 @@
-﻿const Razorpay = require("razorpay");
+const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Payment = require("../models/paymentModels");
 const Order = require("../models/orderModels");
@@ -63,6 +63,10 @@ const createPaymentOrder = async (req, res) => {
       currency: "INR",
       receipt: `order_${order._id}`,
     });
+
+    console.log(
+      `[PaymentPricing] Razorpay Order created: OrderId=${order._id}, TotalAmountRupees=₹${order.totalAmount}, RazorpayAmountPaise=${razorpayOrder.amount}`
+    );
 
     // Retrieve actual laundry commission rate to prevent schema default mismatch
     const Laundry = require("../models/laundryModels");

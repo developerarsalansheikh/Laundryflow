@@ -91,7 +91,7 @@ export const AdminDelivery = () => {
 
   const allOrders = ordersData?.orders || ordersData?.data || [];
   const dispatchQueue = allOrders.filter((o) =>
-    ['pending', 'picked_up', 'ready', 'out_for_delivery'].includes(o.status)
+    ['ready', 'ready_for_redelivery', 'out_for_delivery', 'picked_up'].includes(o.status)
   );
 
   // Mutation: Toggle Driver Active
@@ -585,22 +585,28 @@ export const AdminDelivery = () => {
                                 )}
                               </div>
 
-                              {!hasDriver && (
-                                <button
-                                  onClick={() => autoAssignOrderMutation.mutate(ord._id)}
-                                  disabled={autoAssignOrderMutation.isPending}
-                                  className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
-                                >
-                                  ⚡ Auto
-                                </button>
-                              )}
+                              {ord.status === 'ready' || ord.status === 'ready_for_redelivery' ? (
+                                <>
+                                  {!hasDriver && (
+                                    <button
+                                      onClick={() => autoAssignOrderMutation.mutate(ord._id)}
+                                      disabled={autoAssignOrderMutation.isPending}
+                                      className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
+                                    >
+                                      ⚡ Auto
+                                    </button>
+                                  )}
 
-                              <button
-                                onClick={() => setAssignOrder(ord)}
-                                className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-primaryPurple/15 text-purpleLight border border-primaryPurple/30 hover:bg-primaryPurple/25 transition-colors"
-                              >
-                                {hasDriver ? 'Reassign' : 'Manual'}
-                              </button>
+                                  <button
+                                    onClick={() => setAssignOrder(ord)}
+                                    className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-primaryPurple/15 text-purpleLight border border-primaryPurple/30 hover:bg-primaryPurple/25 transition-colors"
+                                  >
+                                    {hasDriver ? 'Reassign' : 'Manual'}
+                                  </button>
+                                </>
+                              ) : (
+                                <span className="text-[10px] text-textMuted italic">Awaiting Ready</span>
+                              )}
                             </div>
                           </td>
 

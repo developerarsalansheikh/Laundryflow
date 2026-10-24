@@ -1,4 +1,4 @@
-﻿const User = require("../models/userModels");
+const User = require("../models/userModels");
 const Order = require("../models/orderModels");
 const Laundry = require("../models/laundryModels");
 const {
@@ -51,6 +51,10 @@ const autoAssignDriver = async (orderId) => {
 
     if (order.status === "cancelled" || order.status === "delivered") {
       return { success: false, reason: `Cannot assign driver to ${order.status} order` };
+    }
+
+    if (order.status !== "ready" && order.status !== "ready_for_redelivery") {
+      return { success: false, reason: `Driver assignment is only permitted once order reaches 'ready' status (current status: ${order.status})` };
     }
 
     if (order.deliveryPartner) {

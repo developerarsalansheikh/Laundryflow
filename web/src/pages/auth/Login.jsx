@@ -36,13 +36,13 @@ const humanizeError = (message = '') => {
 
 const InputField = ({ id, label, type, value, onChange, onBlur, placeholder, icon: Icon, error, rightElement }) => (
   <div className="space-y-1.5">
-    <label htmlFor={id} className="block text-sm font-medium text-textSecondary">
+    <label htmlFor={id} className="block text-xs font-semibold uppercase tracking-wider text-stone-700 font-oswald">
       {label}
     </label>
     <div className="relative">
       {/* Left icon */}
       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-        <Icon className={`w-4 h-4 ${error ? 'text-statusDanger' : 'text-textMuted'}`} />
+        <Icon className={`w-4 h-4 ${error ? 'text-statusDanger' : 'text-stone-400'}`} />
       </div>
       <input
         id={id}
@@ -52,7 +52,7 @@ const InputField = ({ id, label, type, value, onChange, onBlur, placeholder, ico
         onBlur={onBlur}
         placeholder={placeholder}
         autoComplete={type === 'password' ? 'current-password' : 'email'}
-        className={`input-glass pl-10 ${rightElement ? 'pr-10' : 'pr-3'} ${
+        className={`input-glass pl-10 font-erode ${rightElement ? 'pr-10' : 'pr-3'} ${
           error
             ? 'border-statusDanger/60 focus:border-statusDanger focus:shadow-[0_0_0_2px_rgba(239,68,68,0.2)]'
             : ''
@@ -173,16 +173,16 @@ export const Login = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative bg-[#FAF9F6]">
       {/* ── Fixed Back Button at Left Corner ────────────────────────── */}
       <div className="fixed top-5 left-5 sm:top-7 sm:left-7 z-30">
         <Link
           to={ROUTES.PUBLIC.HOME}
-          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-medium text-stone-300 hover:text-white bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/10 shadow-xl transition-all group cursor-pointer"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-oswald font-semibold uppercase tracking-widest text-stone-800 hover:text-stone-950 bg-white/90 hover:bg-white border border-[#DDD5C7] shadow-2xs transition-all group cursor-pointer"
           title="Return to Public LaundryWave Website"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform text-indigo-400" />
-          <span className="font-medium">Back to Website</span>
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform text-stone-700" />
+          <span>Back to Website</span>
         </Link>
       </div>
 
@@ -195,24 +195,26 @@ export const Login = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-8"
         >
-          {/* Logo */}
-          <img
-            src="/logo.svg"
-            onError={(e) => { e.currentTarget.src = '/logo.png'; }}
-            alt="LaundryWave"
-            className="inline-block w-16 h-16 rounded-2xl object-contain shadow-md mb-5"
-          />
+          {/* Logo Emblem */}
+          <div className="inline-flex w-16 h-16 rounded-2xl bg-white border border-[#DDD5C7] items-center justify-center shadow-sm mb-4 overflow-hidden">
+            <img
+              src="/logo.svg"
+              onError={(e) => { e.currentTarget.src = '/logo.png'; }}
+              alt="LaundryWave"
+              className="w-11 h-11 object-contain"
+            />
+          </div>
 
-          <h1 className="text-2xl font-bold text-textPrimary tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold font-oswald uppercase tracking-tight text-stone-900">
             LaundryWave
           </h1>
-          <div className="flex items-center justify-center gap-1.5 mt-1.5 mb-3">
-            <Zap className="w-3 h-3 text-indigo-400" />
-            <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6F3EE] border border-[#E7E2D8] mt-2 mb-3">
+            <Zap className="w-3 h-3 text-stone-700" />
+            <span className="text-[11px] font-oswald font-semibold text-stone-700 uppercase tracking-widest">
               Laundry Admin & Operations Portal
             </span>
           </div>
-          <p className="text-sm text-textMuted">
+          <p className="text-sm font-erode text-stone-600">
             Sign in to manage your laundry facility and orders
           </p>
         </motion.div>
@@ -222,12 +224,11 @@ export const Login = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card p-8"
-          style={{ boxShadow: '0 0 60px -12px rgba(99, 102, 241, 0.25), 0 25px 50px -12px rgba(0,0,0,0.5)' }}
+          className="bg-white border border-[#E7E2D8] rounded-2xl shadow-xl p-7 sm:p-9"
         >
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-textPrimary">Welcome back</h2>
-            <p className="text-xs text-textSecondary mt-0.5">Enter your store admin credentials</p>
+            <h2 className="text-lg font-bold font-oswald uppercase tracking-wide text-stone-900">Welcome back</h2>
+            <p className="text-xs font-erode text-stone-600 mt-0.5">Enter your store admin credentials</p>
           </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -261,7 +262,7 @@ export const Login = () => {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="text-textMuted hover:text-textSecondary transition-colors cursor-pointer"
+                    className="text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -286,7 +287,7 @@ export const Login = () => {
                 id="login-submit-btn"
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full py-3 gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3.5 rounded-full font-oswald font-semibold uppercase tracking-widest text-xs bg-stone-900 hover:bg-stone-800 text-white shadow-sm flex items-center justify-center gap-2 mt-4 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -303,10 +304,10 @@ export const Login = () => {
             </form>
 
             {/* Footer note */}
-            <p className="text-center text-xs text-textMuted mt-6">
+            <p className="text-center text-xs font-erode text-stone-500 mt-6">
               Authorized access for{' '}
-              <span className="text-indigo-400 font-semibold">Store Admins</span> &{' '}
-              <span className="text-primaryPurple font-semibold">Super Admins</span>.
+              <span className="text-stone-900 font-semibold font-oswald uppercase tracking-wide">Store Admins</span> &{' '}
+              <span className="text-stone-900 font-semibold font-oswald uppercase tracking-wide">Super Admins</span>.
             </p>
           </motion.div>
 
@@ -315,9 +316,9 @@ export const Login = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-center text-xs text-textMuted mt-6"
+            className="text-center text-xs font-erode text-stone-500 mt-6"
           >
-            LaundryWave &copy; {new Date().getFullYear()} · All rights reserved
+            LaundryWave &copy; {new Date().getFullYear()} · Atelier Operations Standard
           </motion.p>
         </div>
       </div>

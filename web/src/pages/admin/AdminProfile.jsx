@@ -230,7 +230,7 @@ export const AdminProfile = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -242,7 +242,7 @@ export const AdminProfile = () => {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -254,7 +254,7 @@ export const AdminProfile = () => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
           </div>
@@ -276,7 +276,7 @@ export const AdminProfile = () => {
                 type="text"
                 value={formData.street}
                 onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -288,7 +288,7 @@ export const AdminProfile = () => {
                 type="text"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -300,7 +300,7 @@ export const AdminProfile = () => {
                 type="text"
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -312,7 +312,7 @@ export const AdminProfile = () => {
                 type="text"
                 value={formData.postalCode}
                 onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
           </div>
@@ -336,7 +336,7 @@ export const AdminProfile = () => {
                 max="100"
                 value={formData.deliveryRadius}
                 onChange={(e) => setFormData({ ...formData, deliveryRadius: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -349,7 +349,7 @@ export const AdminProfile = () => {
                 min="0"
                 value={formData.minOrderAmount}
                 onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -362,7 +362,7 @@ export const AdminProfile = () => {
                 min="0"
                 value={formData.deliveryFee}
                 onChange={(e) => setFormData({ ...formData, deliveryFee: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -376,7 +376,7 @@ export const AdminProfile = () => {
                 max="100"
                 value={formData.maxServiceDistanceKm}
                 onChange={(e) => setFormData({ ...formData, maxServiceDistanceKm: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -389,7 +389,7 @@ export const AdminProfile = () => {
                 min="1"
                 value={formData.defaultTurnaroundHours}
                 onChange={(e) => setFormData({ ...formData, defaultTurnaroundHours: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -402,7 +402,7 @@ export const AdminProfile = () => {
                 placeholder="08:00 AM"
                 value={formData.openingTime}
                 onChange={(e) => setFormData({ ...formData, openingTime: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
 
@@ -415,7 +415,7 @@ export const AdminProfile = () => {
                 placeholder="08:00 PM"
                 value={formData.closingTime}
                 onChange={(e) => setFormData({ ...formData, closingTime: e.target.value })}
-                className="w-full p-3 text-xs rounded-xl bg-white/[0.04] border border-white/10 text-textPrimary focus:outline-none focus:border-primaryPurple transition-all"
+                className="w-full p-3 text-xs rounded-xl bg-white border border-[#DDD5C7] text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs font-erode"
               />
             </div>
           </div>
@@ -442,23 +442,23 @@ export const AdminProfile = () => {
                 tiers.push({ minDistanceKm: minKm, maxDistanceKm: minKm + 5, deliveryFee: 40 });
                 setFormData({ ...formData, distancePricing: tiers });
               }}
-              className="px-3 py-1.5 rounded-lg bg-primaryPurple/20 border border-primaryPurple/40 text-purpleLight text-xs font-semibold hover:bg-primaryPurple/30 transition-all"
+              className="px-3.5 py-1.5 rounded-lg bg-stone-900 text-white hover:bg-stone-800 text-xs font-oswald uppercase tracking-wider transition-all shadow-2xs"
             >
               + Add Tier
             </button>
           </div>
 
           {(formData.distancePricing || []).length === 0 ? (
-            <div className="py-6 text-center text-xs text-textMuted border border-dashed border-white/10 rounded-xl">
+            <div className="py-6 text-center text-xs text-stone-500 border border-dashed border-[#DDD5C7] rounded-xl bg-[#FAF8F5]">
               No distance tiers configured. Standard delivery fee (₹{formData.deliveryFee}) applies.
             </div>
           ) : (
             <div className="space-y-2.5">
               {(formData.distancePricing || []).map((tier, tIdx) => (
-                <div key={tIdx} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                <div key={tIdx} className="flex items-center gap-3 p-3 rounded-xl bg-[#FAF8F5] border border-[#E7E2D8]">
                   <div className="flex-1 grid grid-cols-3 gap-3">
                     <div>
-                      <span className="block text-[10px] text-textMuted mb-1">From (km)</span>
+                      <span className="block text-[10px] text-stone-500 mb-1 font-medium">From (km)</span>
                       <input
                         type="number"
                         min="0"
@@ -468,11 +468,11 @@ export const AdminProfile = () => {
                           updated[tIdx].minDistanceKm = Number(e.target.value);
                           setFormData({ ...formData, distancePricing: updated });
                         }}
-                        className="w-full p-2 text-xs rounded-lg bg-white/[0.04] border border-white/10 text-textPrimary"
+                        className="w-full p-2 text-xs rounded-lg bg-white border border-[#DDD5C7] text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-erode"
                       />
                     </div>
                     <div>
-                      <span className="block text-[10px] text-textMuted mb-1">To (km)</span>
+                      <span className="block text-[10px] text-stone-500 mb-1 font-medium">To (km)</span>
                       <input
                         type="number"
                         min="1"
@@ -482,11 +482,11 @@ export const AdminProfile = () => {
                           updated[tIdx].maxDistanceKm = Number(e.target.value);
                           setFormData({ ...formData, distancePricing: updated });
                         }}
-                        className="w-full p-2 text-xs rounded-lg bg-white/[0.04] border border-white/10 text-textPrimary"
+                        className="w-full p-2 text-xs rounded-lg bg-white border border-[#DDD5C7] text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-erode"
                       />
                     </div>
                     <div>
-                      <span className="block text-[10px] text-textMuted mb-1">Delivery Charge (₹)</span>
+                      <span className="block text-[10px] text-stone-500 mb-1 font-medium">Delivery Charge (₹)</span>
                       <input
                         type="number"
                         min="0"
@@ -496,7 +496,7 @@ export const AdminProfile = () => {
                           updated[tIdx].deliveryFee = Number(e.target.value);
                           setFormData({ ...formData, distancePricing: updated });
                         }}
-                        className="w-full p-2 text-xs rounded-lg bg-white/[0.04] border border-white/10 text-textPrimary"
+                        className="w-full p-2 text-xs rounded-lg bg-white border border-[#DDD5C7] text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-erode"
                       />
                     </div>
                   </div>
@@ -506,7 +506,7 @@ export const AdminProfile = () => {
                       const updated = formData.distancePricing.filter((_, idx) => idx !== tIdx);
                       setFormData({ ...formData, distancePricing: updated });
                     }}
-                    className="p-2 text-statusDanger hover:bg-statusDanger/10 rounded-lg transition-colors mt-3"
+                    className="p-2 text-statusDanger hover:bg-rose-50 rounded-lg transition-colors mt-3"
                     title="Remove Tier"
                   >
                     ✕

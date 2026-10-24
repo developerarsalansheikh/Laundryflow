@@ -137,7 +137,7 @@ const createService = async (req, res) => {
     // Resolve target laundryId
     let targetLaundryId = req.user.laundryId;
     if (!targetLaundryId && req.user._id) {
-      const store = await Laundry.findOne({ ownerId: req.user._id });
+      const store = await Laundry.findOne({ owner: req.user._id });
       if (store) targetLaundryId = store._id;
     }
 
@@ -172,7 +172,7 @@ const createService = async (req, res) => {
       category: normalizedCat,
       estimatedHours: hours,
       clothingType: clothingType || (Array.isArray(items) && items.length > 0 ? items[0].clothingType : null),
-      items: Array.isArray(items)
+      items: Array.isArray(items) && items.length > 0
         ? items.map((it) => ({
             name: it.name?.trim(),
             clothingType: it.clothingType?.trim() || it.name?.trim(),
@@ -181,6 +181,8 @@ const createService = async (req, res) => {
             isActive: it.isActive !== false,
             estimatedHours: Number(it.estimatedHours) || hours,
           }))
+        : normalizedCat === "dry_clean"
+        ? require("../constants/catalog").DEFAULT_DRY_CLEAN_ITEMS
         : [],
       laundryId: targetLaundryId,
       image: req.file ? req.file.path : (req.body.image || ""),
@@ -211,7 +213,7 @@ const updateService = async (req, res) => {
   try {
     let targetLaundryId = req.user.laundryId;
     if (!targetLaundryId && req.user._id) {
-      const store = await Laundry.findOne({ ownerId: req.user._id });
+      const store = await Laundry.findOne({ owner: req.user._id });
       if (store) targetLaundryId = store._id;
     }
 
@@ -295,10 +297,18 @@ const updateService = async (req, res) => {
 const deleteService = async (req, res) => {
   try {
     // Admin sirf apni laundry ki service delete kar sakta hai
-    const service = await Service.findOne({
-      _id: req.params.id,
-      laundryId: req.user.laundryId,
-    });
+    let targetLaundryId = req.user.laundryId;
+    if (!targetLaundryId && req.user._id) {
+      const store = await Laundry.findOne({ owner: req.user._id });
+      if (store) targetLaundryId = store._id;
+    }
+
+    const query = { _id: req.params.id };
+    if (req.user.role !== "super_admin" && req.user.role !== "superadmin" && targetLaundryId) {
+      query.laundryId = targetLaundryId;
+    }
+
+    const service = await Service.findOne(query);
 
     if (!service) {
       return res.status(404).json({
@@ -338,10 +348,18 @@ const deleteService = async (req, res) => {
 // ─────────────────────────────────────────────
 const toggleServiceStatus = async (req, res) => {
   try {
-    const service = await Service.findOne({
-      _id: req.params.id,
-      laundryId: req.user.laundryId,
-    });
+    let targetLaundryId = req.user.laundryId;
+    if (!targetLaundryId && req.user._id) {
+      const store = await Laundry.findOne({ owner: req.user._id });
+      if (store) targetLaundryId = store._id;
+    }
+
+    const query = { _id: req.params.id };
+    if (req.user.role !== "super_admin" && req.user.role !== "superadmin" && targetLaundryId) {
+      query.laundryId = targetLaundryId;
+    }
+
+    const service = await Service.findOne(query);
 
     if (!service) {
       return res.status(404).json({

@@ -5,39 +5,39 @@
 
 @layer utilities {
   /* ==========================================================================
-     Card & Surface Systems (Clean Professional SaaS)
+     Card & Surface Systems (Warm Limestone Atelier)
      ========================================================================== */
   .glass-card {
     background-color: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E7E2D8;
     border-radius: var(--lf-radius-xl);
-    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 1px 3px 0 rgba(28, 25, 23, 0.04), 0 1px 2px -1px rgba(28, 25, 23, 0.03);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
-    border-color: #CBD5E1;
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    border-color: #DDD5C7;
+    box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.06), 0 8px 10px -6px rgba(28, 25, 23, 0.03);
   }
 
   .glass-card-premium {
     background-color: #FFFFFF;
-    border: 1px solid #DBEAFE;
+    border: 1px solid #DDD5C7;
     border-radius: var(--lf-radius-2xl);
-    box-shadow: 0 10px 30px -8px rgba(37, 99, 235, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 10px 30px -8px rgba(28, 25, 23, 0.08), 0 4px 12px -2px rgba(28, 25, 23, 0.04);
   }
 
   .glass-panel {
-    background-color: #F8FAFC;
-    border: 1px solid #E2E8F0;
+    background-color: #FAF8F5;
+    border: 1px solid #E7E2D8;
     border-radius: var(--lf-radius-lg);
   }
 
   .glass-dropdown {
     background-color: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E7E2D8;
     border-radius: var(--lf-radius-lg);
-    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.12), 0 6px 14px -2px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 16px 36px -4px rgba(28, 25, 23, 0.1), 0 6px 14px -2px rgba(28, 25, 23, 0.05);
   }
 
   /* ==========================================================================
@@ -49,7 +49,7 @@
     justify-content: center;
     gap: 0.5rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     line-height: 1.25rem;
     border-radius: var(--lf-radius-md);
     transition: all var(--lf-transition-fast);
@@ -59,7 +59,7 @@
   }
 
   .btn-base:focus-visible {
-    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #3B82F6;
+    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #1C1917;
   }
 
   .btn-base:active {
@@ -67,37 +67,37 @@
   }
 
   .btn-primary {
-    @apply btn-base px-4 py-2 text-white;
-    background-color: #2563EB;
-    box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.3);
+    @apply btn-base px-4 py-2 text-white font-oswald uppercase tracking-wider text-xs;
+    background-color: #1C1917;
+    box-shadow: 0 1px 3px 0 rgba(28, 25, 23, 0.15);
   }
 
   .btn-primary:hover {
-    background-color: #1D4ED8;
-    box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
+    background-color: #292524;
+    box-shadow: 0 4px 12px -2px rgba(28, 25, 23, 0.25);
   }
 
   .btn-secondary {
-    @apply btn-base px-4 py-2 text-slate-700;
+    @apply btn-base px-4 py-2 text-stone-800 font-oswald uppercase tracking-wider text-xs;
     background-color: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    border: 1px solid #DDD5C7;
+    box-shadow: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
   }
 
   .btn-secondary:hover {
-    background-color: #F8FAFC;
-    border-color: #CBD5E1;
-    color: #0F172A;
+    background-color: #FAF8F5;
+    border-color: #1C1917;
+    color: #1C1917;
   }
 
   .btn-ghost {
-    @apply btn-base px-3 py-2 text-slate-600;
+    @apply btn-base px-3 py-2 text-stone-600;
     background: transparent;
   }
 
   .btn-ghost:hover {
-    color: #0F172A;
-    background-color: #F1F5F9;
+    color: #1C1917;
+    background-color: #F6F3EE;
   }
 
   .btn-danger {
@@ -123,16 +123,16 @@
   }
 
   .btn-icon {
-    @apply btn-base p-2 rounded-xl text-slate-600;
+    @apply btn-base p-2 rounded-xl text-stone-700;
     background-color: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    border: 1px solid #E7E2D8;
+    box-shadow: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
   }
 
   .btn-icon:hover {
-    color: #0F172A;
-    background-color: #F8FAFC;
-    border-color: #CBD5E1;
+    color: #1C1917;
+    background-color: #FAF8F5;
+    border-color: #DDD5C7;
   }
 
   /* ==========================================================================
@@ -141,23 +141,23 @@
   .input-glass {
     width: 100%;
     background-color: #FFFFFF;
-    border: 1px solid #CBD5E1;
+    border: 1px solid #DDD5C7;
     border-radius: var(--lf-radius-md);
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: var(--lf-text-primary);
     transition: all var(--lf-transition-fast);
     outline: none;
-    box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    box-shadow: 0 1px 2px 0 rgba(28, 25, 23, 0.03);
   }
 
   .input-glass::placeholder {
-    color: #94A3B8;
+    color: #A8A29E;
   }
 
   .input-glass:focus {
-    border-color: #2563EB;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: #1C1917;
+    box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.08);
   }
 
   .input-glass.pl-9, input.input-glass.pl-9, select.input-glass.pl-9 {
@@ -178,14 +178,14 @@
 
   select option {
     background-color: #FFFFFF !important;
-    color: #0F172A !important;
+    color: #1C1917 !important;
     padding: 8px 12px;
   }
 
   .toggle-glass {
     width: 2.75rem;
     height: 1.5rem;
-    background-color: #CBD5E1;
+    background-color: #DDD5C7;
     border-radius: var(--lf-radius-full);
     position: relative;
     cursor: pointer;
@@ -193,7 +193,7 @@
   }
 
   .toggle-glass-active {
-    background-color: #2563EB;
+    background-color: #1C1917;
   }
 
   /* ==========================================================================
@@ -292,20 +292,20 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #F6F3EE;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #DDD5C7;
   border-radius: var(--lf-radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #A8A29E;
 }
 
 /* Custom Text Selection */
 ::selection {
-  background-color: #DBEAFE;
-  color: #1E3A8A;
+  background-color: #E7E2D8;
+  color: #1C1917;
 }

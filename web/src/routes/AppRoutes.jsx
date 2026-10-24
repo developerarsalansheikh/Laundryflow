@@ -65,27 +65,16 @@ const PageLoadingFallback = () => (
 );
 
 /**
- * HomeRedirectGuard — Role-aware routing for / (Part 4)
- * - Visitor without a valid session: renders public homepage (<PublicHome />).
- * - Authenticated Laundry Admin: redirects to /admin/dashboard.
- * - Authenticated Super Admin: redirects to /superadmin/dashboard.
+ * HomeRedirectGuard — Public showcase home page.
+ * - Renders PublicHome for visitors and authenticated admins alike.
+ * - Authenticated admins retain their active session, and PublicNavbar renders their role-aware return link.
  * - While session initializing: renders fallback without flashing wrong page.
  */
 const HomeRedirectGuard = () => {
-  const { isAuthenticated, role, isInitializing } = useAuthStore();
+  const { isInitializing } = useAuthStore();
 
   if (isInitializing) {
     return <PageLoadingFallback />;
-  }
-
-  if (isAuthenticated) {
-    const normalizedRole = String(role || '').trim().toLowerCase();
-    if (normalizedRole === 'admin') {
-      return <Navigate to={ROUTES.ADMIN.DASHBOARD} replace />;
-    }
-    if (normalizedRole === 'superadmin') {
-      return <Navigate to={ROUTES.SUPERADMIN.DASHBOARD} replace />;
-    }
   }
 
   return (

@@ -108,7 +108,7 @@ export const LaundryActionConfirmModal = ({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-md rounded-2xl bg-[#090D1E] border border-white/12 shadow-2xl overflow-hidden z-10 p-6 space-y-4"
+          className="relative w-full max-w-md rounded-2xl bg-white border border-[#E7E2D8] shadow-2xl overflow-hidden z-10 p-6 space-y-4"
         >
           <div className="flex items-start justify-between">
             <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${config.iconStyle}`}>
@@ -118,21 +118,21 @@ export const LaundryActionConfirmModal = ({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-textMuted hover:text-textPrimary transition-all"
+              className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 border border-[#DDD5C7] flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-textPrimary">{config.title}</h3>
-            <p className="text-xs text-textMuted mt-1 leading-relaxed">{config.description}</p>
+            <h3 className="text-lg font-bold text-stone-900 font-oswald uppercase tracking-wide">{config.title}</h3>
+            <p className="text-xs text-stone-500 mt-1 leading-relaxed font-erode">{config.description}</p>
           </div>
 
           {/* Optional reason input for reject */}
           {config.hasReasonInput && (
             <div>
-              <label className="block text-xs font-medium text-textSecondary mb-1">
+              <label className="block text-xs font-medium text-stone-700 mb-1 font-erode">
                 Rejection Reason (Optional)
               </label>
               <textarea
@@ -140,18 +140,18 @@ export const LaundryActionConfirmModal = ({
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. Incomplete verification documents provided"
                 rows={2}
-                className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-rose-500/50"
+                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#DDD5C7] text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 font-erode shadow-2xs"
               />
             </div>
           )}
 
           {/* Actions */}
-          <div className="pt-3 border-t border-white/8 flex items-center justify-end gap-3">
+          <div className="pt-3 border-t border-[#E7E2D8] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-textSecondary border border-white/10 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-700 border border-[#DDD5C7] transition-all cursor-pointer font-oswald uppercase tracking-wider"
             >
               Cancel
             </button>
@@ -160,7 +160,7 @@ export const LaundryActionConfirmModal = ({
               type="button"
               onClick={handleConfirmClick}
               disabled={isLoading}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 ${config.btnStyle}`}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-oswald uppercase tracking-wider text-xs shadow-2xs transition-all cursor-pointer disabled:opacity-50 ${config.btnStyle}`}
             >
               {isLoading ? (
                 <>

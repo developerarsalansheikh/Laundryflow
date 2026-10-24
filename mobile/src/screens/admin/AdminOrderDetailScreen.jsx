@@ -642,23 +642,29 @@ export const AdminOrderDetailScreen = () => {
             </View>
             {currentStatus !== 'delivered' && currentStatus !== 'cancelled' && (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {!deliveryPartner && (
-                  <Button
-                    title="⚡ Auto-Assign"
-                    size="sm"
-                    variant="outline"
-                    isLoading={autoAssignMutation.isPending}
-                    disabled={autoAssignMutation.isPending}
-                    onPress={() => autoAssignMutation.mutate()}
-                    style={{ marginRight: 6 }}
-                  />
+                {currentStatus === 'ready' || currentStatus === 'ready_for_redelivery' ? (
+                  <>
+                    {!deliveryPartner && (
+                      <Button
+                        title="⚡ Auto-Assign"
+                        size="sm"
+                        variant="outline"
+                        isLoading={autoAssignMutation.isPending}
+                        disabled={autoAssignMutation.isPending}
+                        onPress={() => autoAssignMutation.mutate()}
+                        style={{ marginRight: 6 }}
+                      />
+                    )}
+                    <Button
+                      title={deliveryPartner ? 'Reassign Partner' : 'Assign Partner'}
+                      size="sm"
+                      variant="outline"
+                      onPress={() => setAssignModalVisible(true)}
+                    />
+                  </>
+                ) : (
+                  <Badge label="Assignment on Ready" variant="secondary" size="sm" />
                 )}
-                <Button
-                  title={deliveryPartner ? 'Reassign Partner' : 'Assign Partner'}
-                  size="sm"
-                  variant="outline"
-                  onPress={() => setAssignModalVisible(true)}
-                />
               </View>
             )}
           </View>

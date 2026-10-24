@@ -62,26 +62,26 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-screen max-w-md bg-[#090D1E] border-l border-white/10 shadow-2xl flex flex-col justify-between"
+              className="w-screen max-w-md bg-white border-l border-[#E7E2D8] shadow-2xl flex flex-col justify-between"
             >
               {/* Header */}
-              <div className="p-6 border-b border-white/8 flex items-center justify-between bg-white/[0.02]">
+              <div className="p-6 border-b border-[#E7E2D8] flex items-center justify-between bg-[#FAF8F5]">
                 <div className="flex items-center gap-3">
                   {laundry.logo ? (
                     <img
                       src={laundry.logo}
                       alt={laundry.name}
-                      className="w-11 h-11 rounded-xl object-cover border border-white/10 shadow-lg"
+                      className="w-11 h-11 rounded-xl object-cover border border-[#E7E2D8] shadow-2xs"
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-lg">
+                    <div className="w-11 h-11 rounded-xl bg-stone-100 border border-[#DDD5C7] flex items-center justify-center text-stone-800 font-bold text-lg font-oswald">
                       {laundry.name ? laundry.name.charAt(0).toUpperCase() : <Store className="w-5 h-5" />}
                     </div>
                   )}
                   <div>
-                    <h2 className="text-lg font-bold text-textPrimary">{laundry.name}</h2>
-                    <p className="text-xs text-textMuted flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-textMuted" />
+                    <h2 className="text-lg font-bold text-stone-900 font-oswald tracking-tight">{laundry.name}</h2>
+                    <p className="text-xs text-stone-500 flex items-center gap-1 font-erode">
+                      <MapPin className="w-3 h-3 text-stone-400" />
                       {laundry.city}, {laundry.state}
                     </p>
                   </div>
@@ -89,27 +89,27 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
 
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-textMuted hover:text-textPrimary transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 border border-[#DDD5C7] flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Scrollable Body */}
-              <div className="p-6 space-y-6 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-white/10">
+              <div className="p-6 space-y-6 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-stone-200">
                 {/* Status & Subscription */}
-                <div className="glass-card p-4 rounded-xl border border-white/8 space-y-3">
+                <div className="bg-[#FAF8F5] p-4 rounded-xl border border-[#E7E2D8] space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-textMuted font-medium">Platform Status</span>
+                    <span className="text-xs text-stone-500 font-medium">Platform Status</span>
                     <LaundryStatusBadge status={laundry.status} />
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/5">
-                    <span className="text-textMuted font-medium flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-[#E7E2D8]">
+                    <span className="text-stone-600 font-medium flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-stone-700" />
                       Subscription Plan
                     </span>
-                    <span className="font-semibold capitalize text-purple-300">
+                    <span className="font-semibold capitalize text-stone-900 font-erode">
                       {laundry.subscriptionStatus || 'Trial'}
                     </span>
                   </div>
@@ -117,46 +117,46 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
 
                 {/* Key Metrics */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-textMuted mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 font-oswald mb-2.5">
                     Business Overview
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="glass-card p-3 rounded-xl border border-white/8">
-                      <div className="flex items-center gap-1.5 text-textMuted text-xs mb-1">
-                        <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="bg-white p-3 rounded-xl border border-[#E7E2D8] shadow-2xs">
+                      <div className="flex items-center gap-1.5 text-stone-500 text-xs mb-1">
+                        <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
                         <span>Total Orders</span>
                       </div>
-                      <p className="text-base font-bold text-textPrimary tabular-nums">
+                      <p className="text-base font-bold text-stone-900 tabular-nums font-erode">
                         {formatIndianNumber(laundry.totalOrders || 0)}
                       </p>
                     </div>
 
-                    <div className="glass-card p-3 rounded-xl border border-white/8">
-                      <div className="flex items-center gap-1.5 text-textMuted text-xs mb-1">
-                        <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="bg-white p-3 rounded-xl border border-[#E7E2D8] shadow-2xs">
+                      <div className="flex items-center gap-1.5 text-stone-500 text-xs mb-1">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Total Revenue</span>
                       </div>
-                      <p className="text-base font-bold text-textPrimary tabular-nums">
+                      <p className="text-base font-bold text-stone-900 tabular-nums font-erode">
                         {formatIndianCurrency(laundry.totalRevenue || 0)}
                       </p>
                     </div>
 
-                    <div className="glass-card p-3 rounded-xl border border-white/8">
-                      <div className="flex items-center gap-1.5 text-textMuted text-xs mb-1">
-                        <Percent className="w-3.5 h-3.5 text-purple-400" />
+                    <div className="bg-white p-3 rounded-xl border border-[#E7E2D8] shadow-2xs">
+                      <div className="flex items-center gap-1.5 text-stone-500 text-xs mb-1">
+                        <Percent className="w-3.5 h-3.5 text-stone-600" />
                         <span>Commission</span>
                       </div>
-                      <p className="text-base font-bold text-purple-300 tabular-nums">
+                      <p className="text-base font-bold text-stone-900 tabular-nums font-erode">
                         {laundry.commissionPercent !== undefined ? `${laundry.commissionPercent}%` : '10%'}
                       </p>
                     </div>
 
-                    <div className="glass-card p-3 rounded-xl border border-white/8">
-                      <div className="flex items-center gap-1.5 text-textMuted text-xs mb-1">
-                        <Navigation className="w-3.5 h-3.5 text-cyan-400" />
+                    <div className="bg-white p-3 rounded-xl border border-[#E7E2D8] shadow-2xs">
+                      <div className="flex items-center gap-1.5 text-stone-500 text-xs mb-1">
+                        <Navigation className="w-3.5 h-3.5 text-stone-600" />
                         <span>Delivery Radius</span>
                       </div>
-                      <p className="text-base font-bold text-textPrimary">
+                      <p className="text-base font-bold text-stone-900 font-erode">
                         {laundry.serviceRadius || 10} km
                       </p>
                     </div>
@@ -165,28 +165,28 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
 
                 {/* Owner Information */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-textMuted mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 font-oswald mb-2.5">
                     Owner Details
                   </h3>
-                  <div className="glass-card p-4 rounded-xl border border-white/8 space-y-2.5 text-xs">
-                    <div className="flex items-center gap-2.5 text-textSecondary">
-                      <User className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                      <span className="font-semibold text-textPrimary">{owner.name || 'Unassigned'}</span>
+                  <div className="bg-white p-4 rounded-xl border border-[#E7E2D8] space-y-2.5 text-xs shadow-2xs">
+                    <div className="flex items-center gap-2.5 text-stone-700">
+                      <User className="w-4 h-4 text-stone-600 flex-shrink-0" />
+                      <span className="font-semibold text-stone-900 font-erode">{owner.name || 'Unassigned'}</span>
                     </div>
 
                     {owner.email && (
-                      <div className="flex items-center gap-2.5 text-textMuted">
-                        <Mail className="w-4 h-4 text-textMuted flex-shrink-0" />
-                        <a href={`mailto:${owner.email}`} className="hover:text-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5 text-stone-500">
+                        <Mail className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                        <a href={`mailto:${owner.email}`} className="hover:text-stone-900 transition-colors font-erode">
                           {owner.email}
                         </a>
                       </div>
                     )}
 
                     {owner.phone && (
-                      <div className="flex items-center gap-2.5 text-textMuted">
-                        <Phone className="w-4 h-4 text-textMuted flex-shrink-0" />
-                        <a href={`tel:${owner.phone}`} className="hover:text-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5 text-stone-500">
+                        <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                        <a href={`tel:${owner.phone}`} className="hover:text-stone-900 transition-colors font-erode">
                           {owner.phone}
                         </a>
                       </div>
@@ -196,36 +196,36 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
 
                 {/* Location & Address */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-textMuted mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 font-oswald mb-2.5">
                     Location & Contact
                   </h3>
-                  <div className="glass-card p-4 rounded-xl border border-white/8 space-y-2.5 text-xs">
-                    <div className="flex items-start gap-2.5 text-textSecondary">
-                      <MapPin className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                  <div className="bg-white p-4 rounded-xl border border-[#E7E2D8] space-y-2.5 text-xs shadow-2xs">
+                    <div className="flex items-start gap-2.5 text-stone-700">
+                      <MapPin className="w-4 h-4 text-stone-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-textPrimary">{laundry.address}</p>
-                        <p className="text-textMuted mt-0.5">
+                        <p className="font-medium text-stone-900 font-erode">{laundry.address}</p>
+                        <p className="text-stone-500 mt-0.5 font-erode">
                           {laundry.city}, {laundry.state} - {laundry.pincode}
                         </p>
                       </div>
                     </div>
 
                     {laundry.phone && (
-                      <div className="flex items-center gap-2.5 text-textMuted pt-2 border-t border-white/5">
-                        <Phone className="w-3.5 h-3.5 text-textMuted" />
-                        <span>{laundry.phone}</span>
+                      <div className="flex items-center gap-2.5 text-stone-500 pt-2 border-t border-[#E7E2D8]">
+                        <Phone className="w-3.5 h-3.5 text-stone-400" />
+                        <span className="font-erode">{laundry.phone}</span>
                       </div>
                     )}
 
                     {laundry.email && (
-                      <div className="flex items-center gap-2.5 text-textMuted">
-                        <Mail className="w-3.5 h-3.5 text-textMuted" />
-                        <span>{laundry.email}</span>
+                      <div className="flex items-center gap-2.5 text-stone-500">
+                        <Mail className="w-3.5 h-3.5 text-stone-400" />
+                        <span className="font-erode">{laundry.email}</span>
                       </div>
                     )}
 
                     {coordinates[0] !== 0 && (
-                      <div className="text-[11px] text-textMuted pt-1 font-mono">
+                      <div className="text-[11px] text-stone-400 pt-1 font-mono">
                         GPS: [{coordinates[1]?.toFixed(4)}, {coordinates[0]?.toFixed(4)}]
                       </div>
                     )}
@@ -234,26 +234,26 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
 
                 {/* Working Hours */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-textMuted mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 font-oswald mb-2.5">
                     Operational Hours
                   </h3>
-                  <div className="glass-card p-4 rounded-xl border border-white/8 space-y-2 text-xs">
-                    <div className="flex items-center justify-between text-textSecondary">
-                      <span className="flex items-center gap-1.5 text-textMuted">
-                        <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="bg-white p-4 rounded-xl border border-[#E7E2D8] space-y-2 text-xs shadow-2xs">
+                    <div className="flex items-center justify-between text-stone-700">
+                      <span className="flex items-center gap-1.5 text-stone-500">
+                        <Clock className="w-3.5 h-3.5 text-stone-500" />
                         Daily Hours
                       </span>
-                      <span className="font-mono font-semibold text-textPrimary">
+                      <span className="font-mono font-semibold text-stone-900">
                         {laundry.openTime || '09:00'} - {laundry.closeTime || '21:00'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-textSecondary pt-2 border-t border-white/5">
-                      <span className="flex items-center gap-1.5 text-textMuted">
-                        <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="flex items-center justify-between text-stone-700 pt-2 border-t border-[#E7E2D8]">
+                      <span className="flex items-center gap-1.5 text-stone-500">
+                        <Calendar className="w-3.5 h-3.5 text-stone-500" />
                         Working Days
                       </span>
-                      <span className="text-[11px] font-medium text-textPrimary">
+                      <span className="text-[11px] font-medium text-stone-900 font-erode">
                         {workingDays}
                       </span>
                     </div>
@@ -262,10 +262,10 @@ export const LaundryDetailsDrawer = ({ laundry, isOpen, onClose }) => {
               </div>
 
               {/* Drawer Footer */}
-              <div className="p-4 border-t border-white/8 bg-white/[0.02]">
+              <div className="p-4 border-t border-[#E7E2D8] bg-[#FAF8F5]">
                 <button
                   onClick={onClose}
-                  className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-textPrimary text-xs font-semibold transition-all cursor-pointer"
+                  className="btn-secondary w-full py-2.5 rounded-full font-oswald uppercase tracking-wider text-xs cursor-pointer shadow-2xs hover:bg-stone-100"
                 >
                   Close Details
                 </button>

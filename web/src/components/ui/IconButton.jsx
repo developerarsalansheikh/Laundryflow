@@ -9,8 +9,8 @@ export const IconButton = React.forwardRef(
       <button
         ref={ref}
         type="button"
-        className={`relative inline-flex items-center justify-center p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 active:scale-95 cursor-pointer ${
-          active ? 'bg-blue-50 text-blue-600 border-blue-200' : ''
+        className={`relative inline-flex items-center justify-center p-2 rounded-xl text-stone-700 hover:text-stone-950 bg-white hover:bg-stone-50 border border-[#DDD5C7] shadow-2xs transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-stone-900/10 active:scale-95 cursor-pointer ${
+          active ? 'bg-stone-100 text-stone-900 border-stone-400' : ''
         } ${className}`}
         {...props}
       >

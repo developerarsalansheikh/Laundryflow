@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { adminApi } from '../api/adminApi';
 import { logoutApi } from '../api/auth';
-import { ROUTES, PUBLIC_WEBSITE_URL } from '../routes/routeConstants';
+import { ROUTES } from '../routes/routeConstants';
 import { AppBackground } from '../components/common/AppBackground';
 import { useAdminSocket } from '../hooks/useAdminSocket';
 import { UserMenu } from '../components/common/UserMenu';
@@ -84,15 +84,15 @@ export const AdminLayout = () => {
       <aside
         className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 z-40 overflow-hidden"
         style={{
-          backgroundColor: '#080C1D',
-          borderRight: '1px solid rgba(255,255,255,0.07)',
-          boxShadow: '4px 0 24px rgba(0,0,0,0.5)',
+          backgroundColor: '#1C1917',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
         }}
         aria-label="Admin navigation"
       >
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.07] flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-[#1C1917] border border-stone-700/50 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.08] flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#292524] border border-stone-600/50 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
             <img
               src="/logo.svg"
               alt="LaundryWave"
@@ -108,7 +108,7 @@ export const AdminLayout = () => {
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-              <span className="text-[11px] font-semibold text-slate-400">
+              <span className="text-[10px] font-semibold text-stone-400 font-oswald uppercase tracking-wider">
                 Store Operations
               </span>
             </div>
@@ -127,16 +127,16 @@ export const AdminLayout = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[15px] font-semibold transition-all duration-200 outline-none ${
+                className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[14px] font-semibold transition-all duration-200 outline-none ${
                   isActive
-                    ? 'bg-[#2563eb] text-white font-bold shadow-md shadow-blue-600/25'
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                    ? 'bg-stone-800 text-white font-bold border border-stone-700/60 shadow-xs'
+                    : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <Icon
                     className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                      isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'
+                      isActive ? 'text-white' : 'text-stone-300 group-hover:text-white'
                     }`}
                     strokeWidth={isActive ? 2.3 : 1.9}
                   />
@@ -154,36 +154,34 @@ export const AdminLayout = () => {
             );
           })}
 
-          <div className="pt-2 border-t border-white/[0.07] mt-2">
-            <a
-              href={PUBLIC_WEBSITE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-semibold text-blue-400 hover:text-white hover:bg-white/[0.06] transition-all"
+          <div className="pt-2 border-t border-white/[0.08] mt-2">
+            <Link
+              to={ROUTES.PUBLIC.HOME}
+              className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-semibold text-stone-300 hover:text-white hover:bg-white/[0.06] transition-all"
               title="Visit LaundryWave Website"
             >
-              <Globe className="w-5 h-5 flex-shrink-0 text-blue-400" />
+              <Globe className="w-5 h-5 flex-shrink-0 text-stone-400" />
               <span>Visit LaundryWave Website</span>
-            </a>
+            </Link>
           </div>
         </nav>
 
         {/* Sidebar Footer User Card */}
-        <div className="p-4 border-t border-white/[0.07]">
+        <div className="p-4 border-t border-white/[0.08]">
           <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Store Admin</span>
               </div>
-              <span className="text-[10px] font-medium text-slate-400">
+              <span className="text-[10px] font-medium text-stone-400">
                 {laundry?.city || 'Facility'}
               </span>
             </div>
             <p className="text-xs font-bold truncate text-white">
               {user?.name || user?.fullName || laundry?.owner?.name || 'Laundry Admin'}
             </p>
-            <p className="text-[10px] font-medium truncate text-slate-400 mt-0.5">
+            <p className="text-[10px] font-medium truncate text-stone-400 mt-0.5">
               {user?.email || 'admin@laundrywave.com'}
             </p>
           </div>
@@ -209,14 +207,14 @@ export const AdminLayout = () => {
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               className="fixed inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col z-50"
               style={{
-                backgroundColor: '#080C1D',
+                backgroundColor: '#1C1917',
                 borderRight: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '4px 0 30px rgba(0,0,0,0.8)',
+                boxShadow: '4px 0 30px rgba(0,0,0,0.6)',
               }}
             >
-              <div className="flex items-center justify-between px-5 h-16 border-b border-white/[0.07]">
+              <div className="flex items-center justify-between px-5 h-16 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#1C1917] border border-stone-700/50 flex items-center justify-center overflow-hidden">
+                  <div className="w-8 h-8 rounded-lg bg-[#292524] border border-stone-600/50 flex items-center justify-center overflow-hidden">
                     <img
                       src="/logo.svg"
                       alt="LaundryWave"
@@ -230,7 +228,7 @@ export const AdminLayout = () => {
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-lg text-textMuted hover:text-textPrimary hover:bg-white/[0.05]"
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/[0.05]"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -245,14 +243,14 @@ export const AdminLayout = () => {
                     <NavLink
                       key={item.path}
                       to={item.path}
-                      className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[15px] font-semibold transition-all ${
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-[14px] font-semibold transition-all ${
                         isActive
-                          ? 'bg-[#2563eb] text-white font-bold shadow-md shadow-blue-600/25'
-                          : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                          ? 'bg-stone-800 text-white font-bold border border-stone-700/60 shadow-xs'
+                          : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
                       }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-300'}`} strokeWidth={isActive ? 2.3 : 1.9} />
+                        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-stone-300'}`} strokeWidth={isActive ? 2.3 : 1.9} />
                         <span>{item.label}</span>
                       </div>
                       {item.badge && unreadCount > 0 && (
@@ -267,20 +265,18 @@ export const AdminLayout = () => {
                 })}
               </nav>
 
-              <div className="p-4 border-t border-white/[0.07] space-y-2">
-                <a
-                  href={PUBLIC_WEBSITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="p-4 border-t border-white/[0.08] space-y-2">
+                <Link
+                  to={ROUTES.PUBLIC.HOME}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-colors border border-blue-500/20"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-stone-200 bg-white/10 hover:bg-white/15 rounded-xl transition-colors border border-white/10 font-oswald uppercase tracking-wider"
                 >
                   <Globe className="w-4 h-4" />
                   <span>Visit LaundryWave Website</span>
-                </a>
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-statusDanger bg-statusDanger/10 hover:bg-statusDanger/20 rounded-xl transition-colors border border-statusDanger/20"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold text-statusDanger bg-statusDanger/10 hover:bg-statusDanger/20 rounded-xl transition-colors border border-statusDanger/20 font-oswald uppercase tracking-wider"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
@@ -297,50 +293,48 @@ export const AdminLayout = () => {
         <header
           className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 h-16 transition-colors duration-200"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderBottom: '1px solid #E2E8F0',
+            backgroundColor: 'rgba(250, 249, 246, 0.95)',
+            borderBottom: '1px solid #E7E2D8',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+            boxShadow: '0 1px 3px 0 rgba(28, 25, 23, 0.04)',
           }}
         >
           {/* Left: Mobile hamburger + Store Identity */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors flex-shrink-0"
+              className="lg:hidden p-2 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors flex-shrink-0"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-500 min-w-0">
-              <span className="font-bold text-slate-900 tracking-tight truncate max-w-[130px] sm:max-w-[200px] md:max-w-xs">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-stone-600 min-w-0">
+              <span className="font-bold text-stone-900 tracking-tight truncate max-w-[130px] sm:max-w-[200px] md:max-w-xs font-oswald uppercase tracking-wide">
                 {storeName}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:inline flex-shrink-0" />
-              <span className="text-slate-500 font-medium hidden sm:inline flex-shrink-0">Laundry Operations Portal</span>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400 hidden sm:inline flex-shrink-0" />
+              <span className="text-stone-600 font-medium hidden sm:inline flex-shrink-0 font-erode">Laundry Operations Portal</span>
             </div>
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
             {/* Return to Public Website */}
-            <a
-              href={PUBLIC_WEBSITE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs rounded-xl transition-colors"
+            <Link
+              to={ROUTES.PUBLIC.HOME}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-stone-800 hover:text-stone-950 bg-white hover:bg-stone-50 border border-[#DDD5C7] shadow-2xs rounded-full transition-colors font-oswald uppercase tracking-wider"
               title="Return to Public LaundryWave Website"
             >
-              <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+              <Globe className="w-3.5 h-3.5 text-stone-700 flex-shrink-0" />
               <span>Visit LaundryWave Website</span>
-            </a>
+            </Link>
 
             {/* Notifications Shortcut */}
             <button
               onClick={() => navigate(ROUTES.ADMIN.NOTIFICATIONS)}
-              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors flex-shrink-0"
+              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 bg-white hover:bg-stone-50 border border-[#DDD5C7] shadow-2xs transition-colors flex-shrink-0 cursor-pointer"
               title="View Notifications"
             >
               <Bell className="w-4 h-4" />
@@ -349,7 +343,7 @@ export const AdminLayout = () => {
               )}
             </button>
 
-            <div className="h-6 w-px bg-slate-200 hidden sm:block mx-0.5 flex-shrink-0" />
+            <div className="h-6 w-px bg-[#E7E2D8] hidden sm:block mx-0.5 flex-shrink-0" />
 
             {/* User Identity & Dropdown Menu */}
             <UserMenu />

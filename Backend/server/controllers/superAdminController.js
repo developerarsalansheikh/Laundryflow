@@ -489,6 +489,11 @@ const getAllUsers = async (req, res) => {
     if (role) filter.role = role;
     if (status === "active") filter.isActive = true;
     if (status === "inactive") filter.isActive = false;
+    if (status === "pending" || req.query.approvalStatus === "pending") {
+      filter.approvalStatus = "pending";
+    } else if (req.query.approvalStatus) {
+      filter.approvalStatus = req.query.approvalStatus;
+    }
 
     if (req.query.today === "true" || req.query.timeframe === "today") {
       const { startOfDay, endOfDay } = getTodayDateRange();

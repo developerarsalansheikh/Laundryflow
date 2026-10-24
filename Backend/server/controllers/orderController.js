@@ -320,6 +320,7 @@ const placeOrder = async (req, res) => {
       const targetClothingType = (item.clothingType || "").trim().toLowerCase();
       const targetItemName = (item.itemName || item.name || "").trim().toLowerCase();
 
+      // 1. Check custom items configured on this service
       if (Array.isArray(service.items) && service.items.length > 0) {
         matchedClothing = service.items.find((sub) => {
           const subType = (sub.clothingType || "").trim().toLowerCase();
@@ -334,7 +335,19 @@ const placeOrder = async (req, res) => {
         }
       }
 
-      // If not in service.items, use service.price
+      // 2. If dry cleaning service or clothing item requested without custom item price, use authoritative standard dry clean catalog
+      if ((unitPrice === null || unitPrice === undefined) && (service.category === "dry_clean" || targetClothingType)) {
+        const { getStandardDryCleanPrice } = require("../constants/catalog");
+        const standardItem = getStandardDryCleanPrice(item.clothingType, item.itemName || item.name);
+        if (standardItem && typeof standardItem.price === "number") {
+          unitPrice = standardItem.price;
+          if (!matchedClothing) {
+            matchedClothing = standardItem;
+          }
+        }
+      }
+
+      // 3. If standard flat service (e.g. Wash & Fold per kg or Ironing per piece without sub-items), use service.price
       if (unitPrice === null || unitPrice === undefined) {
         if (typeof service.price === "number" && service.price > 0) {
           unitPrice = service.price;
@@ -392,6 +405,10 @@ const placeOrder = async (req, res) => {
     const gst = Math.round(subtotal * 0.05);
     const discount = 0;
     const totalAmount = subtotal + deliveryFee + gst - discount;
+
+    console.log(
+      `[OrderPricing] Order verification: Subtotal=₹${subtotal}, DeliveryFee=₹${deliveryFee}, GST=₹${gst}, TotalAmount=₹${totalAmount}, Items=${serviceDetails.length}`
+    );
 
     // ── Compute estimated delivery date ───
     const maxEstimatedHours = Math.max(...estimatedHoursList);
@@ -1352,7 +1369,12 @@ const getAllOrders = async (req, res) => {
 
     // Admin sirf apni laundry ke orders dekhe
     if (req.user.role === "admin") {
-      filter.laundryId = req.user.laundryId;
+      let adminLaundryId = req.user.laundryId;
+      if (!adminLaundryId && req.user._id) {
+        const store = await Laundry.findOne({ owner: req.user._id });
+        if (store) adminLaundryId = store._id;
+      }
+      filter.laundryId = adminLaundryId;
     }
 
     const orders = await Order.find(filter)
@@ -1411,14 +1433,19 @@ const assignDeliveryPartner = async (req, res) => {
     }
 
     // Admin sirf apni laundry ke orders mein assign kar sakta hai
-    if (
-      req.user.role === "admin" &&
-      order.laundryId.toString() !== req.user.laundryId.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied — this order does not belong to your store",
-      });
+    if (req.user.role === "admin") {
+      let adminLaundryId = req.user.laundryId;
+      if (!adminLaundryId && req.user._id) {
+        const store = await Laundry.findOne({ owner: req.user._id });
+        if (store) adminLaundryId = store._id;
+      }
+      const orderLaundryId = order.laundryId?._id || order.laundryId;
+      if (!adminLaundryId || orderLaundryId?.toString() !== adminLaundryId.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied — this order does not belong to your store",
+        });
+      }
     }
 
     if (order.status === "cancelled") {
@@ -1432,6 +1459,14 @@ const assignDeliveryPartner = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Cannot change delivery partner for a delivered order",
+      });
+    }
+
+    // Workflow rule: Processing -> Ready -> Delivery assignment -> Pickup -> Delivery
+    if (order.status !== "ready" && order.status !== "ready_for_redelivery") {
+      return res.status(400).json({
+        success: false,
+        message: `Delivery partner can only be assigned when order reaches 'Ready' status. Current order status: '${order.status}'.`,
       });
     }
 
@@ -1690,6 +1725,14 @@ const autoAssignOrder = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: `Cannot assign delivery partner to ${order.status} orders`,
+      });
+    }
+
+    // Workflow rule: Processing -> Ready -> Delivery assignment -> Pickup -> Delivery
+    if (order.status !== "ready" && order.status !== "ready_for_redelivery") {
+      return res.status(400).json({
+        success: false,
+        message: `Delivery partner can only be assigned when order reaches 'Ready' status. Current order status: '${order.status}'.`,
       });
     }
 
@@ -2017,7 +2060,15 @@ const changeOrderAddress = async (req, res) => {
 
     // Authoritative serviceability and distance check
     const { evaluateDeliveryEligibility } = require("./deliveryZoneController");
-    const subtotal = order.subtotal || Math.max(0, order.totalAmount - (order.deliveryFee || 0) - (order.gst || 0));
+    let subtotal = order.subtotal;
+    if (!subtotal || subtotal <= 0) {
+      if (Array.isArray(order.services) && order.services.length > 0) {
+        subtotal = order.services.reduce((sum, s) => sum + ((Number(s.price) || 0) * (Number(s.quantity) || 1)), 0);
+      }
+    }
+    if (!subtotal || subtotal <= 0) {
+      subtotal = Math.max(0, (order.totalAmount || 0) - (order.deliveryFee || 0) - (order.gst || 0));
+    }
     const eligibility = await evaluateDeliveryEligibility({
       laundryId: order.laundryId._id || order.laundryId,
       address: targetAddress,

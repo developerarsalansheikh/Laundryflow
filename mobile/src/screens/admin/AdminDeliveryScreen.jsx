@@ -521,26 +521,32 @@ export const AdminDeliveryScreen = () => {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {!hasDriver && (
-              <Button
-                title="⚡ Auto-Assign"
-                size="sm"
-                variant="outline"
-                isLoading={autoAssignOrderMutation.isPending && autoAssignOrderMutation.variables === item._id}
-                disabled={autoAssignOrderMutation.isPending}
-                onPress={() => autoAssignOrderMutation.mutate(item._id)}
-                style={{ marginRight: 6 }}
-              />
+            {item.status === 'ready' || item.status === 'ready_for_redelivery' ? (
+              <>
+                {!hasDriver && (
+                  <Button
+                    title="⚡ Auto-Assign"
+                    size="sm"
+                    variant="outline"
+                    isLoading={autoAssignOrderMutation.isPending && autoAssignOrderMutation.variables === item._id}
+                    disabled={autoAssignOrderMutation.isPending}
+                    onPress={() => autoAssignOrderMutation.mutate(item._id)}
+                    style={{ marginRight: 6 }}
+                  />
+                )}
+                <Button
+                  title={hasDriver ? 'Reassign' : 'Manual'}
+                  size="sm"
+                  variant={hasDriver ? 'outline' : 'primary'}
+                  onPress={() => {
+                    setSelectedOrderForAssign(item);
+                    setAssignOrderModalVisible(true);
+                  }}
+                />
+              </>
+            ) : (
+              <Badge label="Assignment on Ready" variant="secondary" size="sm" />
             )}
-            <Button
-              title={hasDriver ? 'Reassign' : 'Manual'}
-              size="sm"
-              variant={hasDriver ? 'outline' : 'primary'}
-              onPress={() => {
-                setSelectedOrderForAssign(item);
-                setAssignOrderModalVisible(true);
-              }}
-            />
           </View>
         </View>
       </Card>
@@ -564,11 +570,27 @@ export const AdminDeliveryScreen = () => {
           </View>
 
           {activeTab === 'partners' && (
-            <Badge
-              label={`${onlinePartnersCount} ONLINE`}
-              variant={onlinePartnersCount > 0 ? 'success' : 'neutral'}
-              size="sm"
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Badge
+                label={`${onlinePartnersCount} ONLINE`}
+                variant={onlinePartnersCount > 0 ? 'success' : 'neutral'}
+                size="sm"
+                style={{ marginRight: 8 }}
+              />
+              <Button
+                title="+ Add Partner"
+                variant="primary"
+                size="sm"
+                onPress={() => {
+                  setPartnerName('');
+                  setPartnerEmail('');
+                  setPartnerPhone('');
+                  setPartnerPassword('');
+                  setFormErrors({});
+                  setAddPartnerModalVisible(true);
+                }}
+              />
+            </View>
           )}
 
           {activeTab === 'zones' && (
@@ -670,8 +692,17 @@ export const AdminDeliveryScreen = () => {
             }
             ListEmptyComponent={
               <EmptyState
-                title="No Delivery Partners Available"
-                description="Delivery partners are onboarded and managed centrally by Super Admin. Active partners in your area will appear here automatically."
+                title="No Delivery Partners in Fleet"
+                description="You haven't added any delivery drivers yet. Tap below to register a delivery partner for your laundry store."
+                actionTitle="+ Add Delivery Partner"
+                onAction={() => {
+                  setPartnerName('');
+                  setPartnerEmail('');
+                  setPartnerPhone('');
+                  setPartnerPassword('');
+                  setFormErrors({});
+                  setAddPartnerModalVisible(true);
+                }}
               />
             }
           />
@@ -996,6 +1027,106 @@ export const AdminDeliveryScreen = () => {
                   isLoading={saveZoneMutation.isPending}
                   disabled={saveZoneMutation.isPending}
                   onPress={handleSaveZone}
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── ADD DELIVERY PARTNER MODAL ── */}
+      <Modal
+        visible={addPartnerModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          if (!addPartnerMutation.isPending) {
+            setAddPartnerModalVisible(false);
+          }
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+            <Text variant="h3" weight="bold" colorVariant="primary">
+              Add Delivery Partner
+            </Text>
+            <Text variant="caption" colorVariant="muted" style={{ marginVertical: 4 }}>
+              Register a delivery agent for your laundry fleet.
+            </Text>
+
+            <Divider style={{ marginVertical: spacing.xs }} />
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              <Input
+                label="Full Name *"
+                placeholder="e.g. Ramesh Kumar"
+                value={partnerName}
+                onChangeText={(t) => {
+                  setPartnerName(t);
+                  if (formErrors.name) setFormErrors((p) => ({ ...p, name: null }));
+                }}
+                error={formErrors.name}
+                containerStyle={{ marginBottom: spacing.xs }}
+              />
+
+              <Input
+                label="Mobile Number (10 digits) *"
+                placeholder="e.g. 9876543210"
+                keyboardType="phone-pad"
+                maxLength={10}
+                value={partnerPhone}
+                onChangeText={(t) => {
+                  setPartnerPhone(t);
+                  if (formErrors.phone) setFormErrors((p) => ({ ...p, phone: null }));
+                }}
+                error={formErrors.phone}
+                containerStyle={{ marginBottom: spacing.xs }}
+              />
+
+              <Input
+                label="Email Address *"
+                placeholder="e.g. ramesh@laundrywave.in"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={partnerEmail}
+                onChangeText={(t) => {
+                  setPartnerEmail(t);
+                  if (formErrors.email) setFormErrors((p) => ({ ...p, email: null }));
+                }}
+                error={formErrors.email}
+                containerStyle={{ marginBottom: spacing.xs }}
+              />
+
+              <Input
+                label="Initial Password (min 6 characters) *"
+                placeholder="••••••••"
+                secureTextEntry
+                value={partnerPassword}
+                onChangeText={(t) => {
+                  setPartnerPassword(t);
+                  if (formErrors.password) setFormErrors((p) => ({ ...p, password: null }));
+                }}
+                error={formErrors.password}
+                containerStyle={{ marginBottom: spacing.sm }}
+              />
+
+              <View style={styles.modalBtnRow}>
+                <Button
+                  title="Cancel"
+                  variant="outline"
+                  size="md"
+                  disabled={addPartnerMutation.isPending}
+                  onPress={() => setAddPartnerModalVisible(false)}
+                  style={{ flex: 1, marginRight: 8 }}
+                />
+                <Button
+                  title="Add Partner"
+                  variant="primary"
+                  size="md"
+                  isLoading={addPartnerMutation.isPending}
+                  disabled={addPartnerMutation.isPending}
+                  onPress={handleAddPartnerSubmit}
                   style={{ flex: 1 }}
                 />
               </View>

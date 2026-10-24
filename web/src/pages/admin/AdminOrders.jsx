@@ -15,19 +15,22 @@ import toast from 'react-hot-toast';
 import { adminApi } from '../../api/adminApi';
 import { ROUTES } from '../../routes/routeConstants';
 
-const STATUS_TABS = [
+const MAIN_STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
-  { key: 'pending', label: 'Pending Pickup' },
-  { key: 'picked_up', label: 'Picked Up' },
-  { key: 'at_laundry_pending_confirmation', label: 'Handoff Pending' },
-  { key: 'received_at_laundry', label: 'Received' },
+  { key: 'pending', label: 'Pending' },
   { key: 'in_progress', label: 'Processing' },
   { key: 'ready', label: 'Ready' },
   { key: 'out_for_delivery', label: 'Out for Delivery' },
-  { key: 'delivery_pending_customer_confirmation', label: 'Pending Customer' },
-  { key: 'returned_to_laundry', label: 'Returned' },
   { key: 'delivered', label: 'Delivered' },
   { key: 'cancelled', label: 'Cancelled' },
+];
+
+const SECONDARY_STATUSES = [
+  { key: 'picked_up', label: 'Picked Up' },
+  { key: 'at_laundry_pending_confirmation', label: 'Handoff Pending' },
+  { key: 'received_at_laundry', label: 'Received at Laundry' },
+  { key: 'delivery_pending_customer_confirmation', label: 'Pending Customer' },
+  { key: 'returned_to_laundry', label: 'Returned to Laundry' },
 ];
 
 export const AdminOrders = () => {
@@ -247,9 +250,9 @@ export const AdminOrders = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {STATUS_TABS.map((tab) => {
+      {/* Streamlined Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2 pb-1">
+        {MAIN_STATUS_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
           return (
             <button
@@ -265,6 +268,32 @@ export const AdminOrders = () => {
             </button>
           );
         })}
+
+        {/* Secondary granular status filter */}
+        <div className="relative">
+          <select
+            value={SECONDARY_STATUSES.some((s) => s.key === activeTab) ? activeTab : ''}
+            onChange={(e) => {
+              if (e.target.value) handleTabChange(e.target.value);
+            }}
+            className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all duration-200 outline-none cursor-pointer ${
+              SECONDARY_STATUSES.some((s) => s.key === activeTab)
+                ? 'bg-gradient-to-r from-primaryPurple to-brandIndigo text-white shadow-glowPurple border border-transparent'
+                : 'bg-white/[0.03] hover:bg-white/[0.06] text-textSecondary hover:text-textPrimary border border-white/[0.07]'
+            }`}
+          >
+            <option value="" disabled className="bg-stone-900 text-stone-400">
+              {SECONDARY_STATUSES.some((s) => s.key === activeTab)
+                ? `Filter: ${SECONDARY_STATUSES.find((s) => s.key === activeTab)?.label}`
+                : 'More Filters ▾'}
+            </option>
+            {SECONDARY_STATUSES.map((status) => (
+              <option key={status.key} value={status.key} className="bg-stone-900 text-white">
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Orders Table Container */}

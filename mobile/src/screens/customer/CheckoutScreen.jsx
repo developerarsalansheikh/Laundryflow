@@ -299,15 +299,23 @@ export const CheckoutScreen = () => {
       await customerService.verifyPayment(paymentResult);
       queryClient.invalidateQueries({ queryKey: ['myOrders'] });
       queryClient.invalidateQueries({ queryKey: ['orderDetail', activeRazorpayOrder?.orderId] });
+      const finalAmount =
+        activeRazorpayOrder?.amountInRupees ||
+        activeRazorpayOrder?.amount ||
+        cartSummary?.grandTotal ||
+        0;
+      const successLaundryName =
+        activeRazorpayOrder?.laundryName || cart.laundryName || 'Laundry Store';
+
       cart.clearCart();
       navigation.replace('OrderSuccess', {
         order: {
           _id: activeRazorpayOrder?.orderId,
-          totalAmount: activeRazorpayOrder?.amountInRupees,
+          totalAmount: finalAmount,
           isPaid: true,
           paymentMethod: 'razorpay',
         },
-        laundryName: activeRazorpayOrder?.laundryName,
+        laundryName: successLaundryName,
       });
     } catch (verifyErr) {
       Alert.alert(

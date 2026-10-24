@@ -111,34 +111,34 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-2xl rounded-2xl bg-[#090D1E] border border-white/12 shadow-2xl overflow-hidden z-10 my-8"
+          className="relative w-full max-w-2xl rounded-2xl bg-white border border-[#E7E2D8] shadow-2xl overflow-hidden z-10 my-8"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between bg-white/[0.02]">
+          <div className="px-6 py-4 border-b border-[#E7E2D8] flex items-center justify-between bg-[#FAF8F5]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <div className="w-10 h-10 rounded-xl bg-stone-100 border border-[#DDD5C7] flex items-center justify-center text-stone-800">
                 <Store className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-textPrimary">Add New Laundry</h2>
-                <p className="text-xs text-textMuted">Register laundry business & owner account</p>
+                <h2 className="text-lg font-bold font-oswald uppercase tracking-wide text-stone-900">Add New Laundry</h2>
+                <p className="text-xs font-erode text-stone-600">Register laundry business & owner account</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-textMuted hover:text-textPrimary transition-all"
+              className="w-8 h-8 rounded-xl bg-white hover:bg-stone-100 border border-[#DDD5C7] flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Form Body */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto scrollbar-thin">
             {/* API Error Alert */}
             {apiError && (
-              <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{apiError}</span>
               </div>
@@ -146,7 +146,7 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
 
             {/* Section 1: Laundry Business Info */}
             <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold font-oswald uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
                 <Store className="w-3.5 h-3.5" />
                 Laundry Business Details
               </h3>
@@ -154,8 +154,8 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Laundry Name */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Laundry Name <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Laundry Name <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -163,41 +163,41 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g. Express Cleaners"
-                    className={`w-full px-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                      errors.name ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                      errors.name ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                     }`}
                   />
-                  {errors.name && <p className="text-[11px] text-rose-400 mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.name}</p>}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Business Email <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Business Email <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="w-3.5 h-3.5 text-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="info@expresscleaners.com"
-                      className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                        errors.email ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                        errors.email ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                       }`}
                     />
                   </div>
-                  {errors.email && <p className="text-[11px] text-rose-400 mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.email}</p>}
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Business Phone <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Business Phone <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       name="phone"
@@ -205,39 +205,39 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
                       onChange={handleChange}
                       placeholder="9876543210"
                       maxLength={10}
-                      className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                        errors.phone ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                        errors.phone ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                       }`}
                     />
                   </div>
-                  {errors.phone && <p className="text-[11px] text-rose-400 mt-1">{errors.phone}</p>}
+                  {errors.phone && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.phone}</p>}
                 </div>
 
                 {/* Address */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Street Address <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Street Address <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <MapPin className="w-3.5 h-3.5 text-textMuted absolute left-3 top-2.5" />
+                    <MapPin className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
                     <input
                       type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
                       placeholder="Shop 12, Main Market, MG Road"
-                      className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                        errors.address ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                        errors.address ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                       }`}
                     />
                   </div>
-                  {errors.address && <p className="text-[11px] text-rose-400 mt-1">{errors.address}</p>}
+                  {errors.address && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.address}</p>}
                 </div>
 
                 {/* City */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    City <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    City <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -245,17 +245,17 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
                     value={formData.city}
                     onChange={handleChange}
                     placeholder="Mumbai"
-                    className={`w-full px-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                      errors.city ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                      errors.city ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                     }`}
                   />
-                  {errors.city && <p className="text-[11px] text-rose-400 mt-1">{errors.city}</p>}
+                  {errors.city && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.city}</p>}
                 </div>
 
                 {/* State */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    State <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    State <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -263,17 +263,17 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
                     value={formData.state}
                     onChange={handleChange}
                     placeholder="Maharashtra"
-                    className={`w-full px-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                      errors.state ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                      errors.state ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                     }`}
                   />
-                  {errors.state && <p className="text-[11px] text-rose-400 mt-1">{errors.state}</p>}
+                  {errors.state && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.state}</p>}
                 </div>
 
                 {/* Pincode */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Pincode <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Pincode <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -282,38 +282,38 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
                     onChange={handleChange}
                     placeholder="400001"
                     maxLength={6}
-                    className={`w-full px-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                      errors.pincode ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                      errors.pincode ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                     }`}
                   />
-                  {errors.pincode && <p className="text-[11px] text-rose-400 mt-1">{errors.pincode}</p>}
+                  {errors.pincode && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.pincode}</p>}
                 </div>
 
                 {/* Timings */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-medium text-textSecondary mb-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-textMuted" /> Open
+                    <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-stone-500" /> Open
                     </label>
                     <input
                       type="time"
                       name="openTime"
                       value={formData.openTime}
                       onChange={handleChange}
-                      className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-textPrimary focus:outline-none focus:border-purple-500/50"
+                      className="w-full px-2.5 py-2 rounded-xl bg-white border border-[#DDD5C7] text-xs text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 font-erode shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-textSecondary mb-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-textMuted" /> Close
+                    <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-stone-500" /> Close
                     </label>
                     <input
                       type="time"
                       name="closeTime"
                       value={formData.closeTime}
                       onChange={handleChange}
-                      className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-textPrimary focus:outline-none focus:border-purple-500/50"
+                      className="w-full px-2.5 py-2 rounded-xl bg-white border border-[#DDD5C7] text-xs text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 font-erode shadow-2xs"
                     />
                   </div>
                 </div>
@@ -321,8 +321,8 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
             </div>
 
             {/* Section 2: Owner User Account Info */}
-            <div className="space-y-4 pt-4 border-t border-white/8">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+            <div className="space-y-4 pt-4 border-t border-[#E7E2D8]">
+              <h3 className="text-xs font-bold font-oswald uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5" />
                 Owner Admin Account
               </h3>
@@ -330,55 +330,55 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Owner Name */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Owner Full Name <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Owner Full Name <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="w-3.5 h-3.5 text-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       name="ownerName"
                       value={formData.ownerName}
                       onChange={handleChange}
                       placeholder="Rajesh Kumar"
-                      className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                        errors.ownerName ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                        errors.ownerName ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                       }`}
                     />
                   </div>
-                  {errors.ownerName && <p className="text-[11px] text-rose-400 mt-1">{errors.ownerName}</p>}
+                  {errors.ownerName && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.ownerName}</p>}
                 </div>
 
                 {/* Owner Password */}
                 <div>
-                  <label className="block text-xs font-medium text-textSecondary mb-1">
-                    Initial Owner Password <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-semibold font-oswald uppercase tracking-wider text-stone-700 mb-1">
+                    Initial Owner Password <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="password"
                       name="ownerPassword"
                       value={formData.ownerPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/5 border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none transition-all ${
-                        errors.ownerPassword ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                      className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none transition-all font-erode shadow-2xs ${
+                        errors.ownerPassword ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[#DDD5C7] focus:border-stone-900 focus:ring-1 focus:ring-stone-900'
                       }`}
                     />
                   </div>
-                  {errors.ownerPassword && <p className="text-[11px] text-rose-400 mt-1">{errors.ownerPassword}</p>}
+                  {errors.ownerPassword && <p className="text-[11px] text-rose-600 mt-1 font-erode">{errors.ownerPassword}</p>}
                 </div>
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-white/8 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t border-[#E7E2D8] flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-textSecondary border border-white/10 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-full bg-white hover:bg-stone-50 text-xs font-oswald uppercase tracking-wider font-semibold text-stone-800 border border-[#DDD5C7] transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -386,7 +386,7 @@ export const LaundryFormModal = ({ isOpen, onClose, onSubmit, isLoading = false,
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-xs shadow-lg shadow-purple-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-oswald uppercase tracking-wider text-xs shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>

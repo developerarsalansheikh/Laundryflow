@@ -430,25 +430,33 @@ export const AdminOrderDetail = () => {
           </div>
         </div>
 
-        {/* Assignment Controls */}
+        {/* Assignment Controls — Available only when order reaches Ready status */}
         {!isCancelled && currentStatus !== 'delivered' && (
           <div className="flex items-center gap-2">
-            {!assignedDriver && (
-              <button
-                onClick={() => autoAssignMutation.mutate()}
-                disabled={autoAssignMutation.isPending}
-                className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors flex items-center gap-1.5"
-              >
-                <span>⚡ Auto-Assign Driver</span>
-              </button>
+            {currentStatus === 'ready' || currentStatus === 'ready_for_redelivery' ? (
+              <>
+                {!assignedDriver && (
+                  <button
+                    onClick={() => autoAssignMutation.mutate()}
+                    disabled={autoAssignMutation.isPending}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>⚡ Auto-Assign Driver</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setAssignModalOpen(true)}
+                  className="btn-primary px-4 py-2 text-xs font-semibold gap-1.5"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>{assignedDriver ? 'Reassign Nearby Partner' : 'Assign Nearby Partner'}</span>
+                </button>
+              </>
+            ) : (
+              <span className="px-3 py-1.5 rounded-xl text-xs font-medium bg-white/[0.04] text-textMuted border border-white/[0.08]">
+                Assignment available once order is Ready
+              </span>
             )}
-            <button
-              onClick={() => setAssignModalOpen(true)}
-              className="btn-primary px-4 py-2 text-xs font-semibold gap-1.5"
-            >
-              <Truck className="w-4 h-4" />
-              <span>{assignedDriver ? 'Reassign Nearby Partner' : 'Assign Nearby Partner'}</span>
-            </button>
           </div>
         )}
       </div>

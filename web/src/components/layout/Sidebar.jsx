@@ -19,9 +19,9 @@ export const Sidebar = () => {
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
       className="hidden lg:flex flex-col fixed top-0 left-0 h-screen z-50 overflow-hidden"
       style={{
-        backgroundColor: '#080C1D',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '4px 0 24px rgba(0,0,0,0.4)',
+        backgroundColor: '#1C1917',
+        borderRight: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
       }}
       aria-label="Main navigation"
     >

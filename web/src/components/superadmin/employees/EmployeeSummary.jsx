@@ -24,10 +24,11 @@ const StatCard = ({ label, value, icon: Icon, iconClass, gradient, index }) => (
  * EmployeeSummary Component
  * Displays workforce counts derived from API response.
  */
-export const EmployeeSummary = ({ total, employees = [], isLoading }) => {
+export const EmployeeSummary = ({ total, employees = [], isLoading, onSelectPending }) => {
   const deliveryCount = employees.filter((e) => e.role === 'delivery').length;
   const adminCount = employees.filter((e) => e.role === 'admin').length;
   const activeCount = employees.filter((e) => e.isActive !== false).length;
+  const pendingCount = employees.filter((e) => e.role === 'delivery' && e.approvalStatus === 'pending').length;
 
   const format = (val) => (val === null || val === undefined ? '--' : formatIndianNumber(val));
 
@@ -38,6 +39,14 @@ export const EmployeeSummary = ({ total, employees = [], isLoading }) => {
       icon: Briefcase,
       iconClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
       gradient: 'bg-amber-500',
+    },
+    {
+      label: 'Pending Approvals',
+      value: format(pendingCount),
+      icon: Truck,
+      iconClass: pendingCount > 0 ? 'bg-amber-500/25 text-amber-500 border-amber-500/40 animate-pulse' : 'bg-stone-500/15 text-stone-400 border-stone-500/30',
+      gradient: 'bg-amber-500',
+      onClick: onSelectPending,
     },
     {
       label: 'Delivery Partners',
@@ -64,8 +73,8 @@ export const EmployeeSummary = ({ total, employees = [], isLoading }) => {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="glass-card rounded-2xl p-4 border border-white/8 animate-pulse">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/5" />
@@ -81,7 +90,7 @@ export const EmployeeSummary = ({ total, employees = [], isLoading }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       {cards.map((card, i) => (
         <StatCard key={card.label} {...card} index={i} />
       ))}

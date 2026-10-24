@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
-import { PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '../../routes/routeConstants';
 
 /**
  * SidebarHeader — LaundryWave branding and collapse toggle.
@@ -16,15 +17,13 @@ export const SidebarHeader = () => {
 
   return (
     <div className="flex items-center justify-between px-4 h-16 border-b border-white/[0.08] flex-shrink-0">
-      <a
-        href={PUBLIC_WEBSITE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to={ROUTES.PUBLIC.HOME}
         title="Visit LaundryWave Website"
         className="flex items-center gap-3 min-w-0 group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 rounded-lg"
       >
         {/* Logo Icon */}
-        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#1C1917] border border-stone-700/50 flex items-center justify-center shadow-xs overflow-hidden group-hover:border-stone-500 transition-colors">
+        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#292524] border border-stone-600/50 flex items-center justify-center shadow-xs overflow-hidden group-hover:border-stone-500 transition-colors">
           <img
             src="/logo.svg"
             alt={brandName}
@@ -43,19 +42,19 @@ export const SidebarHeader = () => {
               transition={{ duration: 0.2 }}
               className="overflow-hidden min-w-0"
             >
-              <p className="text-sm font-bold text-white leading-tight truncate tracking-tight">
+              <p className="text-sm font-bold text-white leading-tight truncate tracking-tight font-oswald uppercase tracking-wide">
                 {brandName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-                <span className="text-[10px] font-semibold text-slate-400 tracking-wide uppercase whitespace-nowrap">
+                <span className="text-[10px] font-semibold text-stone-400 tracking-wider uppercase whitespace-nowrap font-oswald">
                   {roleLabel}
                 </span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </a>
+      </Link>
 
       {/* Collapse toggle — only on desktop */}
       {!sidebarCollapsed && (

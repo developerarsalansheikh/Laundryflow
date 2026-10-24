@@ -100,36 +100,32 @@ export const SelectLocationScreen = () => {
         (pos) => {
           setGpsLoading(false);
           const { latitude, longitude } = pos.coords;
-          // Approximate nearest popular city or default to Mumbai / Bangalore
           handleSelectLocation({
-            city: 'Mumbai',
-            address: 'Current Location (GPS)',
+            city: 'Current Location',
+            address: 'GPS Detected Location',
             latitude,
             longitude,
           });
         },
         (error) => {
           setGpsLoading(false);
-          // Fallback to primary metro with exact coords
-          handleSelectLocation({
-            city: 'Mumbai',
-            address: 'Mumbai Central (GPS detected)',
-            latitude: 19.0760,
-            longitude: 72.8777,
-          });
+          Alert.alert(
+            'Location Unavailable',
+            'Unable to determine your GPS location automatically. Please select your city from the list below or enter your address manually.',
+            [{ text: 'OK' }]
+          );
         },
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
       );
     } else {
       setTimeout(() => {
         setGpsLoading(false);
-        handleSelectLocation({
-          city: 'Mumbai',
-          address: 'Mumbai Central (GPS detected)',
-          latitude: 19.0760,
-          longitude: 72.8777,
-        });
-      }, 500);
+        Alert.alert(
+          'Location Unavailable',
+          'Automatic GPS location is not available on this device. Please select your city from the list below or enter your address manually.',
+          [{ text: 'OK' }]
+        );
+      }, 300);
     }
   };
 

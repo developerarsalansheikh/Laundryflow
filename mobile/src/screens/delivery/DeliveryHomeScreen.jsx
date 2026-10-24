@@ -28,6 +28,28 @@ import Divider from '../../components/ui/Divider';
 import Loader from '../../components/ui/Loader';
 import ErrorState from '../../components/ui/ErrorState';
 
+const getOrderStatusBadge = (status = '') => {
+  const s = String(status).toLowerCase();
+  switch (s) {
+    case 'ready':
+    case 'ready_for_redelivery':
+      return { label: 'READY FOR PICKUP', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0' };
+    case 'out_for_delivery':
+      return { label: 'OUT FOR DELIVERY', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' };
+    case 'picked_up':
+      return { label: 'COLLECTED', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE' };
+    case 'at_laundry_pending_confirmation':
+      return { label: 'HANDOFF PENDING', color: '#EA580C', bg: '#FFF7ED', border: '#FFEDD5' };
+    case 'received_at_laundry':
+    case 'in_progress':
+      return { label: 'PROCESSING', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE' };
+    case 'delivered':
+      return { label: 'DELIVERED', color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' };
+    default:
+      return { label: s.replace(/_/g, ' ').toUpperCase() || 'ACTIVE', color: '#6B7280', bg: '#F3F4F6', border: '#E5E7EB' };
+  }
+};
+
 export const DeliveryHomeScreen = () => {
   const { colors, spacing, radius } = useTheme();
   const navigation = useNavigation();
@@ -435,14 +457,16 @@ export const DeliveryHomeScreen = () => {
               const laundryAddress = order.laundryId?.address || '123 Main khajrana';
               const servicesCount = order.services?.length || 1;
 
+              const statusBadge = getOrderStatusBadge(order.status);
+
               return (
                 <View key={order._id} style={styles.deliveryOrderCard}>
                   {/* Top: #ID & Status */}
                   <View style={styles.orderCardHeaderRow}>
                     <Text style={styles.orderCardIdText}>#{orderId}</Text>
-                    <View style={styles.orderStatusPillHandoff}>
-                      <Text style={styles.orderStatusPillHandoffText}>
-                        DE AT LAUNDRY (HANDOFF PENDING)
+                    <View style={[styles.orderStatusPillHandoff, { backgroundColor: statusBadge.bg, borderColor: statusBadge.border }]}>
+                      <Text style={[styles.orderStatusPillHandoffText, { color: statusBadge.color }]}>
+                        {statusBadge.label}
                       </Text>
                     </View>
                   </View>
@@ -471,9 +495,11 @@ export const DeliveryHomeScreen = () => {
                       <Text style={styles.orderCustomerCity} numberOfLines={1}>
                         {pickupAddress}
                       </Text>
-                      <Text style={styles.photoAttachedCheck}>
-                        ✓ Pickup Photo Attached
-                      </Text>
+                      {Boolean(order.pickupPhoto?.url) && (
+                        <Text style={styles.photoAttachedCheck}>
+                          ✓ Pickup Photo Attached
+                        </Text>
+                      )}
                     </View>
                   </View>
 
@@ -487,23 +513,24 @@ export const DeliveryHomeScreen = () => {
                     </Text>
                   </View>
 
-                  {/* Navigate Button */}
-                  <TouchableOpacity
-                    style={styles.navigateButton}
-                    onPress={() => handleOpenMaps(pickupAddress)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.navigateButtonText}>Navigate →</Text>
-                  </TouchableOpacity>
+                  {/* Clean Action Buttons */}
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                    <TouchableOpacity
+                      style={[styles.navigateButton, { flex: 1, marginTop: 0 }]}
+                      onPress={() => handleOpenMaps(pickupAddress)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.navigateButtonText}>Navigate 📍</Text>
+                    </TouchableOpacity>
 
-                  {/* Manage / Pick up action */}
-                  <TouchableOpacity
-                    style={styles.detailLink}
-                    onPress={() => navigation.navigate('DeliveryOrderDetail', { orderId: order._id })}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.detailLinkText}>View Order Details & Complete Pickup ›</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.detailLinkBtn, { flex: 2 }]}
+                      onPress={() => navigation.navigate('DeliveryOrderDetail', { orderId: order._id })}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.detailLinkBtnText}>View & Pickup →</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               );
             })
@@ -531,15 +558,16 @@ export const DeliveryHomeScreen = () => {
               const laundryName = order.laundryId?.name || 'Ali Laundry';
               const laundryAddress = order.laundryId?.address || '123 Main khajrana';
               const servicesCount = order.services?.length || 1;
+              const statusBadge = getOrderStatusBadge(order.status);
 
               return (
                 <View key={order._id} style={styles.deliveryOrderCard}>
                   {/* Top: #ID & Status */}
                   <View style={styles.orderCardHeaderRow}>
                     <Text style={styles.orderCardIdText}>#{orderId}</Text>
-                    <View style={styles.orderStatusPillHandoff}>
-                      <Text style={styles.orderStatusPillHandoffText}>
-                        DE AT LAUNDRY (HANDOFF PENDING)
+                    <View style={[styles.orderStatusPillHandoff, { backgroundColor: statusBadge.bg, borderColor: statusBadge.border }]}>
+                      <Text style={[styles.orderStatusPillHandoffText, { color: statusBadge.color }]}>
+                        {statusBadge.label}
                       </Text>
                     </View>
                   </View>
@@ -568,9 +596,11 @@ export const DeliveryHomeScreen = () => {
                       <Text style={styles.orderCustomerCity} numberOfLines={1}>
                         {deliveryAddress}
                       </Text>
-                      <Text style={styles.photoAttachedCheck}>
-                        ✓ Pickup Photo Attached
-                      </Text>
+                      {Boolean(order.pickupPhoto?.url) && (
+                        <Text style={styles.photoAttachedCheck}>
+                          ✓ Pickup Photo Attached
+                        </Text>
+                      )}
                     </View>
                   </View>
 
@@ -584,23 +614,24 @@ export const DeliveryHomeScreen = () => {
                     </Text>
                   </View>
 
-                  {/* Navigate Button */}
-                  <TouchableOpacity
-                    style={styles.navigateButton}
-                    onPress={() => handleOpenMaps(deliveryAddress)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.navigateButtonText}>Navigate →</Text>
-                  </TouchableOpacity>
+                  {/* Clean Action Buttons */}
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                    <TouchableOpacity
+                      style={[styles.navigateButton, { flex: 1, marginTop: 0 }]}
+                      onPress={() => handleOpenMaps(deliveryAddress)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.navigateButtonText}>Navigate 📍</Text>
+                    </TouchableOpacity>
 
-                  {/* Manage / Deliver action */}
-                  <TouchableOpacity
-                    style={styles.detailLink}
-                    onPress={() => navigation.navigate('DeliveryOrderDetail', { orderId: order._id })}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.detailLinkText}>View Order Details & Complete Delivery ›</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.detailLinkBtn, { flex: 2 }]}
+                      onPress={() => navigation.navigate('DeliveryOrderDetail', { orderId: order._id })}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.detailLinkBtnText}>View & Deliver →</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               );
             })
@@ -1137,6 +1168,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#0284C7',
     fontWeight: '600',
+  },
+  detailLinkBtn: {
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailLinkBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   // ── Modals ──
   modalOverlay: {

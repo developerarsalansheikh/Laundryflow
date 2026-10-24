@@ -65,24 +65,24 @@ export const LaundryCommissionModal = ({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-md rounded-2xl bg-[#090D1E] border border-white/12 shadow-2xl overflow-hidden z-10"
+          className="relative w-full max-w-md rounded-2xl bg-white border border-[#E7E2D8] shadow-2xl overflow-hidden z-10"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between bg-white/[0.02]">
+          <div className="px-6 py-4 border-b border-[#E7E2D8] flex items-center justify-between bg-[#FAF8F5]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <div className="w-9 h-9 rounded-xl bg-stone-100 border border-[#DDD5C7] flex items-center justify-center text-stone-800">
                 <Percent className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-textPrimary">Edit Commission</h2>
-                <p className="text-xs text-textMuted truncate max-w-[200px]">{laundry.name}</p>
+                <h2 className="text-base font-bold text-stone-900 font-oswald uppercase tracking-wide">Edit Commission</h2>
+                <p className="text-xs text-stone-500 truncate max-w-[200px] font-erode">{laundry.name}</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-textMuted hover:text-textPrimary transition-all"
+              className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 border border-[#DDD5C7] flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -91,14 +91,14 @@ export const LaundryCommissionModal = ({
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {apiError && (
-              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{apiError}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-textSecondary mb-1">
+              <label className="block text-xs font-medium text-stone-700 mb-1 font-erode">
                 Commission Rate (%)
               </label>
               <div className="relative">
@@ -112,28 +112,28 @@ export const LaundryCommissionModal = ({
                     setCommission(e.target.value);
                     if (error) setError('');
                   }}
-                  className={`w-full px-3.5 py-2.5 rounded-xl bg-white/5 border text-sm font-mono text-purple-300 placeholder:text-textMuted focus:outline-none transition-all ${
-                    error ? 'border-rose-500' : 'border-white/10 focus:border-purple-500/50'
+                  className={`w-full px-3.5 py-2.5 rounded-xl bg-white border text-sm font-mono text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all shadow-2xs ${
+                    error ? 'border-rose-500' : 'border-[#DDD5C7]'
                   }`}
                   placeholder="e.g. 10"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-textMuted font-mono">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-400 font-mono">
                   %
                 </span>
               </div>
-              {error && <p className="text-[11px] text-rose-400 mt-1">{error}</p>}
-              <p className="text-[11px] text-textMuted mt-1.5 leading-relaxed">
+              {error && <p className="text-[11px] text-rose-600 mt-1 font-erode">{error}</p>}
+              <p className="text-[11px] text-stone-500 mt-1.5 leading-relaxed font-erode">
                 SuperAdmin commission percentage deducted on every order for this laundry.
               </p>
             </div>
 
             {/* Actions */}
-            <div className="pt-3 border-t border-white/8 flex items-center justify-end gap-2.5">
+            <div className="pt-3 border-t border-[#E7E2D8] flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-textSecondary border border-white/10 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-700 border border-[#DDD5C7] transition-all cursor-pointer font-oswald uppercase tracking-wider"
               >
                 Cancel
               </button>
@@ -141,7 +141,7 @@ export const LaundryCommissionModal = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 transition-all cursor-pointer disabled:opacity-50"
+                className="btn-primary inline-flex items-center gap-2 px-5 py-2 rounded-full font-oswald uppercase tracking-wider text-xs shadow-2xs cursor-pointer disabled:opacity-50"
               >
                 {isLoading ? (
                   <>

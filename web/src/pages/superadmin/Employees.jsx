@@ -235,7 +235,12 @@ export const Employees = () => {
       </div>
 
       {/* Summary */}
-      <EmployeeSummary total={total} employees={employees} isLoading={isLoading} />
+      <EmployeeSummary
+        total={total}
+        employees={employees}
+        isLoading={isLoading}
+        onSelectPending={() => setFilters({ ...filters, status: 'pending', role: 'delivery' })}
+      />
 
       {/* Filters */}
       <EmployeeFilters

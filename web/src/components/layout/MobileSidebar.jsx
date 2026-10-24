@@ -49,8 +49,8 @@ export const MobileSidebar = () => {
             transition={{ type: 'spring', stiffness: 380, damping: 38 }}
             className="fixed top-0 left-0 h-screen w-[260px] z-50 flex flex-col lg:hidden"
             style={{
-              backgroundColor: '#080C1D',
-              borderRight: '1px solid rgba(255,255,255,0.07)',
+              backgroundColor: '#1C1917',
+              borderRight: '1px solid rgba(255,255,255,0.08)',
             }}
             role="dialog"
             aria-modal="true"

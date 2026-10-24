@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Menu, Maximize2, Minimize2, Globe } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { PUBLIC_WEBSITE_URL } from '../../routes/routeConstants';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from '../../routes/routeConstants';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
@@ -76,9 +76,11 @@ export const TopNavbar = () => {
       style={{
         left: 0,
         zIndex: 40,
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid #E2E8F0',
-        boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.06)',
+        backgroundColor: 'rgba(250, 249, 246, 0.95)',
+        borderBottom: '1px solid #E7E2D8',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        boxShadow: '0 1px 3px 0 rgba(28, 25, 23, 0.04)',
       }}
     >
       {/* Desktop left offset spacer — tracks sidebar width */}
@@ -112,14 +114,14 @@ export const TopNavbar = () => {
       </IconButton>
 
       {/* Quick Status Filter Pills (Interactive, navigating to real filtered orders) */}
-      <div className="hidden 2xl:flex items-center gap-1.5 xl:gap-2 mx-auto select-none flex-shrink-0">
+      <div className="hidden 2xl:flex items-center gap-1.5 xl:gap-2 mx-auto select-none flex-shrink-0 font-oswald text-xs uppercase tracking-wider">
         <button
           type="button"
           onClick={() => handlePillClick('')}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs cursor-pointer transition-all ${
+          className={`px-3.5 py-1.5 rounded-full font-semibold shadow-xs cursor-pointer transition-all ${
             isOrdersPage && !currentStatus
-              ? 'bg-blue-700 text-white ring-2 ring-blue-500/30'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-stone-900 text-white ring-2 ring-stone-900/30'
+              : 'bg-stone-800 text-white hover:bg-stone-900'
           }`}
           title="View all orders"
         >
@@ -129,15 +131,15 @@ export const TopNavbar = () => {
         <button
           type="button"
           onClick={() => handlePillClick('ready')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-3 py-1.5 rounded-full font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
             isOrdersPage && currentStatus === 'ready'
-              ? 'bg-sky-100 text-sky-900 border-sky-400 ring-2 ring-sky-400/20 shadow-xs'
-              : 'bg-sky-50 text-sky-800 border-sky-200/80 hover:bg-sky-100'
+              ? 'bg-emerald-100 text-emerald-900 border-emerald-400 ring-2 ring-emerald-400/20 shadow-xs'
+              : 'bg-emerald-50 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
           }`}
           title="Filter Ready orders"
         >
           Ready
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-bold leading-tight">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-700 text-white font-bold leading-tight">
             {readyCount}
           </span>
         </button>
@@ -145,7 +147,7 @@ export const TopNavbar = () => {
         <button
           type="button"
           onClick={() => handlePillClick('in_progress')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-3 py-1.5 rounded-full font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
             isOrdersPage && (currentStatus === 'in_progress' || currentStatus === 'pending')
               ? 'bg-amber-100 text-amber-900 border-amber-400 ring-2 ring-amber-400/20 shadow-xs'
               : 'bg-amber-50 text-amber-800 border-amber-200/80 hover:bg-amber-100'
@@ -153,7 +155,7 @@ export const TopNavbar = () => {
           title="Filter Not Ready / Processing orders"
         >
           Not Ready
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-bold leading-tight">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-600 text-white font-bold leading-tight">
             {notReadyCount}
           </span>
         </button>
@@ -161,15 +163,15 @@ export const TopNavbar = () => {
         <button
           type="button"
           onClick={() => handlePillClick('delivered')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-3 py-1.5 rounded-full font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
             isOrdersPage && currentStatus === 'delivered'
-              ? 'bg-emerald-100 text-emerald-900 border-emerald-400 ring-2 ring-emerald-400/20 shadow-xs'
-              : 'bg-emerald-50 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
+              ? 'bg-stone-200 text-stone-900 border-stone-400 ring-2 ring-stone-400/20 shadow-xs'
+              : 'bg-stone-100 text-stone-800 border-stone-200/80 hover:bg-stone-200'
           }`}
           title="Filter Delivered orders"
         >
           Delivered
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-bold leading-tight">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-stone-700 text-white font-bold leading-tight">
             {deliveredCount}
           </span>
         </button>
@@ -177,7 +179,7 @@ export const TopNavbar = () => {
         <button
           type="button"
           onClick={() => handlePillClick('cancelled')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-3 py-1.5 rounded-full font-medium border flex items-center gap-1.5 cursor-pointer transition-all ${
             isOrdersPage && (currentStatus === 'cancelled' || currentStatus === 'delivery_failed')
               ? 'bg-rose-100 text-rose-900 border-rose-400 ring-2 ring-rose-400/20 shadow-xs'
               : 'bg-rose-50 text-rose-800 border-rose-200/80 hover:bg-rose-100'
@@ -200,20 +202,18 @@ export const TopNavbar = () => {
         <NotificationMenu />
 
         {/* Return to Public Website link */}
-        <a
-          href={PUBLIC_WEBSITE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 shadow-2xs transition-colors"
+        <Link
+          to={ROUTES.PUBLIC.HOME}
+          className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-stone-800 hover:text-stone-950 bg-white hover:bg-stone-50 rounded-full border border-[#DDD5C7] shadow-2xs transition-colors font-oswald uppercase tracking-wider"
           title="Return to Public LaundryWave Website"
         >
-          <Globe className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+          <Globe className="w-3.5 h-3.5 text-stone-700 flex-shrink-0" />
           <span className="hidden xl:inline">Visit LaundryWave Website</span>
           <span className="xl:hidden">Website</span>
-        </a>
+        </Link>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block flex-shrink-0" />
+        <div className="w-px h-6 bg-[#E7E2D8] mx-1 hidden sm:block flex-shrink-0" />
 
         {/* User menu */}
         <UserMenu />

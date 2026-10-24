@@ -2,32 +2,8 @@ const Order = require("../models/orderModels");
 const User = require("../models/userModels");
 const Laundry = require("../models/laundryModels");
 
-// Helper to send SMS (Twilio in production, console in development)
-const sendSMS = async (phone, message) => {
-  if (
-    process.env.NODE_ENV === "production" &&
-    process.env.TWILIO_ACCOUNT_SID &&
-    process.env.TWILIO_AUTH_TOKEN
-  ) {
-    try {
-      const twilio = require("twilio");
-      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-      await client.messages.create({
-        body: message,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phone.startsWith("+") ? phone : `+91${phone}`,
-      });
-      console.log(`[SMS-PROD] Sent successfully to ${phone}`);
-    } catch (err) {
-      console.error("Twilio SMS error:", err.message);
-    }
-  } else {
-    console.log("\n--- [SMS-DEV CONSOLE LOG] ---");
-    console.log(`To: ${phone}`);
-    console.log(`Message: ${message}`);
-    console.log("-----------------------------\n");
-  }
-};
+// Central universal SMS service (Fast2SMS / 2Factor / Twilio failover)
+const { sendSMS } = require("../services/smsService");
 
 // ─────────────────────────────────────────────
 // SAFE DELIVERY AGENT ACCESS & AREA ISOLATION HELPERS
@@ -427,26 +403,16 @@ const getMyActiveOrders = async (req, res) => {
 
     // Check if delivery partner is active and available
     const isOnline = req.user.availabilityStatus === "available" && req.user.isAvailable !== false;
-
-    // Check if single active delivery agent across the platform (Legacy Agent feature preservation)
-    let isSingleActiveAgent = false;
-    if (isOnline && isLegacy) {
-      const activeDrivers = await User.find({
-        role: "delivery",
-        isActive: true,
-        availabilityStatus: "available",
-        isAvailable: { $ne: false },
-      });
-      isSingleActiveAgent = activeDrivers.length === 1 && activeDrivers[0]._id.toString() === req.user._id.toString();
-    }
+    // Explicitly preserve original legacy delivery agent's cross-laundry pickup visibility
+    const canAccessCrossLaundryPickups = isOnline && isLegacy;
 
     let query = {};
 
     if (type === "pickup") {
       // PICKUP: Genuine ready-for-pickup orders
       const pickupStatuses = ["pending", "pending_pickup", "placed"];
-      if (isSingleActiveAgent && isLegacy) {
-        // Single active legacy agent automatically sees eligible pickup orders from different laundries
+      if (canAccessCrossLaundryPickups) {
+        // Authorized legacy agent automatically sees eligible pickup orders from different laundries
         query = {
           status: { $in: pickupStatuses },
           $or: [{ deliveryPartner: req.user._id }, { deliveryPartner: null }],
@@ -497,7 +463,7 @@ const getMyActiveOrders = async (req, res) => {
         "returned_to_laundry",
       ];
 
-      if (isSingleActiveAgent && isLegacy) {
+      if (canAccessCrossLaundryPickups) {
         query = {
           $or: [
             { deliveryPartner: req.user._id, status: { $in: allActiveStatuses } },
@@ -847,7 +813,7 @@ const generateDeliveryOTP = async (req, res) => {
     const customerPhone = order.user?.phone;
     if (customerPhone) {
       const message = `Hello ${order.user.name || "Customer"}, your OTP for laundry order delivery is: ${otp}. Valid for 10 minutes.`;
-      await sendSMS(customerPhone, message);
+      await sendSMS(customerPhone, message, otp);
     }
 
     const responsePayload = {
@@ -1101,22 +1067,14 @@ const getMyStats = async (req, res) => {
       ]),
     ]);
 
-    // Check if single active delivery agent to compute accurate pickup counter
+    // Check if legacy delivery partner has authorized cross-laundry pickup visibility
     const isOnline = req.user.availabilityStatus === "available" && req.user.isAvailable !== false;
-    let isSingleActiveAgent = false;
-    if (isOnline) {
-      const activeDrivers = await User.find({
-        role: "delivery",
-        isActive: true,
-        availabilityStatus: "available",
-        isAvailable: { $ne: false },
-      });
-      isSingleActiveAgent = activeDrivers.length === 1 && activeDrivers[0]._id.toString() === req.user._id.toString();
-    }
+    const isLegacy = isLegacyDeliveryAgent(req.user);
+    const canAccessCrossLaundryPickups = isOnline && isLegacy;
 
     const pickupStatuses = ["pending", "pending_pickup", "placed"];
     const pickupCount = await Order.countDocuments(
-      isSingleActiveAgent
+      canAccessCrossLaundryPickups
         ? { status: { $in: pickupStatuses }, $or: [{ deliveryPartner: partnerId }, { deliveryPartner: null }] }
         : { status: { $in: pickupStatuses }, deliveryPartner: partnerId }
     );

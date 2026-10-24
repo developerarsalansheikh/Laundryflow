@@ -543,13 +543,17 @@ const addDeliveryPartner = async (req, res) => {
     // Determine target laundry
     let targetLaundryId = null;
     if (isLaundryAdmin) {
-      if (!req.user.laundryId) {
+      targetLaundryId = req.user.laundryId;
+      if (!targetLaundryId && req.user._id) {
+        const store = await Laundry.findOne({ owner: req.user._id });
+        if (store) targetLaundryId = store._id;
+      }
+      if (!targetLaundryId) {
         return res.status(400).json({
           success: false,
           message: "Your admin account is not linked to any authorized laundry.",
         });
       }
-      targetLaundryId = req.user.laundryId;
     } else {
       targetLaundryId = inputLaundryId || req.user.laundryId;
     }
@@ -803,6 +807,13 @@ const approveDeliveryPartner = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Delivery partner not found.",
+      });
+    }
+
+    if (partner.approvalStatus === "approved" && partner.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "This delivery partner account is already approved and active.",
       });
     }
 
@@ -1402,10 +1413,18 @@ const getLaundryById = async (req, res) => {
       });
     }
 
-    const services = await Service.find({
+    const rawServices = await Service.find({
       laundryId: req.params.id,
       isActive: true,
-    }).sort({ category: 1, price: 1 });
+    }).sort({ category: 1, price: 1 }).lean();
+
+    const { DEFAULT_DRY_CLEAN_ITEMS } = require("../constants/catalog");
+    const services = rawServices.map((s) => {
+      if (s.category === "dry_clean" && (!Array.isArray(s.items) || s.items.length === 0)) {
+        return { ...s, items: DEFAULT_DRY_CLEAN_ITEMS };
+      }
+      return s;
+    });
 
     // Validate serviceability if customer location provided (Rule 6)
     let isServiceable = true;

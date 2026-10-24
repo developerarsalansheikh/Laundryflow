@@ -82,7 +82,7 @@ export const CommandPalette = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs"
+            className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs"
             onClick={close}
             aria-hidden="true"
           />
@@ -99,10 +99,10 @@ export const CommandPalette = () => {
             aria-modal="true"
             aria-label="Command palette"
           >
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl border border-[#E7E2D8] shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               {/* Search input */}
-              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 bg-slate-50/50">
-                <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#E7E2D8] bg-[#FAF8F5]">
+                <Search className="w-4 h-4 text-stone-400 flex-shrink-0" />
                 <input
                   ref={inputRef}
                   type="text"
@@ -110,13 +110,13 @@ export const CommandPalette = () => {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search pages, orders, stores, customers... (Press Enter)"
-                  className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none"
+                  className="flex-1 bg-transparent text-sm text-stone-900 placeholder:text-stone-400 outline-none font-erode"
                 />
                 <button
                   type="button"
                   onClick={close}
                   aria-label="Close command palette"
-                  className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  className="text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -128,31 +128,31 @@ export const CommandPalette = () => {
                   <button
                     type="button"
                     onClick={() => handleNavigate(`/superadmin/orders?search=${encodeURIComponent(query.trim())}`)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left bg-blue-50/60 hover:bg-blue-50 text-blue-700 border border-blue-100 mb-1.5 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left bg-stone-100 hover:bg-stone-200 text-stone-900 border border-[#DDD5C7] mb-1.5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Search className="w-4 h-4 text-blue-600" />
+                      <Search className="w-4 h-4 text-stone-700" />
                       <span className="text-xs font-semibold">Search orders for &ldquo;{query.trim()}&rdquo;</span>
                     </div>
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-mono">Enter</span>
+                    <span className="text-[10px] bg-white border border-[#DDD5C7] text-stone-800 px-1.5 py-0.5 rounded font-mono">Enter</span>
                   </button>
                 )}
 
-                <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <p className="px-3 py-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider font-oswald">
                   {query ? 'Matched Pages' : 'Quick Navigation'}
                 </p>
 
                 {filteredItems.length === 0 && !query.trim() ? (
-                  <p className="px-3 py-4 text-xs text-slate-400 text-center">No matching pages</p>
+                  <p className="px-3 py-4 text-xs text-stone-400 text-center font-erode">No matching pages</p>
                 ) : (
                   filteredItems.map((item) => (
                     <button
                       key={item.path}
                       type="button"
                       onClick={() => handleNavigate(item.path)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all duration-150 outline-none cursor-pointer"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-[#FAF8F5] transition-all duration-150 outline-none cursor-pointer"
                     >
-                      <item.icon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <item.icon className="w-4 h-4 text-stone-500 flex-shrink-0" />
                       <span className="text-xs font-semibold">{item.label}</span>
                     </button>
                   ))
@@ -160,10 +160,10 @@ export const CommandPalette = () => {
               </div>
 
               {/* Footer hint */}
-              <div className="flex items-center justify-between px-4 py-2 border-t border-slate-100 bg-slate-50/70">
-                <span className="text-[10px] text-slate-400">Navigation & platform search</span>
-                <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-white font-mono text-[9px]">ESC</kbd>
+              <div className="flex items-center justify-between px-4 py-2 border-t border-[#E7E2D8] bg-[#FAF8F5]">
+                <span className="text-[10px] text-stone-500 font-erode">Navigation & platform search</span>
+                <span className="text-[10px] text-stone-500 flex items-center gap-1 font-erode">
+                  <kbd className="px-1.5 py-0.5 rounded border border-[#DDD5C7] bg-white font-mono text-[9px]">ESC</kbd>
                   {' '}to close
                 </span>
               </div>
