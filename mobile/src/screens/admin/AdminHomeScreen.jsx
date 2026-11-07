@@ -26,6 +26,9 @@ import Badge from '../../components/ui/Badge';
 import Divider from '../../components/ui/Divider';
 import Loader from '../../components/ui/Loader';
 import ErrorState from '../../components/ui/ErrorState';
+import Icon from '../../components/ui/Icon';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { ASSETS } from '../../assets';
 
 export const AdminHomeScreen = () => {
   const { colors, spacing, radius, shadows } = useTheme();
@@ -124,137 +127,123 @@ export const AdminHomeScreen = () => {
           />
         }
       >
-        {/* ── Top Hero Header (Dark Navy curved container matching Screenshot 1) ── */}
-        <View style={styles.heroContainer}>
-          <View style={styles.heroTopRow}>
-            <View style={styles.heroLeftProfile}>
-              <View style={styles.heroAvatarCircle}>
-                <Text style={{ fontSize: 20, color: '#FFFFFF' }}>🏪</Text>
-              </View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.storeNameText} numberOfLines={1}>
-                  {user?.laundryName || user?.name || 'Ali Laundry Admin'}
-                </Text>
-                <View style={styles.emailLiveRow}>
-                  <Text style={styles.liveRadioIcon}>((•))</Text>
-                  <Text style={styles.storeEmailText} numberOfLines={1}>
-                    {user?.email || 'ali@laundry.com'}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.heroSignOutBtn}
-              onPress={() => setSignOutModalVisible(true)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.heroSignOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Amber Attention Banner */}
+        {/* ── TOP HEADER (Matching Image 2 Reference) ── */}
+        <View style={styles.adminTopHeader}>
+          <TouchableOpacity onPress={() => navigation.openDrawer ? navigation.openDrawer() : null} style={styles.menuIconBtn}>
+            <Icon name="grid" size={20} color="#0F172A" />
+          </TouchableOpacity>
+          <Text variant="title" weight="bold" style={styles.adminHeaderBrand}>
+            LaundryWave Admin
+          </Text>
           <TouchableOpacity
-            style={styles.attentionBanner}
-            activeOpacity={0.88}
-            onPress={() => navigation.navigate('Orders', { status: 'pending' })}
+            style={styles.notifBtn}
+            onPress={() => navigation.navigate('AdminNotifications')}
           >
-            <View style={styles.attentionIconCircle}>
-              <Text style={styles.attentionIcon}>⚡</Text>
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.attentionTitle}>
-                {attentionOrdersCount > 0 ? `${attentionOrdersCount} Orders Require Attention` : 'All Caught Up!'}
-              </Text>
-              <Text style={styles.attentionSubtitle}>
-                {stats.pendingOrders || 0} pending pickup & {stats.inProgressOrders || 0} in processing
-              </Text>
-            </View>
-            <Text style={styles.attentionChevron}>›</Text>
+            <Icon name="bell" size={20} color="#0F172A" />
+            <View style={styles.notifBadgeDot} />
           </TouchableOpacity>
         </View>
 
+        {/* ── GREETING HERO BANNER WITH 3D MASCOT ── */}
+        <View style={styles.greetingHeroCard}>
+          <View style={styles.greetingLeft}>
+            <Text style={styles.greetingHeading}>Good morning, Admin</Text>
+            <Text style={styles.greetingSub}>Here's what's happening today.</Text>
+          </View>
+          {ASSETS.illustrations?.foldedClothes && (
+            <Image
+              source={ASSETS.illustrations.foldedClothes}
+              style={styles.greetingMascot}
+              resizeMode="cover"
+            />
+          )}
+        </View>
+
+        {/* ── TODAY OVERVIEW (3 KPI METRIC CARDS) ── */}
+        <View style={styles.overviewSection}>
+          <Text style={styles.overviewSectionTitle}>Today Overview</Text>
+          <View style={styles.kpiRow}>
+            <MetricCard
+              title="Today's Pickups"
+              value={todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 18)}
+              subtitle="View details ›"
+              iconName="calendar"
+              iconBg="#EFF6FF"
+              iconColor="#0066FF"
+              onPress={() => navigation.navigate('Orders', { status: 'pending', todayOnly: true })}
+            />
+            <MetricCard
+              title="Active Orders"
+              value={stats.todayInProgressOrders ?? stats.inProgressOrders ?? 56}
+              subtitle="View details ›"
+              iconName="washing-machine"
+              iconBg="#F0FDFA"
+              iconColor="#14B8A6"
+              onPress={() => navigation.navigate('Orders', { status: 'in_progress' })}
+            />
+            <MetricCard
+              title="Revenue"
+              value={`₹${(stats.totalRevenue ?? 1240).toLocaleString('en-IN')}`}
+              subtitle="View report ›"
+              iconName="credit-card"
+              iconBg="#ECFDF5"
+              iconColor="#10B981"
+              onPress={() => navigation.navigate('Orders')}
+            />
+          </View>
+        </View>
+
+        {/* ── QUICK ACTIONS (4 GRID CARDS MATCHING MOCKUP) ── */}
+        <View style={styles.quickActionsSection}>
+          <Text style={styles.overviewSectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActionsGrid}>
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('Orders', { createNew: true })}
+            >
+              <View style={[styles.quickActionIconWrap, { backgroundColor: '#EFF6FF' }]}>
+                <Text style={{ fontSize: 18, color: '#0066FF' }}>⊕</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>New Order</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('Orders', { status: 'pending' })}
+            >
+              <View style={[styles.quickActionIconWrap, { backgroundColor: '#F0FDFA' }]}>
+                <Text style={{ fontSize: 18, color: '#14B8A6' }}>📅</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Schedule Pickup</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('Orders')}
+            >
+              <View style={[styles.quickActionIconWrap, { backgroundColor: '#F5F3FF' }]}>
+                <Text style={{ fontSize: 18, color: '#7C3AED' }}>📦</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Manage Orders</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('AdminCustomers')}
+            >
+              <View style={[styles.quickActionIconWrap, { backgroundColor: '#FFF7ED' }]}>
+                <Text style={{ fontSize: 18, color: '#EA580C' }}>👤</Text>
+              </View>
+              <Text style={styles.quickActionLabel}>Add Customer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <View style={styles.body}>
-          {/* ── OPERATIONAL ACTIONS STEPPER ── */}
-          <Text style={styles.sectionCategoryHeader}>OPERATIONAL ACTIONS</Text>
-          <View style={styles.operationalStepperRow}>
-            {/* 1. PICKUP */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.stepperPillPickup}
-              onPress={() =>
-                navigation.navigate('Orders', {
-                  status: 'pending',
-                  todayOnly: true,
-                  timestamp: Date.now(),
-                })
-              }
-            >
-              <Text style={styles.stepperIcon}>🧺</Text>
-              <Text style={styles.stepperLabelPickup} numberOfLines={1}>
-                PICKUP ({todayPickups.length > 0 ? todayPickups.length : (stats.todayPendingOrders ?? stats.pendingOrders ?? 0)})
-              </Text>
-            </TouchableOpacity>
-
-            {/* 2. WASH */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.stepperPillWash}
-              onPress={() =>
-                navigation.navigate('Orders', {
-                  status: 'in_progress',
-                  timestamp: Date.now(),
-                })
-              }
-            >
-              <Text style={styles.stepperIcon}>⚙️</Text>
-              <Text style={styles.stepperLabelWash} numberOfLines={1}>
-                WASH ({stats.todayInProgressOrders ?? stats.inProgressOrders ?? 0})
-              </Text>
-            </TouchableOpacity>
-
-            {/* 3. DELIVERY */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.stepperPillDelivery}
-              onPress={() =>
-                navigation.navigate('Orders', {
-                  status: 'out_for_delivery',
-                  todayOnly: true,
-                  timestamp: Date.now(),
-                })
-              }
-            >
-              <Text style={styles.stepperIcon}>🚚</Text>
-              <Text style={styles.stepperLabelDelivery} numberOfLines={1}>
-                DELIVERY ({todayDeliveries.length > 0 ? todayDeliveries.length : (stats.todayOutForDeliveryOrders ?? stats.outForDeliveryOrders ?? 0)})
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ── REVENUE & SERVICES CARD ── */}
-          <View style={styles.revenueCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.revenueSubtitle}>Net Laundry Revenue:</Text>
-              <Text style={styles.revenueAmount}>
-                ₹{(stats.totalRevenue ?? 1301.40).toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.activeServicesBadge}
-              onPress={() => navigation.navigate('AdminAddEditService')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.activeServicesText}>
-                {stats.totalServices ?? 6} Services Active
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* ── TODAY'S PROCESS OVERVIEW (7 STAGES) ── */}
           <View style={styles.overviewHeaderRow}>
             <Text style={styles.sectionHeading}>Today's Overview</Text>
@@ -850,7 +839,134 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.25)',
   },
-  // ── Attention Banner ──
+  // ── New FreshFold/LaundryWave Admin Styles ──
+  adminTopHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  menuIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adminHeaderBrand: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  notifBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notifBadgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  greetingHeroCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: '#F8FAFC',
+  },
+  greetingLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  greetingHeading: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+  greetingSub: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  greetingMascot: {
+    width: 70,
+    height: 70,
+    borderRadius: 14,
+  },
+  overviewSection: {
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  overviewSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  kpiRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  quickActionsSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  quickActionCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EDF2F7',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0E2954',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickActionIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  quickActionLabel: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  // ── Attention Banner (Legacy fallback) ──
   attentionBanner: {
     backgroundColor: '#B45309',
     borderRadius: 14,
@@ -891,7 +1007,7 @@ const styles = StyleSheet.create({
   // ── Body ──
   body: {
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 10,
   },
   sectionCategoryHeader: {
     fontSize: 12,

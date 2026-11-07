@@ -11,25 +11,35 @@ export const palette = Object.freeze({
     200: '#BAE6FD',
     300: '#7DD3FC',
     400: '#38BDF8',
-    500: '#0EA5E9',
-    600: '#0284C7', // Signature Fresh Sky Cyan Blue from Logo
-    700: '#0369A1',
-    800: '#075985',
-    900: '#0C4A6E',
+    500: '#0B63E5', // LaundryWave Signature Blue
+    600: '#0284C7', // Harmonized Logo Sky/Wave Blue (previously electric #0066FF)
+    700: '#2D485E', // Logo Mineral Slate Wave (previously harsh #0052CC)
+    800: '#223647', // Logo Deep Tailored Slate (previously harsh #0E2954)
+    900: '#1A2936', // Logo Harmonized Dark Slate (previously pitch black #0A192F)
+  },
+  wave: {
+    50: '#F0FDFA',
+    100: '#CCFBF1',
+    200: '#99F6E4',
+    300: '#5EEAD4',
+    400: '#2DD4BF', // Wave Mint Teal from Logo
+    500: '#14B8A6',
+    600: '#0D9488',
+    700: '#0F766E',
   },
   accentOrange: {
     50: '#FFF7ED',
     100: '#FFEDD5',
-    500: '#FF7A00', // Signature Warm Orange from Logo
+    500: '#FF6B6B', // Soft Coral/Salmon from logo & alerts
     600: '#EA580C',
   },
   navy: {
-    950: '#060911',
-    900: '#090D16', // Deep Dark Navy background
-    850: '#0F172A', // Slate navy surface
-    800: '#141E33', // Elevated navy card surface
-    750: '#1A253E',
-    700: '#233050',
+    950: '#0B1520',
+    900: '#1A2936', // Soft Slate Navy (previously pitch dark #0A192F)
+    850: '#223647', // Logo Deep Tailored Slate (previously #0E2954)
+    800: '#2D485E', // Logo Mineral Slate Wave
+    750: '#36546D',
+    700: '#2A4365',
     600: '#334155',
     500: '#475569',
     400: '#64748B',
@@ -40,28 +50,30 @@ export const palette = Object.freeze({
   },
   status: {
     success: '#10B981',
-    successLight: 'rgba(16, 185, 129, 0.14)',
-    successBorder: 'rgba(16, 185, 129, 0.32)',
+    successLight: '#ECFDF5',
+    successBorder: '#A7F3D0',
     warning: '#F59E0B',
-    warningLight: 'rgba(245, 158, 11, 0.14)',
-    warningBorder: 'rgba(245, 158, 11, 0.32)',
+    warningLight: '#FFFBEB',
+    warningBorder: '#FDE68A',
     danger: '#EF4444',
-    dangerLight: 'rgba(239, 68, 68, 0.14)',
-    dangerBorder: 'rgba(239, 68, 68, 0.32)',
+    dangerLight: '#FEF2F2',
+    dangerBorder: '#FECACA',
     error: '#EF4444',
-    errorLight: 'rgba(239, 68, 68, 0.14)',
-    errorBorder: 'rgba(239, 68, 68, 0.32)',
-    info: '#3B82F6',
-    infoLight: 'rgba(59, 130, 246, 0.14)',
-    infoBorder: 'rgba(59, 130, 246, 0.32)',
+    errorLight: '#FEF2F2',
+    errorBorder: '#FECACA',
+    info: '#0066FF',
+    infoLight: '#EFF6FF',
+    infoBorder: '#BFDBFE',
   },
   accent: {
     cyan: '#06B6D4',
-    sky: '#0EA5E9',
-    indigo: '#6366F1',
+    teal: '#14B8A6',
+    waveMint: '#2DD4BF',
+    sky: '#0284C7',
+    indigo: '#0E2954',
     emerald: '#10B981',
     amber: '#F59E0B',
-    rose: '#F43F5E',
+    coral: '#FF6B6B',
   },
 });
 
@@ -123,13 +135,20 @@ export const lightColors = Object.freeze({
   surfaceHighlight: '#E2E8F0',
   surfaceGlass: 'rgba(255, 255, 255, 0.88)',
 
+  // Brand Highlights
+  brandNavy: palette.navy[850], // #0E2954
+  brandTeal: palette.wave[500], // #14B8A6
+  brandMint: palette.wave[400], // #2DD4BF
+  bottomNavBg: palette.navy[900], // #0A192F
+  iceBlue: palette.primary[100], // #E0F2FE
+
   // Cards
   card: '#FFFFFF',
-  cardElevated: '#F8FAFC',
-  cardGlass: 'rgba(255, 255, 255, 0.92)',
-  cardBorder: 'rgba(15, 23, 42, 0.08)',
-  glassBorder: 'rgba(15, 23, 42, 0.10)',
-  glassBorderSubtle: 'rgba(15, 23, 42, 0.04)',
+  cardElevated: '#FFFFFF',
+  cardGlass: 'rgba(255, 255, 255, 0.95)',
+  cardBorder: '#EDF2F7',
+  glassBorder: 'rgba(14, 41, 84, 0.08)',
+  glassBorderSubtle: 'rgba(14, 41, 84, 0.04)',
 
   // Text
   textPrimary: '#0F172A',
@@ -140,24 +159,24 @@ export const lightColors = Object.freeze({
 
   // Borders & Dividers
   border: '#E2E8F0',
-  borderLight: 'rgba(15, 23, 42, 0.06)',
-  borderFocus: palette.primary[600], // #7C3AED
+  borderLight: '#F1F5F9',
+  borderFocus: palette.primary[600],
 
-  // Primary Brand
-  primary: palette.primary[600], // #7C3AED
+  // Primary Brand (Royal Sky Blue from buttons & cards)
+  primary: palette.primary[600], // #0066FF
   primaryHover: palette.primary[700],
   primaryActive: palette.primary[800],
-  primaryLight: palette.primary[100], // #EDE9FE
+  primaryLight: '#EFF6FF',
   onPrimary: '#FFFFFF',
 
   // Secondary
-  secondary: '#E2E8F0',
-  secondaryHover: '#CBD5E1',
+  secondary: '#F1F5F9',
+  secondaryHover: '#E2E8F0',
   onSecondary: '#0F172A',
 
   // Overlays
-  overlay: 'rgba(15, 23, 42, 0.45)',
-  overlayStrong: 'rgba(15, 23, 42, 0.65)',
+  overlay: 'rgba(10, 25, 47, 0.55)',
+  overlayStrong: 'rgba(10, 25, 47, 0.75)',
 
   // Status mappings
   status: palette.status,

@@ -16,3 +16,5 @@ export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { ScreenContainer } from './ScreenContainer';
 export { Icon } from './Icon';
+export { StepProgressIndicator } from './StepProgressIndicator';
+export { MetricCard } from './MetricCard';

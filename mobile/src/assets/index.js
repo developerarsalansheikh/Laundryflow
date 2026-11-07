@@ -10,6 +10,7 @@ import pickupDelivery from './illustrations/pickup_delivery.jpg';
 import orderTracking from './illustrations/order_tracking.jpg';
 import emptyOrders from './illustrations/empty_orders.jpg';
 import orderSuccess from './illustrations/order_success.jpg';
+import scheduleBasket from './illustrations/schedule_basket.jpg';
 
 import logo from './logo.png';
 
@@ -30,6 +31,7 @@ export const illustrations = {
   orderTracking,
   emptyOrders,
   orderSuccess,
+  scheduleBasket,
 };
 
 export const clothes = {

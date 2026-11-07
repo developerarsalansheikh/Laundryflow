@@ -34,10 +34,10 @@ export const ModernBottomTabBar = ({ state, descriptors, navigation, tabIcons = 
       style={[
         styles.barContainer,
         {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.borderLight,
+          backgroundColor: colors.bottomNavBg || '#0A192F',
+          borderTopColor: 'rgba(255, 255, 255, 0.08)',
           paddingBottom: containerPaddingBottom,
-          paddingTop: 6,
+          paddingTop: 8,
         },
       ]}
     >
@@ -75,9 +75,9 @@ export const ModernBottomTabBar = ({ state, descriptors, navigation, tabIcons = 
           // Resolve icon for route
           const iconConfig = tabIcons[route.name] || { name: 'grid' };
           const iconName = iconConfig.name;
-          const activeColor = colors.primary || '#2563EB';
-          const inactiveColor = colors.textMuted || '#94A3B8';
-          const activeBg = colors.primaryLight || 'rgba(37, 99, 235, 0.12)';
+          const activeColor = '#2DD4BF'; // LaundryWave Mint Teal
+          const inactiveColor = '#94A3B8'; // Crisp Muted Slate
+          const activeBg = 'rgba(45, 212, 191, 0.14)';
 
           return (
             <TouchableOpacity
@@ -96,16 +96,18 @@ export const ModernBottomTabBar = ({ state, descriptors, navigation, tabIcons = 
                 },
               ]}
             >
-              {/* Active Tab Accent Indicator */}
-              <View
-                style={[
-                  styles.activeIndicator,
-                  {
-                    backgroundColor: isFocused ? activeColor : 'transparent',
-                    width: isFocused ? (isSmallScreen ? 16 : 24) : 0,
-                  },
-                ]}
-              />
+              {/* Active Tab Accent Top Indicator */}
+              {isFocused && (
+                <View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      backgroundColor: activeColor,
+                      width: isSmallScreen ? 20 : 28,
+                    },
+                  ]}
+                />
+              )}
 
               {/* Rounded Icon Pill Container */}
               <View
@@ -136,7 +138,7 @@ export const ModernBottomTabBar = ({ state, descriptors, navigation, tabIcons = 
                   {
                     color: isFocused ? activeColor : inactiveColor,
                     fontSize: isSmallScreen && isFiveTab ? 9.5 : 11,
-                    marginTop: 2,
+                    marginTop: 3,
                   },
                 ]}
               >

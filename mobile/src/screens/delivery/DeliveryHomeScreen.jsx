@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Image,
   Modal,
+  Switch,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,6 +28,8 @@ import Badge from '../../components/ui/Badge';
 import Divider from '../../components/ui/Divider';
 import Loader from '../../components/ui/Loader';
 import ErrorState from '../../components/ui/ErrorState';
+import Icon from '../../components/ui/Icon';
+import { ASSETS } from '../../assets';
 
 const getOrderStatusBadge = (status = '') => {
   const s = String(status).toLowerCase();
@@ -262,108 +265,97 @@ export const DeliveryHomeScreen = () => {
       }
       contentContainerStyle={styles.container}
     >
-      {/* ── Top Curved Hero Header (Matching Screenshot 2) ── */}
-      <View style={styles.heroContainer}>
-        <View style={styles.heroRow}>
-          {/* Avatar with + status badge */}
-          <View style={styles.avatarWrapper}>
-            <Text style={styles.avatarLetter}>{userInitial}</Text>
-            <View style={styles.onlineBadgePlus}>
-              <Text style={styles.onlineBadgePlusText}>+</Text>
-            </View>
-          </View>
+      {/* ── TOP HEADER (Matching Image 3 Reference) ── */}
+      <View style={styles.deliveryTopHeader}>
+        <TouchableOpacity onPress={() => navigation.openDrawer ? navigation.openDrawer() : null} style={styles.menuIconBtn}>
+          <Icon name="grid" size={20} color="#0F172A" />
+        </TouchableOpacity>
+        <Text variant="title" weight="bold" style={styles.deliveryHeaderBrand}>
+          LaundryWave
+        </Text>
+        <TouchableOpacity
+          style={styles.notifBtn}
+          onPress={() => navigation.navigate('DeliveryNotifications')}
+        >
+          <Icon name="bell" size={20} color="#0F172A" />
+          <View style={styles.notifBadgeDot} />
+        </TouchableOpacity>
+      </View>
 
-          {/* Partner Info */}
-          <View style={styles.partnerInfo}>
-            <Text style={styles.partnerName} numberOfLines={1}>
-              {(user?.name || 'Ramesh Kumar').replace(/\s*\(Delivery\s*Agent\)/i, '').replace(/\s*\(Delivery\)/i, '')}
+      {/* ── GREETING HERO BANNER WITH 3D MASCOT & ONLINE TOGGLE ── */}
+      <View style={styles.deliveryGreetingCard}>
+        <View style={styles.deliveryGreetingContent}>
+          <View style={styles.deliveryGreetingLeft}>
+            <Text style={styles.deliveryGreetingTitle}>
+              Good morning, {user?.name ? user.name.split(' ')[0] : 'Partner'}!
             </Text>
-            <Text style={styles.partnerRole}>(Delivery Agent)</Text>
-            <Text style={styles.partnerContact} numberOfLines={1}>
-              + {user?.phone || '91 9876543219'} • {user?.email || 'delivery@laundryflow.com'}
+            <Text style={styles.deliveryGreetingSub}>
+              Ready for a productive day?
             </Text>
           </View>
+          {ASSETS.illustrations?.foldedClothes && (
+            <Image
+              source={ASSETS.illustrations.foldedClothes}
+              style={styles.deliveryMascot}
+              resizeMode="cover"
+            />
+          )}
+        </View>
 
-          {/* Go Online / Status Button */}
-          <TouchableOpacity
-            style={[
-              styles.goOnlineBtn,
-              currentStatus === 'available' ? styles.goOnlineBtnActive : styles.goOnlineBtnIdle,
-            ]}
-            onPress={handleToggleOnline}
-            activeOpacity={0.8}
+        {/* ── YOU ARE ONLINE TOGGLE ROW ── */}
+        <View style={styles.onlineToggleRow}>
+          <View style={styles.onlineLabelRow}>
+            <View
+              style={[
+                styles.onlineIndicatorDot,
+                { backgroundColor: currentStatus === 'available' ? '#10B981' : '#94A3B8' },
+              ]}
+            />
+            <Text style={styles.onlineLabelText}>
+              {currentStatus === 'available' ? 'You are Online' : 'You are Offline'}
+            </Text>
+          </View>
+          <Switch
+            value={currentStatus === 'available'}
+            onValueChange={handleToggleOnline}
+            trackColor={{ false: '#CBD5E1', true: '#2DD4BF' }}
+            thumbColor="#FFFFFF"
             disabled={availabilityMutation.isPending}
-          >
-            <Text style={styles.goOnlineBtnText}>
-              {currentStatus === 'available' ? 'Online' : 'Go Online'}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
 
-      {/* ── Duty Status Alert Bar (Cream / Amber bar matching Screenshot 2) ── */}
-      <View style={styles.dutyAlertBar}>
-        <View style={styles.dutyAlertLeft}>
-          <View style={[styles.dutyStatusPill, currentStatus === 'available' ? styles.dutyStatusPillOnline : styles.dutyStatusPillOffline]}>
-            <Text style={[styles.dutyStatusPillText, currentStatus === 'available' ? styles.dutyStatusPillTextOnline : styles.dutyStatusPillTextOffline]}>
-              {currentStatus === 'available' ? 'ONLINE' : 'OFFLINE'}
-            </Text>
-          </View>
-          <Text style={styles.dutyAlertMessage} numberOfLines={1}>
-            • {currentStatus === 'available' ? 'Duty Active (Ready for orders)' : 'Duty Paused (Go Online to work)'}
-          </Text>
+      {/* ── DAILY GOAL PROGRESS CARD ── */}
+      <View style={styles.dailyGoalCard}>
+        <View style={styles.dailyGoalHeader}>
+          <Text style={styles.dailyGoalTitle}>Daily Goal</Text>
+          <Text style={styles.dailyGoalCount}>{deliverCount + pickupCount} / 20 Stops</Text>
         </View>
-
-        <TouchableOpacity
-          onPress={handleSyncLocation}
-          activeOpacity={0.7}
-          disabled={locationSyncing}
-          style={{ paddingHorizontal: 4 }}
-        >
-          <Text style={styles.dutySyncText}>
-            {locationSyncing ? 'Syncing...' : 'Sync'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.progressBarTrack}>
+          <View
+            style={[
+              styles.progressBarFill,
+              { width: `${Math.min(100, Math.max(10, ((deliverCount + pickupCount) / 20) * 100))}%` },
+            ]}
+          />
+        </View>
       </View>
 
-      {/* ── Lifetime Performance Card (Matching Screenshot 2) ── */}
-      <View style={styles.performanceCard}>
-        <Text style={styles.performanceTitle}>Lifetime Performance</Text>
-        <View style={styles.performanceStatsRow}>
-          {/* Deliveries */}
-          <View style={styles.perfCol}>
-            <Text style={styles.perfNumberDeliveries}>
-              {stats?.totalDelivered ?? stats?.completedDeliveries ?? 4}
-            </Text>
-            <Text style={styles.perfLabel}>Deliveries</Text>
-          </View>
-
-          {/* Earnings */}
-          <View style={styles.perfCol}>
-            <Text style={styles.perfNumberEarnings}>
-              ₹{stats?.totalEarnings ?? stats?.todayEarnings ?? 180}
-            </Text>
-            <Text style={styles.perfLabel}>Earnings</Text>
-          </View>
-
-          {/* Rating */}
-          <View style={styles.perfCol}>
-            <Text style={styles.perfNumberRating}>
-              {stats?.rating ? Number(stats.rating).toFixed(1) : '5.0'}★
-            </Text>
-            <Text style={styles.perfLabel}>Rating</Text>
-          </View>
+      {/* ── NEED HELP BANNER ── */}
+      <TouchableOpacity
+        style={styles.needHelpBanner}
+        activeOpacity={0.85}
+        onPress={() => Linking.openURL('tel:1800123456').catch(() => null)}
+      >
+        <View style={styles.needHelpIconWrap}>
+          <Text style={{ fontSize: 18 }}>🎧</Text>
         </View>
-
-        {/* Sign Out Button */}
-        <TouchableOpacity
-          style={styles.signOutButton}
-          onPress={() => setSignOutModalVisible(true)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.signOutButtonText}>Sign Out</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.needHelpTitle}>Need Help?</Text>
+          <Text style={styles.needHelpSub}>Contact support</Text>
+        </View>
+        <Text style={styles.needHelpArrow}>›</Text>
+      </TouchableOpacity>
 
       {/* ── Two Big Work Sections: Collect & Deliver (Matching Screenshot 2) ── */}
       <View style={styles.twoBigCardsRow}>
@@ -777,7 +769,164 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  // ── Duty Alert Bar ──
+  // ── New Delivery Partner Mockup Styles ──
+  deliveryTopHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  deliveryHeaderBrand: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  deliveryGreetingCard: {
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDF2F7',
+  },
+  deliveryGreetingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  deliveryGreetingLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  deliveryGreetingTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+  deliveryGreetingSub: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  deliveryMascot: {
+    width: 68,
+    height: 68,
+    borderRadius: 14,
+  },
+  onlineToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EDF2F7',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 14,
+  },
+  onlineLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  onlineIndicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  onlineLabelText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0F172A',
+  },
+  summarySection: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  summarySectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  dailyGoalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EDF2F7',
+    padding: 14,
+    marginHorizontal: 16,
+    marginTop: 14,
+  },
+  dailyGoalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  dailyGoalTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  dailyGoalCount: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0066FF',
+  },
+  progressBarTrack: {
+    height: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#2DD4BF',
+    borderRadius: 4,
+  },
+  needHelpBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FFEDD5',
+    borderRadius: 14,
+    padding: 14,
+    marginHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  needHelpIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFEDD5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  needHelpTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#EA580C',
+  },
+  needHelpSub: {
+    fontSize: 11,
+    color: '#9A3412',
+    marginTop: 1,
+  },
+  needHelpArrow: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#EA580C',
+  },
+  // ── Duty Alert Bar (Legacy fallback) ──
   dutyAlertBar: {
     backgroundColor: '#FEF3C7',
     borderRadius: 14,

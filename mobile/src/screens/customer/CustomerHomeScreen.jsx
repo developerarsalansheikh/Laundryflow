@@ -462,23 +462,29 @@ export const CustomerHomeScreen = () => {
           </Card>
         ) : (
           <>
-            {/* ── HERO BANNER: Schedule Your Pickup Today! ── */}
+            {/* ── HERO BANNER: Schedule Pickup (Matching Image Reference) ── */}
             <View style={styles.heroBanner}>
               <View style={styles.heroTextContainer}>
-                <Text style={styles.heroTitle}>Schedule Your Pickup Today!</Text>
-                <Text style={styles.heroSubtitle}>Fast, Clean, Fresh Laundry</Text>
+                <Text style={styles.heroTitle}>Fresh Clothes,</Text>
+                <Text style={styles.heroTitle}>More Moments</Text>
+                <Text style={styles.heroSubtitle}>Professional care for{'\n'}your clothes.</Text>
                 <TouchableOpacity
                   activeOpacity={0.88}
                   style={styles.heroCtaBtn}
                   onPress={handleBookPickupBanner}
+                  accessibilityRole="button"
+                  accessibilityLabel="Schedule Pickup"
                 >
-                  <Text style={styles.heroCtaText}>Book a Pickup 📅</Text>
+                  <Icon name="calendar" size={15} color="#FFFFFF" style={styles.heroCtaIcon} />
+                  <Text style={styles.heroCtaText}>Schedule Pickup</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.dotsRow}>
-                <View style={[styles.dot, styles.dotActive]} />
-                <View style={styles.dot} />
-                <View style={styles.dot} />
+              <View style={styles.heroImageContainer}>
+                <Image
+                  source={ASSETS.illustrations.scheduleBasket}
+                  style={styles.heroImage}
+                  resizeMode="cover"
+                />
               </View>
             </View>
 
@@ -970,13 +976,13 @@ const styles = StyleSheet.create({
   brandTitleFirst: {
     fontSize: 18,
     fontWeight: '800',
-    color: BRAND_PRIMARY,
+    color: '#2D485E',
     letterSpacing: -0.3,
   },
   brandTitleSecond: {
     fontSize: 18,
     fontWeight: '800',
-    color: BRAND_ORANGE,
+    color: '#0284C7',
     letterSpacing: -0.3,
   },
   locationSelector: {
@@ -1018,64 +1024,68 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   heroBanner: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: '#F5F8FD',
     borderRadius: 18,
-    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#BAE6FD',
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    height: 150,
   },
   heroTextContainer: {
-    marginBottom: 10,
+    flex: 1,
+    paddingLeft: 16,
+    paddingVertical: 12,
+    paddingRight: 6,
+    justifyContent: 'center',
   },
   heroTitle: {
-    fontSize: 19,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: -0.2,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#08223B',
+    lineHeight: 22,
   },
   heroSubtitle: {
-    fontSize: 13,
-    color: '#0284C7',
-    marginTop: 2,
-    marginBottom: 14,
-    fontWeight: '500',
+    fontSize: 12,
+    color: '#556987',
+    marginTop: 4,
+    marginBottom: 10,
+    lineHeight: 16,
   },
   heroCtaBtn: {
-    backgroundColor: '#0284C7',
+    backgroundColor: '#0367E3',
     alignSelf: 'flex-start',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
     elevation: 2,
-    shadowColor: '#0284C7',
+    shadowColor: '#0367E3',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
+  heroCtaIcon: {
+    marginRight: 6,
+  },
   heroCtaText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  heroImageContainer: {
+    width: 135,
+    height: 150,
     alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
+    justifyContent: 'center',
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#94A3B8',
-    opacity: 0.4,
-  },
-  dotActive: {
-    width: 16,
-    backgroundColor: '#0284C7',
-    opacity: 1,
+  heroImage: {
+    width: 135,
+    height: 150,
   },
   servicesGrid: {
     flexDirection: 'row',
